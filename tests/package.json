@@ -1,0 +1,10 @@
+{
+  "name": "placar-obs-tests",
+  "private": true,
+  "type": "module",
+  "description": "Harness de testes em Node (canvas simulado) do Placar OBS",
+  "scripts": {
+    "test": "node test_app.mjs && node test_app2.mjs && node test_app3.mjs && node test_escudo.mjs && node test_app4.mjs"
+  },
+  "dependencies": { "@napi-rs/canvas": "^0.1.60" }
+}

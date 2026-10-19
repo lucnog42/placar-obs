@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Placar OBS — Servidor v17</title>
+<link rel="stylesheet" href="css/base.css?v=20260616b">
+<link id="tema" rel="stylesheet" href="css/laliga.css?v=20260616b">
+<link rel="stylesheet" href="css/midia-anim.css?v=20260616b">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:1920px;height:1080px;background:transparent;font-family:'Arial',sans-serif;overflow:hidden;position:relative}
+#placarWrapper{position:absolute;z-index:1;top:50px;left:50px;transform:scale(0.65);transform-origin:0 0}
+#status{position:fixed;top:4px;right:8px;z-index:999;font-size:14px;color:#0f0;opacity:1;background:rgba(0,0,0,0.7);padding:2px 8px;border-radius:3px}
+</style>
+</head>
+<body>
+<div id="camadaMidia" data-transicao="fade"></div>
+<div id="status"></div>
+<div id="placarWrapper">
+<div class="Placar">
+    <div class="time" id="timeA"><span class="sigla-text" id="siglaA">SIG A</span><span class="full-text" id="fullA">TIME A</span></div>
+    <div class="time" id="timeB"><span class="sigla-text" id="siglaB">SIG B</span><span class="full-text" id="fullB">TIME B</span></div>
+    <img class="escudo" src="" id="escudoA"><img class="escudo" src="" id="escudoB">
+    <span id="golsA" class="gol-num">0</span><span id="linha"> - </span><span id="golsB" class="gol-num">0</span>
+    <div class="timer" id="tempoDisplay">00:00</div>
+
+    <!-- ====== BASQUETE: Periodo + Shot Clock + Faltas + Posse ====== -->
+    <div id="periodoDisplay" class="basquete-only" style="display:none">1Q</div>
+    <div id="shotClockDisplay" class="basquete-only shot-clock" style="display:none">24</div>
+
+    <div id="faltasRow" class="basquete-only" style="display:none">
+        <div id="faltasA" class="faltas-display"></div>
+        <span id="posseSeta" class="posse-seta">◀</span>
+        <div id="faltasB" class="faltas-display"></div>
+    </div>
+
+    <div id="notificacao" class="notificacao hidden">
+        <div class="notif-text-wrapper"><div class="notif-track" id="notifTrack">
+            <img class="bola-spin" src="img/bola.png" alt=""><span id="notifText" class="notif-text"></span>
+            <img class="bola-spin" src="img/bola.png" alt=""><span id="notifText2" class="notif-text"></span>
+            <img class="bola-spin" src="img/bola.png" alt=""><span id="notifText3" class="notif-text"></span>
+            <img class="bola-spin" src="img/bola.png" alt=""><span id="notifText4" class="notif-text"></span>
+        </div></div>
+    </div>
+</div>
+
+    <!-- ====== PENALTIS (futebol-only) ====== -->
+    <div id="Penalte" class="escondido futebol-only">
+    <div id="PenaltesA"><div id="PA1" class="Penaltes"></div><div id="PA2" class="Penaltes"></div><div id="PA3" class="Penaltes"></div><div id="PA4" class="Penaltes"></div><div id="PA5" class="Penaltes"></div></div>
+    <div id="PenaltesB"><div id="PB5" class="Penaltes"></div><div id="PB4" class="Penaltes"></div><div id="PB3" class="Penaltes"></div><div id="PB2" class="Penaltes"></div><div id="PB1" class="Penaltes"></div></div>
+</div>
+</div>
+<div id="camadaTabela"><canvas id="tabelaCanvas" width="1920" height="1080"></canvas></div>
+<script src="js/eventbus.js?v=20260616b"></script>
+<script src="js/comum.js?v=20260624c"></script>
+<script src="js/placar/core.js?v=20260624c"></script>
+<script src="js/placar/timer.js?v=20260624c"></script>
+<script src="js/placar/gols.js?v=20260624c"></script>
+<script src="js/placar/times.js?v=20260624c"></script>
+<script src="js/placar/penaltes.js?v=20260616b"></script>
+<script src="js/placar/notificacao.js?v=20260616b"></script>
+<script src="js/placar/tema.js?v=20260616b"></script>
+<script src="js/placar/midia.js?v=20260616b"></script>
+<script src="js/placar/basquete.js?v=20260616b"></script>
+<script src="tabela/dados.js?v=20261017a"></script>
+<script src="tabela/tabela.js?v=20261017a"></script>
+<script src="js/placar/tabela.js?v=20261017a"></script>
+<script>Placar.init();</script>
+</body>
+</html>

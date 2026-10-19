@@ -1,0 +1,37 @@
+# estado em execução — cada instalação tem o seu, criado pelo api.php
+estado.json
+estado.json.bak
+
+# bancos de arquivos: conteúdo enviado pelo operador (não versionar)
+midias/*
+!midias/.gitkeep
+torneios/*
+!torneios/.gitkeep
+presets/*
+!presets/.gitkeep
+
+# escudos: só as cores genéricas do app entram no repositório.
+# Escudos de clubes são marcas de terceiros — baixe pelo import de CSV ou
+# coloque os seus em escudos/ (o git vai ignorar).
+escudos/*
+!escudos/.gitkeep
+!escudos/Amarelo.png
+!escudos/Azul.png
+!escudos/Branco.png
+!escudos/Laranja.png
+!escudos/Preto.png
+!escudos/Roxo.png
+!escudos/Verde.png
+!escudos/Vermelho.png
+!escudos/timeA.png
+!escudos/timeB.png
+
+# testes
+tests/node_modules/
+tests/frames/*
+!tests/frames/.gitkeep
+
+# ruído de editor/sistema
+.DS_Store
+Thumbs.db
+*.swp

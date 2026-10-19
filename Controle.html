@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Controle de Placar — Servidor</title>
+<link rel="stylesheet" href="css/controle.css?v=20261017b">
+</head>
+<body>
+
+<div id="status" class="sync">🔄 Conectando ao servidor...</div>
+<h2>🎮 Controle do Overlay</h2>
+
+<!-- ====== PREVIEW DO PLACAR ====== -->
+<div id="lateral">
+<div id="previewWrapper">
+  <div id="previewBar">
+    <span>👁 Preview do Placar</span>
+    <span id="previewZoomBox">🔍 <input type="range" id="previewZoom" min="35" max="100" step="1" value="100" oninput="Controle.zoomPreview(this.value)" onchange="Controle.salvarZoomPreview()"> <span id="previewZoomVal">100%</span></span>
+    <button onclick="Controle.togglePreview()">Esconder</button>
+  </div>
+  <div id="previewContainer">
+    <iframe src="Placar.html" id="previewFrame"></iframe>
+    <div id="previewDrag"><div id="dragBox"><span class="drag-tag"></span><span class="drag-handle"></span></div></div>
+  </div>
+</div>
+
+<!-- ====== OVERLAY: SISTEMA DE TABELAS ====== -->
+<div class="acc-section open rolagem">
+  <div class="acc-header" onclick="Controle.toggleAccordion(this)">
+    <span class="icon">&#128202;</span>
+    <span class="title">Overlay &middot; Tabelas</span>
+    <span class="badge" id="tabelaBadge">fora do ar</span>
+    <span class="arrow">&#9660;</span>
+  </div>
+  <div class="acc-body">
+    <div class="grid-inner">
+      <section class="full">
+        <button id="btnTabela" class="btn-tabela" onclick="Controle.alternarTabela()">&#9654; Ligar overlay</button>
+        <p style="font-size:10px;color:#aaa;margin-top:5px">Ao ligar, o placar sai de cena e o overlay entra no lugar dele. Ao desligar, o overlay sai e o placar volta.</p>
+      </section>
+      <section>
+        <p>Tema do overlay</p>
+        <select id="tabelaTema" onchange="Controle.definirTemaTabela(this.value)"></select>
+        <p>Modo de exibi&ccedil;&atilde;o</p>
+        <div class="modo-row">
+          <label class="toggle-sw" title="Ligado = cena fixa &middot; Desligado = linha do tempo">
+            <input type="checkbox" id="tabelaFixa" onchange="Controle.alternarModoTabela(this.checked)"><span class="slider"></span>
+          </label>
+          <span class="modo-lbl auto" id="tabelaModoLabel">Linha do tempo</span>
+          <button class="btn-play" id="btnTabelaPlay" onclick="Controle.tocarSequencia()" title="Recome&ccedil;a a sequ&ecirc;ncia agora">&#9654; Tocar</button>
+        </div>
+        <select id="tabelaModo" class="escondido">
+          <option value="auto">Linha do tempo (sequência)</option>
+          <option value="fixa">Cena fixa</option>
+        </select>
+        <div id="blocoCenaFixa" class="escondido">
+          <p>Cena fixa <span class="hint">(ao ligar o modo fixo ele j&aacute; vem com a cena que estava no ar)</span></p>
+          <select id="tabelaCena" onchange="Controle.definirCenaTabela(this.value)"></select>
+        </div>
+      </section>
+      <section>
+        <p>Time destaque</p>
+        <div class="modo-row">
+          <button class="btn-destaque" id="btnDestA" onclick="Controle.destaquePlacar('a')">&#11088; Casa (A)</button>
+          <button class="btn-destaque" id="btnDestB" onclick="Controle.destaquePlacar('b')">&#11088; Fora (B)</button>
+          <button class="btn-destaque" id="btnDestAuto" onclick="Controle.definirDestaqueTabela('auto')">Autom&aacute;tico</button>
+        </div>
+        <select id="tabelaDestaque" onchange="Controle.definirDestaqueTabela(this.value)"></select>
+        <p style="font-size:10px;color:#aaa;margin-top:4px">Vale para a cena Time destaque e para as Escala&ccedil;&otilde;es. Os dois times do confronto (A e B) v&ecirc;m do placar automaticamente.</p>
+        <span class="hint" id="tabelaDadosInfo"></span>
+      </section>
+      <section class="full" id="secCenas">
+        <p>Cenas &middot; linha do tempo <span class="hint" id="tabelaCenaCount"></span> <span class="hint" id="tabelaTotal"></span></p>
+        <div id="tabelaCenasLista"></div>
+        <div class="row" style="margin-top:5px">
+          <button onclick="Controle.todasCenas(true)" style="font-size:10px;padding:3px 8px">Todas</button>
+          <button onclick="Controle.todasCenas(false)" style="font-size:10px;padding:3px 8px">Nenhuma</button>
+          <button onclick="Controle.resetarCenas()" style="font-size:10px;padding:3px 8px">Padr&atilde;o</button>
+          <span class="hint">marque, mude a dura&ccedil;&atilde;o (s) e ordene com &#8593;&#8595;</span>
+        </div>
+      </section>
+      <section class="full">
+        <p>Cabe&ccedil;alho do overlay</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">
+          <div><label style="font-size:10px;color:#aaa">T&iacute;tulo</label><input id="tabelaTitulo" placeholder="Ex: QUARTA CATALANA" onchange="Controle.definirTexto('tabelaTitulo',this.value)"></div>
+          <div><label style="font-size:10px;color:#aaa">Subt&iacute;tulo</label><input id="tabelaSub" placeholder="Ex: GRUP 18 &middot; Temporada 2026-27" onchange="Controle.definirTexto('tabelaSub',this.value)"></div>
+          <div><label style="font-size:10px;color:#aaa">Local / campo</label><input id="tabelaLocal" placeholder="Ex: Camp Municipal" onchange="Controle.definirTexto('tabelaLocal',this.value)"></div>
+          <div><label style="font-size:10px;color:#aaa">Hora</label><input id="tabelaHora" placeholder="Ex: 18:00" onchange="Controle.definirTexto('tabelaHora',this.value)"></div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;margin-top:6px;flex-wrap:wrap">
+          <label style="font-size:10px;color:#aaa">Logo do torneio</label>
+          <select id="tabelaLogo" onchange="Controle.selecionarLogoTabela()" style="flex:1;font-size:11px;min-width:110px"><option value="">Nenhum</option></select>
+          <img id="tabelaLogoPrev" style="height:22px;display:none" alt="">
+          <button onclick="Controle.uploadLogo()" style="font-size:10px;padding:2px 6px;background:#2196F3;color:#fff">&#128228; Subir</button>
+          <button onclick="Controle.recarregarLogos()" style="font-size:10px;padding:2px 6px">&#128260;</button>
+        </div>
+        <div style="display:flex;gap:14px;align-items:center;margin-top:7px;flex-wrap:wrap">
+          <label style="font-size:11px"><input type="checkbox" id="tabelaZonas" onchange="Controle.definirZonasTabela()"> Zonas</label>
+          <label style="font-size:11px">1&ordm;&ndash;<input id="tabelaZonaUp" style="width:46px" onchange="Controle.definirZonasTabela()"></label>
+          <label style="font-size:11px"><input id="tabelaZonaDn" style="width:46px" onchange="Controle.definirZonasTabela()">&ndash;16&ordm;</label>
+          <label style="font-size:11px"><input type="checkbox" id="tabelaEscudos" onchange="Controle.definirEscudosTabela()"> Escudos</label>
+        </div>
+        <p style="margin-top:9px">Classifica&ccedil;&atilde;o (CSV do fcf.cat: Pos;Equip;Punts;...;Escut)</p>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <label style="font-size:11px;color:#ddd">&#128196; Importar CSV da classifica&ccedil;&atilde;o:</label>
+          <input type="file" id="tabelaCsvFile" accept=".csv,text/csv" onchange="Controle.importarClassificacao(this)" style="font-size:11px">
+          <button onclick="Controle.sincronizarEscudos()" style="font-size:10px;padding:3px 8px" title="Confere a biblioteca escudos/ e baixa so o que falta">&#128229; Sincronizar escudos</button>
+          <button onclick="Controle.conferirEscudos()" style="font-size:10px;padding:3px 8px" title="Diz quais times estao sem escudo na biblioteca, sem baixar nada">&#128270; Conferir biblioteca</button>
+          <span class="hint">importa os times e leva todos os escudos do CSV para a biblioteca (escudos/), baixando s&oacute; os que ainda n&atilde;o est&atilde;o l&aacute;</span>
+          <span id="tabelaCsvInfo" class="hint"></span>
+        </div>
+        <p style="margin-top:9px">Escala&ccedil;&otilde;es (CSV: time; jogador; n&uacute;mero; posi&ccedil;&atilde;o)</p>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <label style="font-size:11px;color:#ddd">&#128196; Importar CSV:</label>
+          <input type="file" id="tabelaEscFile" accept=".csv,text/csv" onchange="Controle.importarEscalacoes(this)" style="font-size:11px">
+          <button onclick="Controle.limparEscalacoes()" style="font-size:10px;padding:3px 7px">Limpar</button>
+          <span id="tabelaEscInfo" style="font-size:10px;color:#8fb2c8">nenhuma escala&ccedil;&atilde;o carregada</span>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+</div><!-- /#lateral -->
+
+<div id="container">
+
+<div class="acc-section open">
+  <div class="acc-header" onclick="Controle.toggleAccordion(this)">
+    <span class="icon">👥</span>
+    <span class="title">Times &amp; Competição</span>
+    <span class="badge">Nomes · Escudos · Torneio · Presets</span>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="acc-body">
+    <div class="grid-inner">
+
+<!-- ====== TIMES ====== -->
+<section>
+    <p>Times</p>
+    <input id="timeA" placeholder="Time A">
+    <input id="timeB" placeholder="Time B"><br>
+    <input id="siglaA" placeholder="Sigla A" maxlength="6" style="width:100px;">
+    <input id="siglaB" placeholder="Sigla B" maxlength="6" style="width:100px;">
+    <button onclick="Controle.definirTimes()">Definir Times</button>
+</section>
+
+<!-- ====== TORNEIO ====== -->
+<section class="full">
+    <p>🏆 Torneio</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">
+        <div><label style="font-size:10px;color:#aaa">Competição</label><input id="competicao" placeholder="Ex: Pirineus Cup" onchange="Controle.definirTorneio()"></div>
+        <div><label style="font-size:10px;color:#aaa">Categoria</label><input id="categoria" placeholder="Ex: U16 Masculino" onchange="Controle.definirTorneio()"></div>
+        <div><label style="font-size:10px;color:#aaa">Grupo</label><input id="grupo" placeholder="Ex: Grupo A" onchange="Controle.definirTorneio()"></div>
+        <div><label style="font-size:10px;color:#aaa">Fase</label><input id="fase" placeholder="Ex: Final" onchange="Controle.definirTorneio()"></div>
+        <div><label style="font-size:10px;color:#aaa">Data</label><input id="data" placeholder="Ex: 20/06/2026" onchange="Controle.definirTorneio()"></div>
+        <div><label style="font-size:10px;color:#aaa">Hora</label><input id="hora" placeholder="Ex: 15:30" onchange="Controle.definirTorneio()"></div>
+        <div><label style="font-size:10px;color:#aaa">Clima</label><input id="clima" placeholder="Ex: 18 &deg;C" onchange="Controle.definirTorneio()"></div>
+        <div><label style="font-size:10px;color:#aaa">&Iacute;cone do clima</label>
+          <select id="climaIcone" onchange="Controle.definirTorneio()">
+            <option value="&#9728;&#65039;">&#9728;&#65039; Sol</option>
+            <option value="&#9925;">&#9925; Parcialmente nublado</option>
+            <option value="&#9729;&#65039;">&#9729;&#65039; Nublado</option>
+            <option value="&#127783;&#65039;">&#127783;&#65039; Chuva</option>
+            <option value="&#9928;">&#9928; Trovoada</option>
+            <option value="&#127784;&#65039;">&#127784;&#65039; Neve</option>
+            <option value="&#127788;&#65039;">&#127788;&#65039; Vento</option>
+            <option value="">(sem &iacute;cone)</option>
+          </select>
+        </div>
+    </div>
+    <div style="margin-top:3px"><label style="font-size:10px;color:#aaa">Local</label><input id="local" placeholder="Ex: Estádio Municipal" onchange="Controle.definirTorneio()" style="width:100%"></div>
+    <p style="margin-top:8px;font-size:10px;color:#aaa">🏆 Logo do Torneio</p>
+    <div style="display:flex;gap:4px;align-items:center">
+        <img id="logoTorneioPreview" src="" style="width:60px;height:60px;object-fit:contain;border-radius:8px;background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.1);display:none" onerror="this.style.display='none'">
+        <select id="logoTorneio" onchange="Controle.selecionarLogoTorneio()" style="flex:1;font-size:11px"><option value="">Nenhum</option></select>
+        <button onclick="Controle.uploadLogo()" style="font-size:10px;padding:2px 6px;background:#2196F3;color:#fff">📤 Subir logo</button>
+        <button onclick="Controle.recarregarLogos()" style="font-size:10px;padding:2px 6px">🔄</button>
+    </div>
+</section>
+
+<!-- ====== ESCUDOS: UPLOAD EM MASSA ====== -->
+<section class="full">
+    <p>📤 Upload de Escudos</p>
+    <div style="display:flex;gap:4px;align-items:center">
+        <button onclick="Controle.uploadEscudosBatch()" style="background:#2196F3;color:#fff">📁 Selecionar PNGs</button>
+        <span style="font-size:10px;color:#aaa">1 ou mais arquivos</span>
+    </div>
+</section>
+
+<!-- ====== ESCUDOS: BIBLIOTECA ====== -->
+<section class="full">
+    <p>📚 Biblioteca de Escudos</p>
+    <div style="display:flex;gap:4px;margin-bottom:4px;align-items:center">
+        <label style="font-size:11px;cursor:pointer;display:flex;align-items:center;gap:3px"><input type="checkbox" id="selTodosEscudos" onchange="Controle.toggleTodosEscudos()"> Selecionar Todos</label>
+        <button onclick="Controle.removerEscudosMarcados()" class="btn-remover" style="margin-left:auto">✕ Remover Marcados</button>
+    </div>
+    <div id="listaEscudos">
+        <span style="color:#888;font-size:11px">Carregando...</span>
+    </div>
+</section>
+
+<!-- ====== CORES ====== -->
+<section  class="full">
+    <p>Cores dos Times</p>
+    <button class="A" onclick="Controle.definirCor('timeA')">Cor <span class="nomeTimeA">Time A</span></button>
+    <button class="B" onclick="Controle.definirCor('timeB')">Cor <span class="nomeTimeB">Time B</span></button>
+    <button onclick="Controle.resetarCor()">Resetar</button>
+</section>
+
+
+<hr class="acc-divider">
+
+<!-- ====== PRESETS (dentro de Times) ====== -->
+<section class="full">
+    <p>💾 Salvar Configuracao Atual</p>
+    <div style="display:flex;gap:4px;align-items:center">
+        <span style="font-size:11px;color:#aaa;flex:1">Nome auto: <b style="color:#ffd700" id="presetNomeAuto">TimeA_x_TimeB</b><br><span id="presetInfoExtra" style="font-size:10px;color:#666"></span></span>
+        <button onclick="Controle.salvarPreset()" style="background:#4CAF50;color:#fff">💾 Salvar</button>
+    </div>
+</section>
+
+<section class="full">
+    <p>📂 Presets Salvos <span id="contadorPresets" style="font-size:10px;color:#888;margin-left:8px"></span></p>
+    <div style="display:flex;gap:4px;margin-bottom:4px;align-items:center">
+        <label style="font-size:11px;cursor:pointer;display:flex;align-items:center;gap:3px"><input type="checkbox" id="selTodosPresets" onchange="Controle.toggleTodosPresets()"> Selecionar Todos</label>
+        <button onclick="Controle.removerPresetsMarcados()" class="btn-remover" style="margin-left:auto">✕ Remover Marcados</button>
+    </div>
+    <div style="display:flex;gap:4px;margin-bottom:6px;align-items:center;flex-wrap:wrap">
+        <select id="filtroCompeticao" onchange="Controle.filtrarPresets()" style="font-size:11px;max-width:180px"><option value="">Todas competições</option></select>
+        <select id="filtroCategoria" onchange="Controle.filtrarPresets()" style="font-size:11px;max-width:140px"><option value="">Todas categorias</option></select>
+        <select id="filtroGrupo" onchange="Controle.filtrarPresets()" style="font-size:11px;max-width:100px"><option value="">Todos grupos</option></select>
+        <select id="filtroFase" onchange="Controle.filtrarPresets()" style="font-size:11px;max-width:110px"><option value="">Todas fases</option></select>
+        <select id="filtroData" onchange="Controle.filtrarPresets()" style="font-size:11px;max-width:105px"><option value="">Datas</option></select>
+        <select id="filtroHora" onchange="Controle.filtrarPresets()" style="font-size:11px;max-width:90px"><option value="">Horários</option></select>
+        <select id="filtroLocal" onchange="Controle.filtrarPresets()" style="font-size:11px;max-width:120px"><option value="">Locais</option></select>
+        <input type="text" id="buscaPresets" placeholder="🔍 Buscar time..." style="flex:1;min-width:80px;font-size:11px" onkeyup="Controle.filtrarPresets()">
+    </div>
+    <div id="listaPresets">
+        <span style="color:#888;font-size:11px">Carregando...</span>
+    </div>
+</section>
+
+<section class="full">
+    <p>📥 Importar / 📤 Exportar</p>
+    <button onclick="Controle.importarPresets()" style="background:#2196F3;color:#fff">📁 Importar .json</button>
+    <button onclick="Controle.exportarPresets()" style="background:#FF9800;color:#fff;margin-left:4px">📤 Exportar Todos</button>
+    <span style="font-size:10px;color:#aaa;margin-left:6px">Importe ou exporte presets em lote</span>
+</section>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ====== ABA 3: ESTILO (inclui Posição/Tamanho) ====== -->
+<div class="acc-section">
+  <div class="acc-header" onclick="Controle.toggleAccordion(this)">
+    <span class="icon">🎨</span>
+    <span class="title">Estilo &amp; Posição</span>
+    <span class="badge">Tema · Fonte · Animação · Escala</span>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="acc-body">
+    <div class="grid-inner">
+
+<!-- ====== TEMA / FONTE / ANIMAÇÃO / NOMES ====== -->
+<section  class="full">
+    <p>Estilo do Placar</p>
+    <button class="tema-btn" data-tema="laliga" onclick="Controle.definirTema('laliga')">🏆 La Liga</button>
+    <button class="tema-btn" data-tema="colorido" onclick="Controle.definirTema('colorido')">🎨 Colorido</button>
+    <button class="tema-btn" data-tema="simples" onclick="Controle.definirTema('simples')">⬛ Simples</button><br>
+    <button id="toggleNomesBtn" onclick="Controle.alternarNomes()">📝 Expandir Nomes</button>
+    <hr style="border-color:#444;margin:5px 0">
+    <p style="font-size:10px;margin:4px 0 2px">Animação da Notificação</p>
+    <button class="anim-btn" data-anim="esquerda" onclick="Controle.definirAnimNotif('esquerda')">◀ Esq</button>
+    <button class="anim-btn" data-anim="direita" onclick="Controle.definirAnimNotif('direita')">Dir ▶</button>
+    <button class="anim-btn" data-anim="centro" onclick="Controle.definirAnimNotif('centro')">⟷ Centro</button>
+    <button class="anim-btn" data-anim="topo" onclick="Controle.definirAnimNotif('topo')">▼ Topo</button>
+    <hr style="border-color:#444;margin:5px 0">
+    <p style="font-size:10px;margin:4px 0 2px">Fonte</p>
+    <button class="fonte-btn" data-fonte="arial" onclick="Controle.definirFonte('arial')">Arial</button>
+    <button class="fonte-btn" data-fonte="impact" onclick="Controle.definirFonte('impact')">Impact</button>
+    <button class="fonte-btn" data-fonte="georgia" onclick="Controle.definirFonte('georgia')">Georgia</button>
+    <button class="fonte-btn" data-fonte="courier" onclick="Controle.definirFonte('courier')">Courier</button>
+    <button class="fonte-btn" data-fonte="trebuchet" onclick="Controle.definirFonte('trebuchet')">Trebuchet</button>
+    <button class="fonte-btn" data-fonte="verdana" onclick="Controle.definirFonte('verdana')">Verdana</button>
+</section>
+
+      <hr class="acc-divider">
+
+<!-- ====== NOVO: TAMANHO E POSIÇÃO DO PLACAR ====== -->
+<section  class="full">
+    <p>📐 Tamanho e Posição do Placar</p>
+    <div class="scale-row">
+        <span>Escala:</span>
+        <button onclick="Controle.ajustarScale(-0.05)">−</button>
+        <input type="range" id="scaleSlider" min="0.3" max="1.5" step="0.05" value="0.65" oninput="Controle.onScaleSlider(this.value)">
+        <button onclick="Controle.ajustarScale(0.05)">+</button>
+        <span id="scaleVal" style="min-width:30px">0.65</span>
+    </div>
+    <div class="pos-row">
+        <label>X:</label><input type="number" id="inputX" value="50" onchange="Controle.setPosicao()" style="width:60px;"> px
+        <label>Y:</label><input type="number" id="inputY" value="50" onchange="Controle.setPosicao()" style="width:60px;"> px
+        <button onclick="Controle.resetPosicao()">↺</button>
+    </div>
+</section>
+
+    </div>
+  </div>
+</div>
+
+
+
+<!-- ====== ABA 4: JOGO ====== -->
+<div class="acc-section">
+  <div class="acc-header" onclick="Controle.toggleAccordion(this)">
+    <span class="icon">🎯</span>
+    <span class="title">Jogo</span>
+    <span class="badge">Pontos · Tempo · Período</span>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="acc-body">
+    <div class="grid-inner">
+
+<!-- ====== PONTOS / GOLS ====== -->
+<section>
+    <p>Pontos</p>
+    <div class="futebol-ctrl">
+        <button class="A" onclick="Controle.adicionarGol(1,'A')">+ <span class="nomeTimeA">Time A</span></button>
+        <button class="A" onclick="Controle.adicionarGol(-1,'A')">- <span class="nomeTimeA">Time A</span></button><br>
+        <button class="B" onclick="Controle.adicionarGol(1,'B')">+ <span class="nomeTimeB">Time B</span></button>
+        <button class="B" onclick="Controle.adicionarGol(-1,'B')">- <span class="nomeTimeB">Time B</span></button>
+    </div>
+    <div class="basquete-ctrl basquete-pontos" style="display:none">
+        <button class="A" onclick="Controle.adicionarGol(3,'A')">+3 <span class="nomeTimeA">Time A</span></button>
+        <button class="A" onclick="Controle.adicionarGol(2,'A')">+2 <span class="nomeTimeA">Time A</span></button>
+        <button class="A" onclick="Controle.adicionarGol(1,'A')">+1 <span class="nomeTimeA">Time A</span></button>
+        <button class="A" onclick="Controle.adicionarGol(-1,'A')">-1</button><br>
+        <button class="B" onclick="Controle.adicionarGol(3,'B')">+3 <span class="nomeTimeB">Time B</span></button>
+        <button class="B" onclick="Controle.adicionarGol(2,'B')">+2 <span class="nomeTimeB">Time B</span></button>
+        <button class="B" onclick="Controle.adicionarGol(1,'B')">+1 <span class="nomeTimeB">Time B</span></button>
+        <button class="B" onclick="Controle.adicionarGol(-1,'B')">-1</button>
+    </div>
+    <button onclick="Controle.zerarGols()">Zerar</button>
+</section>
+
+<!-- ====== PERIODO (Basquete) ====== -->
+<section class="basquete-ctrl" style="display:none">
+    <p>Período</p>
+    <select id="periodoSelect" onchange="Controle.definirPeriodo(this.value)" style="padding:4px;background:#333;color:#fff;border:1px solid #555;border-radius:4px;width:100%;margin-bottom:4px">
+        <option value="1Q">1º Quarto</option>
+        <option value="2Q">2º Quarto</option>
+        <option value="3Q">3º Quarto</option>
+        <option value="4Q">4º Quarto</option>
+        <option value="OT">Prorrogação</option>
+    </select>
+    <div style="display:flex;gap:4px;align-items:center;font-size:11px">
+        <span>Duração:</span>
+        <button onclick="Controle.definirDuracaoQuarto(10)" style="padding:2px 6px;font-size:11px">10 min</button>
+        <button onclick="Controle.definirDuracaoQuarto(12)" style="padding:2px 6px;font-size:11px">12 min</button>
+    </div>
+</section>
+
+<!-- ====== SHOT CLOCK (Basquete) ====== -->
+<section class="basquete-ctrl" style="display:none">
+    <p>⏱ Shot Clock <span id="shotClockValor" style="color:#ffd700">24</span>s</p>
+    <div style="display:flex;gap:4px;flex-wrap:wrap">
+        <button onclick="Controle.shotClockStart()" style="background:#4CAF50;color:#fff">▶ Iniciar</button>
+        <button onclick="Controle.shotClockPause()">⏸ Pausar</button>
+        <button onclick="Controle.shotClockReset(24)">🔄 24s</button>
+        <button onclick="Controle.shotClockReset(14)">🔄 14s</button>
+    </div>
+</section>
+
+<!-- ====== TEMPO (comum) ====== -->
+<section class="full">
+    <p>Tempo</p>
+    <div class="tempo-row">
+        <button onclick="Controle.setEstado({rodando:'true'})">▶ Iniciar</button>
+        <button onclick="Controle.setEstado({rodando:'false'})">⏸ Pausar</button>
+        <button onclick="Controle.setEstado({tempo:'0.'+Date.now(),rodando:'false'})">🔄 Resetar</button>
+        <span>Definir:</span>
+        <input type="number" id="minutos" placeholder="MM" style="width:50px;">
+        <input type="number" id="segundos" placeholder="SS" style="width:50px;">
+        <button onclick="Controle.definirTempo()">⏱ Set</button>
+    </div>
+</section>
+
+<!-- ====== FALTAS (Basquete) ====== -->
+<section class="basquete-ctrl" style="display:none">
+    <p>⚠ Faltas</p>
+    <div id="faltasACtrl" style="margin-bottom:4px;font-size:12px">Faltas Time A: 0</div>
+    <div style="display:flex;gap:3px;margin-bottom:6px">
+        <button onclick="Controle.adicionarFalta('A')" style="background:#ff6b35;color:#fff;font-size:11px;padding:2px 8px">+ Falta A</button>
+        <button onclick="Controle.removerFalta('A')" style="font-size:11px;padding:2px 8px">- Falta A</button>
+        <button onclick="Controle.toggleBonus('A')" style="font-size:11px;padding:2px 8px">Bonus A</button>
+    </div>
+    <div id="faltasBCtrl" style="margin-bottom:4px;font-size:12px">Faltas Time B: 0</div>
+    <div style="display:flex;gap:3px;margin-bottom:6px">
+        <button onclick="Controle.adicionarFalta('B')" style="background:#2196F3;color:#fff;font-size:11px;padding:2px 8px">+ Falta B</button>
+        <button onclick="Controle.removerFalta('B')" style="font-size:11px;padding:2px 8px">- Falta B</button>
+        <button onclick="Controle.toggleBonus('B')" style="font-size:11px;padding:2px 8px">Bonus B</button>
+    </div>
+    <button onclick="Controle.zerarFaltas()" style="font-size:11px">Zerar Faltas</button>
+</section>
+
+<!-- ====== POSSE DE BOLA (Basquete) ====== -->
+<section class="basquete-ctrl" style="display:none">
+    <p>🏀 Posse de Bola</p>
+    <button id="posseBtn" onclick="Controle.alternarPosse()" style="width:100%;font-size:12px">🏀 Posse: Time A</button>
+    <div style="display:flex;gap:4px;margin-top:4px">
+        <button onclick="Controle.definirPosse('A')" style="flex:1;font-size:11px">◀ Time A</button>
+        <button onclick="Controle.definirPosse('B')" style="flex:1;font-size:11px">Time B ▶</button>
+    </div>
+</section>
+
+<!-- ====== TIMEOUTS (Basquete) ====== -->
+<section class="basquete-ctrl" style="display:none">
+    <p>⏱ Timeouts</p>
+    <div id="timeoutsACtrl" style="margin-bottom:4px;font-size:12px">⏱ Time A: 3</div>
+    <div style="display:flex;gap:3px;margin-bottom:6px">
+        <button onclick="Controle.pedirTimeout('A')" style="background:#ff6b35;color:#fff;font-size:11px;padding:2px 8px">Timeout A</button>
+        <button onclick="Controle.resetarTimeouts('A')" style="font-size:11px;padding:2px 8px">↺ A</button>
+    </div>
+    <div id="timeoutsBCtrl" style="margin-bottom:4px;font-size:12px">⏱ Time B: 3</div>
+    <div style="display:flex;gap:3px">
+        <button onclick="Controle.pedirTimeout('B')" style="background:#2196F3;color:#fff;font-size:11px;padding:2px 8px">Timeout B</button>
+        <button onclick="Controle.resetarTimeouts('B')" style="font-size:11px;padding:2px 8px">↺ B</button>
+    </div>
+</section>
+
+<!-- ====== PÊNALTIS (Futebol) ====== -->
+<section class="futebol-ctrl">
+    <p>Pênaltis</p>
+    <div class="SessaoPenaltes">
+        <div><span class="nomeTimeA">Time A</span>
+            <div><button id="PA1" class="btnPenaltes" onclick="Controle.alternarPenalte(this)">1</button>
+            <button id="PA2" class="btnPenaltes" onclick="Controle.alternarPenalte(this)">2</button>
+            <button id="PA3" class="btnPenaltes" onclick="Controle.alternarPenalte(this)">3</button>
+            <button id="PA4" class="btnPenaltes" onclick="Controle.alternarPenalte(this)">4</button>
+            <button id="PA5" class="btnPenaltes" onclick="Controle.alternarPenalte(this)">5</button></div>
+        </div>
+        <div><span class="nomeTimeB">Time B</span>
+            <div><button id="PB1" class="btnPenaltes" onclick="Controle.alternarPenalte(this)">1</button>
+            <button id="PB2" class="btnPenaltes" onclick="Controle.alternarPenalte(this)">2</button>
+            <button id="PB3" class="btnPenaltes" onclick="Controle.alternarPenalte(this)">3</button>
+            <button id="PB4" class="btnPenaltes" onclick="Controle.alternarPenalte(this)">4</button>
+            <button id="PB5" class="btnPenaltes" onclick="Controle.alternarPenalte(this)">5</button></div>
+        </div>
+    </div>
+    <button onclick="Controle.salvarPenalte()">Atualizar</button>
+    <button id="togglePenaltesBtn" onclick="Controle.desativarPenalte()">Ativar</button>
+</section>
+
+    </div>
+  </div>
+</div>
+
+<!-- ====== ABA 5: NOTIFICAÇÕES & MÍDIAS ====== -->
+<div class="acc-section">
+  <div class="acc-header" onclick="Controle.toggleAccordion(this)">
+    <span class="icon">📢</span>
+    <span class="title">Repertório · Notificações &amp; Mídias</span>
+    <span class="badge">Gol · Cartões · Imagem · GIF · Vídeo</span>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="acc-body">
+    <div class="grid-inner">
+
+<!-- ====== NOTIFICAÇÕES (itens de texto do repertório) ====== -->
+<section  class="full">
+    <p>Notificações</p>
+    <span class="hint">viram itens do repertório abaixo, com dura&ccedil;&atilde;o, transi&ccedil;&atilde;o e repeti&ccedil;&atilde;o pr&oacute;prias</span>
+    <div class="toggle-notificacao">
+        <label><input type="radio" name="tipoNotif" value="gol" checked> ⚽ Gol <input type="text" id="textoGol" placeholder="GOOOLLL!!!"></label>
+        <label><input type="radio" name="tipoNotif" value="amarelo"> 🟨 Amarelo <input type="text" id="textoAmarelo" placeholder="CARTÃO AMARELO"></label>
+        <label><input type="radio" name="tipoNotif" value="vermelho"> 🟥 Vermelho <input type="text" id="textoVermelho" placeholder="CARTÃO VERMELHO"></label>
+    </div>
+    <div class="modo-notif">
+        <label><input type="radio" name="modoNotif" value="jogador" checked onchange="Controle.toggleModoNotif()"> 👤 Jogador</label>
+        <label><input type="radio" name="modoNotif" value="time" onchange="Controle.toggleModoNotif()"> 🏆 Time</label>
+    </div>
+    <input type="text" id="nomeJogador" placeholder="Nome do jogador">
+    <div id="seletorTimeNotif" style="display:none;margin-top:4px;">
+        <select id="timeNotif"><option value="A">Time A</option><option value="B">Time B</option></select>
+    </div>
+    <div class="row" style="margin-top:5px">
+      <button onclick="Controle.enviarNotificacao(true)" style="background:#4CAF50;color:#fff">▶ Enviar agora</button>
+      <button onclick="Controle.salvarNotificacao()">➕ Guardar no repertório</button>
+    </div>
+</section>
+
+<!-- ====== NOVO: REPERTÓRIO DE MÍDIAS ====== -->
+<section class="full">
+    <p>🖼 Repertório de Mídias <span class="hint">imagem &middot; GIF animado &middot; v&iacute;deo &middot; notifica&ccedil;&otilde;es de texto</span></p>
+    <div style="display:flex;gap:4px;margin-bottom:6px;align-items:center;flex-wrap:wrap">
+        <input type="text" id="midiaNome" placeholder="Nome da mídia" style="flex:1;min-width:100px;">
+        <select id="midiaTransicaoSelect">
+            <option value="fade">Fade</option>
+            <option value="slide-left">Slide ←</option>
+            <option value="slide-right">Slide →</option>
+            <option value="zoom">Zoom</option>
+            <option value="none">Instantâneo</option>
+        </select>
+        <input type="number" id="midiaDuracao" placeholder="Duração (s)" min="0" style="width:60px;" title="0 = manual">
+        <input type="number" id="midiaIntervalo" placeholder="Intervalo (s)" min="0" style="width:60px;" title="0 = sem repetir">
+        <button onclick="Controle.adicionarMidia()" style="background:#4CAF50;color:#fff;">+ Adicionar</button>
+    </div>
+    <div id="listaMidias" style="min-height:60px;">
+        <span style="color:#888;font-size:11px;">Nenhuma mídia adicionada</span>
+    </div>
+</section>
+
+    </div>
+  </div>
+</div>
+
+
+
+<!-- ====== ABA 6: DEBUG ====== -->
+<div class="acc-section">
+  <div class="acc-header" onclick="Controle.toggleAccordion(this)">
+    <span class="icon">🛠</span>
+    <span class="title">Debug</span>
+    <span class="badge">Contador · Log · Ping · JSON</span>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="acc-body">
+    <div class="grid-inner">
+
+      <section>
+        <p>🔢 Contador de Alteracoes</p>
+        <div class="debug-row">
+          <label class="toggle-sw"><input type="checkbox" id="debugContadorToggle" checked onchange="Controle.toggleDebugContador()"><span class="slider"></span></label>
+          <span id="debugContadorStatus" style="color:#4CAF50;font-weight:bold;font-size:11px">LIGADO</span>
+        </div>
+        <div class="debug-row">
+          <span class="debug-counter" id="debugContador">0</span>
+          <button onclick="Controle.zerarDebugContador()">Zerar</button>
+        </div>
+      </section>
+
+      <section>
+        <p>📡 Log de Polling</p>
+        <div class="debug-log" id="debugLog">Nenhum poll ainda...</div>
+        <div class="debug-row">
+          <button onclick="Controle.limparDebugLog()">Limpar</button>
+          <span id="debugLogCount" style="font-size:10px;color:#aaa">0 registros</span>
+        </div>
+      </section>
+
+      <section>
+        <p>⚡ Ping / Latencia</p>
+        <div class="debug-row">
+          <span class="debug-ping fast" id="debugPing">-- ms</span>
+          <span id="debugPingStatus" style="font-size:10px;color:#aaa">Aguardando...</span>
+        </div>
+      </section>
+
+      <section>
+        <p>✏️ Forcar Estado (JSON Direto)</p>
+        <textarea class="debug-json" id="debugJsonInput" placeholder='{"placar":{"golsA":"1",...}}'></textarea>
+        <div class="debug-row">
+          <button onclick="Controle.forcarEstado()" style="background:#ff9800;color:#000">Forcar POST</button>
+          <button onclick="document.getElementById('debugJsonInput').value=''">Limpar</button>
+          <span style="color:#ff9800;font-size:10px">⚠ Sobrescreve estado real</span>
+        </div>
+      </section>
+
+      <section>
+        <p>📶 Status da Conexao</p>
+        <div class="debug-row">
+          <label class="toggle-sw"><input type="checkbox" id="debugStatusToggle" checked onchange="Controle.toggleDebugStatus()"><span class="slider"></span></label>
+          <span id="debugStatusLabel" style="color:#4CAF50;font-weight:bold;font-size:11px">VISIVEL</span>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+
+
+</div><!-- fim #container -->
+
+
+<script src="js/eventbus.js?v=20260624c"></script>
+<script src="js/comum.js?v=20260624c"></script>
+<script src="js/controle/core.js?v=20260624c"></script>
+<script src="js/controle/elementos.js?v=20261017b"></script>
+<script src="js/controle/estilo.js?v=20260624c"></script>
+<script src="js/controle/midia.js?v=20261017b"></script>
+<script src="js/controle/basquete.js?v=20260624c"></script>
+<script src="js/controle/tabela.js?v=20261017b"></script>
+<script>
+/* ====== DEBUG ====== */
+Controle.debugContador = 0;
+Controle.debugContadorAtivo = true;
+Controle.debugLogLines = [];
+Controle.debugPingMs = 0;
+
+Controle.togglePreview = function() {
+  var w = document.getElementById('previewWrapper');
+  w.classList.toggle('preview-off');
+  var btn = w.querySelector('#previewBar button');
+  if (w.classList.contains('preview-off')) {
+    btn.textContent = 'Mostrar';
+    document.getElementById('previewFrame').src = '';
+  } else {
+    btn.textContent = 'Esconder';
+    document.getElementById('previewFrame').src = 'Placar.html';
+    setTimeout(function(){ if (Controle.restaurarZoomPreview) Controle.restaurarZoomPreview(); Controle.resizePreview(); }, 300);
+  }
+};
+
+Controle.zoomPreview = function(v) {
+  Controle._zoom = Math.min(1, Math.max(0.35, (parseInt(v, 10) || 100) / 100));
+  var el = document.getElementById('previewZoomVal');
+  if (el) el.textContent = Math.round(Controle._zoom * 100) + '%';
+  Controle.resizePreview();
+};
+/* o zoom do preview fica no estado (servidor): qualquer sessao entra com o mesmo */
+Controle.salvarZoomPreview = function() {
+  Controle.setEstado({ previewZoom: String(Math.round((Controle._zoom || 1) * 100)) });
+};
+Controle.restaurarZoomPreview = function() {
+  if (Controle._zoomRestaurado) return;
+  var v = parseInt((Controle.estado || {}).previewZoom, 10);
+  if (isNaN(v) || v < 35 || v > 100) return;
+  Controle._zoomRestaurado = true;
+  Controle._zoom = v / 100;
+  var sl = document.getElementById('previewZoom'), tx = document.getElementById('previewZoomVal');
+  if (sl && 'value' in sl) sl.value = String(v);
+  if (tx) tx.textContent = v + '%';
+  Controle.resizePreview();
+};
+
+Controle.resizePreview = function() {
+  var c = document.getElementById('previewContainer');
+  var f = document.getElementById('previewFrame');
+  if (!c || !f) return;
+  var wrapper = document.getElementById('previewWrapper');
+  var bar = document.getElementById('previewBar');
+  var zoom = Controle._zoom || 1;
+  var deitado = !!(window.matchMedia && window.matchMedia('(min-width:1100px)').matches);
+  /* tela em pe: a largura manda. tela deitada: cabe tambem na altura, para o
+     frame do video aparecer inteiro (sem corte em cima/embaixo). */
+  var largura = Math.max(160, (wrapper ? wrapper.clientWidth : c.parentElement.clientWidth) - 2);
+  var altura = 0;
+  if (deitado) {
+    /* deitado: o preview ocupa os 50% de cima da coluna (o menu fica com os
+       outros 50%, com scroll proprio) — mede a caixa viva, nao a janela */
+    var caixa = (wrapper ? wrapper.clientHeight : 0) - (bar ? (bar.offsetHeight || 30) : 30) - 6;
+    if (caixa < 120) caixa = ((window.innerHeight || 800) - 60) * 0.5;
+    altura = Math.max(160, caixa);
+  }
+  var w = largura, h = w * 9 / 16;
+  if (altura && h > altura) { h = altura; w = h * 16 / 9; }
+  w = Math.max(160, Math.floor(w * zoom));
+  h = Math.round(w * 9 / 16);                 /* 16:9 exato: o iframe cobre o container */
+  c.style.width = w + 'px';
+  c.style.height = h + 'px';
+  var scale = w / 1920;
+  f.style.transform = 'translate(-50%, -50%) scale(' + scale + ')';
+};
+window.addEventListener('resize', Controle.resizePreview);
+
+Controle.toggleDebugContador = function() {
+  Controle.debugContadorAtivo = document.getElementById('debugContadorToggle').checked;
+  var s = document.getElementById('debugContadorStatus');
+  s.textContent = Controle.debugContadorAtivo ? 'LIGADO' : 'DESLIGADO';
+  s.style.color = Controle.debugContadorAtivo ? '#4CAF50' : '#888';
+};
+
+Controle.zerarDebugContador = function() {
+  Controle.debugContador = 0;
+  document.getElementById('debugContador').textContent = '0';
+};
+
+Controle.limparDebugLog = function() {
+  Controle.debugLogLines = [];
+  document.getElementById('debugLog').textContent = 'Nenhum poll ainda...';
+  document.getElementById('debugLogCount').textContent = '0 registros';
+};
+
+Controle.addDebugLog = function(entry) {
+  Controle.debugLogLines.unshift(entry);
+  if (Controle.debugLogLines.length > 5) Controle.debugLogLines.pop();
+  document.getElementById('debugLog').textContent = Controle.debugLogLines.join('\n');
+  document.getElementById('debugLogCount').textContent = Controle.debugLogLines.length + ' registros';
+};
+
+Controle.updateDebugPing = function(ms) {
+  Controle.debugPingMs = ms;
+  var el = document.getElementById('debugPing');
+  var st = document.getElementById('debugPingStatus');
+  el.textContent = ms + ' ms';
+  el.className = 'debug-ping ' + (ms < 50 ? 'fast' : ms < 200 ? 'medium' : 'slow');
+  st.textContent = ms < 50 ? 'Rapido' : ms < 200 ? 'Normal' : 'Lento';
+  st.style.color = ms < 50 ? '#4CAF50' : ms < 200 ? '#ff9800' : '#f44336';
+};
+
+Controle.incrementarDebugContador = function() {
+  if (Controle.debugContadorAtivo) {
+    Controle.debugContador++;
+    document.getElementById('debugContador').textContent = Controle.debugContador;
+  }
+};
+
+Controle.toggleDebugStatus = function() {
+  var on = document.getElementById('debugStatusToggle').checked;
+  var label = document.getElementById('debugStatusLabel');
+  console.log('[DEBUG] toggleDebugStatus: ' + (on ? 'LIGAR' : 'DESLIGAR'));
+  if (on) {
+    Controle.setEstado({mostrarStatus: 'true'});
+    label.textContent = 'VISIVEL';
+    label.style.color = '#4CAF50';
+  } else {
+    Controle.setEstado({mostrarStatus: 'false'});
+    label.textContent = 'OCULTO';
+    label.style.color = '#888';
+  }
+};
+
+Controle.forcarEstado = function() {
+  var raw = document.getElementById('debugJsonInput').value.trim();
+  if (!raw) { alert('JSON vazio!'); return; }
+  try {
+    var obj = JSON.parse(raw);
+    Controle.setEstado(obj);
+    Controle.incrementarDebugContador();
+  } catch(e) {
+    alert('JSON invalido: ' + e.message);
+  }
+};
+
+/* Monkey-patch movido para depois do init */
+
+/* Hook status movido para depois do init */
+</script>
+
+<script>
+Controle.toggleAccordion = function(header) {
+  var section = header.parentElement;
+  section.classList.toggle("open");
+};
+Controle.init();
+setTimeout(function(){ Controle.resizePreview(); }, 500);
+setTimeout(function(){ Controle.listarPresets(); }, 800);
+setTimeout(function(){ Controle.listarEscudos(); }, 800);
+setTimeout(function(){ Controle.atualizarNomePreset(); }, 900);
+setTimeout(function(){ Controle.recarregarLogos(); }, 1000);
+
+/* Monkey-patch setEstado AFTER init (garantido que existe) */
+var _origSetEstado = Controle.setEstado;
+Controle.setEstado = function() {
+  Controle.incrementarDebugContador();
+  return _origSetEstado.apply(this, arguments);
+};
+
+/* Hook status() to capture polling log + ping */
+var _origStatus = Controle.status;
+Controle.status = function(t, m) {
+  var now = new Date().toTimeString().slice(0,8);
+  Controle.addDebugLog(now + ' [' + t + '] ' + (m || ''));
+  return _origStatus.apply(this, arguments);
+};
+
+console.log('[DEBUG] Monkey-patches aplicados. setEstado=' + typeof Controle.setEstado);
+</script>
+
+</body>
+</html>

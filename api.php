@@ -1,0 +1,814 @@
+<?php
+/**
+ * Basketball Scoreboard API - PHP 5.3 compatible
+ * Persistence: estado.json with LOCK_EX atomic writes
+ * Polling: GET ?v=N returns {_same:true,v:N} when unchanged
+ * Mutations: POST merges state and increments estadoVersao
+ */
+
+header('Content-Type: application/json; charset=utf-8');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+header('Expires: 0');
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    // 200 OK (default)
+    exit;
+}
+
+// ---------- helpers ----------
+
+define('BASE_DIR', dirname(__FILE__));
+define('ESTADO_FILE', BASE_DIR . '/estado.json');
+define('PRESETS_DIR', BASE_DIR . '/presets');
+define('ESCUDOS_DIR', BASE_DIR . '/escudos');
+define('MIDIAS_DIR', BASE_DIR . '/midias');
+
+function ensure_dirs() {
+    $dirs = array(PRESETS_DIR, ESCUDOS_DIR, MIDIAS_DIR);
+    foreach ($dirs as $d) {
+        if (!is_dir($d)) {
+            mkdir($d, 0755, true);
+        }
+    }
+}
+ensure_dirs();
+
+function load_estado() {
+    if (!file_exists(ESTADO_FILE)) {
+        return default_estado();
+    }
+    $raw = file_get_contents(ESTADO_FILE);
+    $data = json_decode($raw, true);
+    if (!$data) {
+        return default_estado();
+    }
+    return $data;
+}
+
+function save_estado($data) {
+    $json = json_encode($data);
+    file_put_contents(ESTADO_FILE, $json, LOCK_EX);
+}
+
+function default_estado() {
+    return array(
+        'placar' => array('golsA' => '0', 'golsB' => '0', 'tempo' => '0', 'rodando' => 'false', 'esporte' => 'futebol', 'periodo' => ''),
+        'times' => array(
+            'timeA' => '', 'timeB' => '',
+            'siglaA' => '', 'siglaB' => '',
+            'escudoA' => '', 'escudoB' => '',
+            'timeACor' => '#ff0000', 'timeBCor' => '#0000ff',
+            'competicao' => '', 'categoria' => '', 'grupo' => '',
+            'fase' => '', 'data' => '', 'hora' => '', 'local' => '', 'logoTorneio' => '',
+            'clima' => '', 'climaIcone' => '☀️'
+        ),
+        'estilo' => array(
+            'tema' => 'laliga', 'fonte' => 'arial',
+            'nomesExpandidos' => 'false', 'notifAnimacao' => 'esquerda',
+            'mostrarStatus' => 'true'
+        ),
+        'penaltes' => array(
+            'penaltesAtivos' => 'false',
+            'PA1' => 'neutro', 'PA2' => 'neutro', 'PA3' => 'neutro', 'PA4' => 'neutro', 'PA5' => 'neutro',
+            'PB1' => 'neutro', 'PB2' => 'neutro', 'PB3' => 'neutro', 'PB4' => 'neutro', 'PB5' => 'neutro'
+        ),
+        'notif' => array('notifTipo' => '', 'notifTexto' => '', 'notifId' => ''),
+        'posicao' => array('placarScale' => '0.65', 'placarX' => '50', 'placarY' => '50'),
+        'midia' => array('midias' => '[]', 'midiasAtivas' => '[]', 'midiaTransicao' => 'fade'),
+        'basquete' => array('shotClock' => '24', 'shotRodando' => 'false', 'faltasA' => '0', 'faltasB' => '0', 'posse' => 'A', 'bonusA' => 'false', 'bonusB' => 'false', 'timeoutsA' => '3', 'timeoutsB' => '3'),
+        'torneio' => array('competicao' => '', 'categoria' => '', 'grupo' => '', 'fase' => '', 'data' => '', 'hora' => '', 'local' => ''),
+        'tabela' => array(
+            'tabelaAtivo' => 'false', 'tabelaCena' => 'table', 'tabelaTema' => 'escuro',
+            'tabelaDuracao' => '8', 'tabelaA' => 'auto', 'tabelaB' => 'auto',
+            'tabelaDestaque' => 'auto', 'tabelaEscalacao' => 'auto',
+            'tabelaTitulo' => '', 'tabelaSub' => '',
+            'tabelaZonas' => 'true', 'tabelaZonaUp' => '1', 'tabelaZonaDn' => '14',
+            'tabelaZonaCorUp' => '#22c55e', 'tabelaZonaCorDn' => '#ef4444',
+            'tabelaLocal' => '', 'tabelaHora' => '', 'tabelaLogo' => '', 'previewZoom' => '100',
+            'tabelaEscudos' => 'true',
+            'tabelaEscalacoes' => '{}',
+            'tabelaModo' => 'auto', 'tabelaCenas' => '[]', 'tabelaTimes' => '[]'
+        ),
+        'estadoVersao' => 1
+    );
+}
+
+function deep_merge($base, $overlay) {
+    foreach ($overlay as $key => $value) {
+        if (is_array($value) && isset($base[$key]) && is_array($base[$key])) {
+            $base[$key] = deep_merge($base[$key], $value);
+        } else {
+            $base[$key] = $value;
+        }
+    }
+    return $base;
+}
+
+function get_post_data() {
+    $raw = file_get_contents('php://input');
+    $data = json_decode($raw, true);
+    if (!$data) {
+        return array();
+    }
+    return $data;
+}
+
+function respond($data) {
+    $json = json_encode($data);
+    if ($json === false) {
+        $json = json_encode(array('erro' => 'json_encode failed', 'raw' => print_r($data, true)));
+    }
+    echo $json;
+    if (function_exists('fastcgi_finish_request')) fastcgi_finish_request();
+    exit;
+}
+
+function respond_error($msg, $code = 400) {
+    // status code handled by response body
+    respond(array('erro' => $msg));
+}
+
+function save_data_uri($dataUri, $filepath) {
+    // data:image/png;base64,iVBOR...
+    if (strpos($dataUri, 'data:') !== 0) {
+        // assume it's raw base64
+        $bin = base64_decode($dataUri);
+    } else {
+        $comma = strpos($dataUri, ',');
+        if ($comma === false) {
+            return false;
+        }
+        $b64 = substr($dataUri, $comma + 1);
+        $bin = base64_decode($b64);
+    }
+    if ($bin === false) {
+        return false;
+    }
+    return file_put_contents($filepath, $bin, LOCK_EX);
+}
+
+function list_escudo_files() {
+    $files = array();
+    if (!is_dir(ESCUDOS_DIR)) return $files;
+    $dh = opendir(ESCUDOS_DIR);
+    if (!$dh) return $files;
+    while (($entry = readdir($dh)) !== false) {
+        if ($entry === '.' || $entry === '..') continue;
+        $ext = strtolower(pathinfo($entry, PATHINFO_EXTENSION));
+        if ($ext !== 'png') continue;
+        $name = pathinfo($entry, PATHINFO_FILENAME);
+        // Skip timeA.png and timeB.png
+        if ($name === 'timeA' || $name === 'timeB') continue;
+        $files[] = $name;
+    }
+    closedir($dh);
+    sort($files);
+    return $files;
+}
+
+// ---------- routing ----------
+
+$method = $_SERVER['REQUEST_METHOD'];
+$acao = isset($_GET['acao']) ? $_GET['acao'] : '';
+
+// ---------- GET ----------
+
+if ($method === 'GET') {
+
+    if ($acao === 'listar_presets') {
+        $presets = array();
+        if (is_dir(PRESETS_DIR)) {
+            $dh = opendir(PRESETS_DIR);
+            if ($dh) {
+                while (($entry = readdir($dh)) !== false) {
+                    if ($entry === '.' || $entry === '..') continue;
+                    if (strtolower(pathinfo($entry, PATHINFO_EXTENSION)) !== 'json') continue;
+                    $name = pathinfo($entry, PATHINFO_FILENAME);
+                    $raw = file_get_contents(PRESETS_DIR . '/' . $entry);
+                    $data = json_decode($raw, true);
+                    if ($data) {
+                        $item = array(
+                            'nome' => $name,
+                            'timeA' => isset($data['timeA']) ? $data['timeA'] : '',
+                            'timeB' => isset($data['timeB']) ? $data['timeB'] : '',
+                            'siglaA' => isset($data['siglaA']) ? $data['siglaA'] : '',
+                            'siglaB' => isset($data['siglaB']) ? $data['siglaB'] : '',
+                            'escudoA' => isset($data['escudoA']) ? $data['escudoA'] : '',
+                            'escudoB' => isset($data['escudoB']) ? $data['escudoB'] : '',
+                            'timeACor' => isset($data['timeACor']) ? $data['timeACor'] : '',
+                            'timeBCor' => isset($data['timeBCor']) ? $data['timeBCor'] : '',
+                            'competicao' => isset($data['competicao']) ? $data['competicao'] : '',
+                            'categoria' => isset($data['categoria']) ? $data['categoria'] : '',
+                            'grupo' => isset($data['grupo']) ? $data['grupo'] : '',
+                            'fase' => isset($data['fase']) ? $data['fase'] : '',
+                            'data' => isset($data['data']) ? $data['data'] : '',
+                            'hora' => isset($data['hora']) ? $data['hora'] : '',
+                            'local' => isset($data['local']) ? $data['local'] : '',
+                            'logoTorneio' => isset($data['logoTorneio']) ? $data['logoTorneio'] : ''
+                        );
+                        // Apply filter if requested
+                        $filtro = isset($_GET['filtro']) ? $_GET['filtro'] : '';
+                        $match = true;
+                        // Filtro por campos especificos + busca textual
+                        $filtroComp = isset($_GET['competicao']) ? $_GET['competicao'] : '';
+                        $filtroCat  = isset($_GET['categoria']) ? $_GET['categoria'] : '';
+                        $filtroGrupo = isset($_GET['grupo']) ? $_GET['grupo'] : '';
+                        $filtroFase = isset($_GET['fase']) ? $_GET['fase'] : '';
+                        $filtroData = isset($_GET['data']) ? $_GET['data'] : '';
+                        $filtroHora = isset($_GET['hora']) ? $_GET['hora'] : '';
+                        $filtroLocal = isset($_GET['local']) ? $_GET['local'] : '';
+                        $busca      = isset($_GET['busca']) ? $_GET['busca'] : '';
+                        $match = true;
+                        if ($filtroComp && stripos($item['competicao'], $filtroComp) === false) $match = false;
+                        if ($filtroCat  && stripos($item['categoria'], $filtroCat)   === false) $match = false;
+                        if ($filtroGrupo && stripos($item['grupo'], $filtroGrupo)     === false) $match = false;
+                        if ($filtroFase && stripos($item['fase'], $filtroFase)        === false) $match = false;
+                        if ($filtroData && stripos($item['data'], $filtroData)        === false) $match = false;
+                        if ($filtroHora && stripos($item['hora'], $filtroHora)        === false) $match = false;
+                        if ($filtroLocal) {
+                            // Remove caracteres especiais (aspas, acentos) para comparacao
+                            $localLimpo = preg_replace('/[^a-zA-Z0-9 ]/', '', $item['local']);
+                            $filtroLimpo = preg_replace('/[^a-zA-Z0-9 ]/', '', $filtroLocal);
+                            if (stripos($localLimpo, $filtroLimpo) === false) $match = false;
+                        }
+                        if ($busca) {
+                            $tudo = $item['competicao'] . ' ' . $item['categoria'] . ' ' . $item['grupo'] . ' ' . $item['fase'] . ' ' . $item['timeA'] . ' ' . $item['timeB'] . ' ' . $item['nome'];
+                            if (stripos($tudo, $busca) === false) $match = false;
+                        }
+                        if ($match) {
+                            $presets[] = $item;
+                        }
+                    }
+                }
+                closedir($dh);
+            }
+        }
+        // Ordenar por data+hora (mais recente primeiro, sem data vai pro fim)
+        usort($presets, function($a, $b) {
+            $da = !empty($a['data']) ? $a['data'] . ' ' . (isset($a['hora']) ? $a['hora'] : '00:00') : '9999';
+            $db = !empty($b['data']) ? $b['data'] . ' ' . (isset($b['hora']) ? $b['hora'] : '00:00') : '9999';
+            return strcmp($da, $db);
+        });
+        respond(array('presets' => $presets));
+    }
+
+    if ($acao === 'proxy_imagem') {
+        // Proxy de imagem: baixa imagem externa e retorna com CORS permitido
+        // Uso: api.php?acao=proxy_imagem&url=URL_CODIFICADA
+        $url = isset($_GET['url']) ? $_GET['url'] : '';
+        if (!$url) { respond_error('Parametro url obrigatorio.'); }
+        // Seguranca: so permite URLs http/https
+        if (strpos($url, 'http://') !== 0 && strpos($url, 'https://') !== 0) {
+            respond_error('URL invalida.');
+        }
+        $imgData = @file_get_contents($url);
+        if ($imgData === false) {
+            // Retorna 1x1 pixel transparente como fallback
+            header('Content-Type: image/png');
+            header('Access-Control-Allow-Origin: *');
+            echo base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==');
+            exit;
+        }
+        // Detecta tipo
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mime = $finfo->buffer($imgData);
+        header('Content-Type: ' . $mime);
+        header('Access-Control-Allow-Origin: *');
+        header('Cache-Control: public, max-age=86400');
+        echo $imgData;
+        exit;
+    }
+
+    if ($acao === 'listar_filtros') {
+        // Retorna valores unicos de competicao, categoria e fase para os dropdowns
+        $comps = array(); $cats = array(); $grupos = array(); $fases = array(); $datas = array(); $horas = array(); $locais = array();
+        if (is_dir(PRESETS_DIR)) {
+            $dh = opendir(PRESETS_DIR);
+            if ($dh) {
+                while (($entry = readdir($dh)) !== false) {
+                    if ($entry === '.' || $entry === '..') continue;
+                    if (strtolower(pathinfo($entry, PATHINFO_EXTENSION)) !== 'json') continue;
+                    $raw = file_get_contents(PRESETS_DIR . '/' . $entry);
+                    $data = json_decode($raw, true);
+                    if ($data) {
+                        if (!empty($data['competicao']) && !in_array($data['competicao'], $comps)) $comps[] = $data['competicao'];
+                        if (!empty($data['categoria'])   && !in_array($data['categoria'], $cats))   $cats[] = $data['categoria'];
+                        if (!empty($data['grupo'])       && !in_array($data['grupo'], $grupos))     $grupos[] = $data['grupo'];
+                        if (!empty($data['fase'])        && !in_array($data['fase'], $fases))       $fases[] = $data['fase'];
+                        if (!empty($data['data'])        && !in_array($data['data'], $datas))       $datas[] = $data['data'];
+                        if (!empty($data['hora'])        && !in_array($data['hora'], $horas))       $horas[] = $data['hora'];
+                        if (!empty($data['local'])       && !in_array($data['local'], $locais))     $locais[] = $data['local'];
+                    }
+                }
+                closedir($dh);
+            }
+        }
+        sort($comps); sort($cats); sort($grupos); sort($fases); sort($datas); sort($horas); sort($locais);
+        respond(array('competicao' => $comps, 'categoria' => $cats, 'grupo' => $grupos, 'fase' => $fases, 'data' => $datas, 'hora' => $horas, 'local' => $locais));
+    }
+
+    if ($acao === 'listar_logos') {
+        $logos = array();
+        $dir = 'torneios';
+        if (is_dir($dir)) {
+            $dh = opendir($dir);
+            if ($dh) {
+                while (($f = readdir($dh)) !== false) {
+                    if ($f === '.' || $f === '..') continue;
+                    $ext = strtolower(pathinfo($f, PATHINFO_EXTENSION));
+                    if (in_array($ext, array('png','jpg','jpeg','svg','webp','gif'))) {
+                        $logos[] = $f;
+                    }
+                }
+                closedir($dh);
+            }
+        }
+        sort($logos);
+        respond(array('logos' => $logos));
+    }
+
+    if ($acao === 'listar_escudos') {
+        respond(array('escudos' => list_escudo_files()));
+    }
+
+    if ($acao === 'carregar_preset') {
+        $nome = isset($_GET['nome']) ? $_GET['nome'] : '';
+        if (!$nome) {
+            respond_error('Parametro "nome" obrigatorio.');
+        }
+        // Security: prevent path traversal
+        if (strpos($nome, '/') !== false || strpos($nome, '\\') !== false || $nome === '.' || $nome === '..') {
+            respond_error('Nome invalido.');
+        }
+        $path = PRESETS_DIR . '/' . $nome . '.json';
+        if (!file_exists($path)) {
+            respond_error('Preset nao encontrado.', 404);
+        }
+        $raw = file_get_contents($path);
+        $data = json_decode($raw, true);
+        if (!$data) {
+            respond_error('Preset corrompido.', 500);
+        }
+        respond($data);
+    }
+
+    // Default GET: return estado.json with polling optimization
+    $clientVersion = isset($_GET['v']) ? intval($_GET['v']) : 0;
+    $estado = load_estado();
+    $serverVersion = intval($estado['estadoVersao']);
+
+    if ($clientVersion > 0 && $clientVersion === $serverVersion) {
+        respond(array('_same' => true, 'v' => $serverVersion));
+    }
+    respond($estado);
+}
+
+// ---------- POST ----------
+
+if ($method === 'POST') {
+
+    if ($acao === 'salvar_preset') {
+        $input = get_post_data();
+        $nome = isset($input['nome']) ? $input['nome'] : '';
+        $dados = isset($input['dados']) ? $input['dados'] : array();
+
+        if (!$nome) {
+            respond_error('Parametro "nome" obrigatorio.');
+        }
+        if (strpos($nome, '/') !== false || strpos($nome, '\\') !== false || $nome === '.' || $nome === '..') {
+            respond_error('Nome invalido.');
+        }
+
+        if (!is_dir(PRESETS_DIR)) {
+            mkdir(PRESETS_DIR, 0755, true);
+        }
+
+        $path = PRESETS_DIR . '/' . $nome . '.json';
+        $json = json_encode($dados);
+        file_put_contents($path, $json, LOCK_EX);
+
+        respond(array('ok' => true, 'nome' => $nome));
+    }
+
+    if ($acao === 'remover_preset') {
+        $input = get_post_data();
+        $nome = isset($input['nome']) ? $input['nome'] : '';
+
+        if (!$nome) {
+            respond_error('Parametro "nome" obrigatorio.');
+        }
+        if (strpos($nome, '/') !== false || strpos($nome, '\\') !== false || $nome === '.' || $nome === '..') {
+            respond_error('Nome invalido.');
+        }
+
+        $path = PRESETS_DIR . '/' . $nome . '.json';
+        if (file_exists($path)) {
+            unlink($path);
+        }
+        respond(array('ok' => true));
+    }
+
+    if ($acao === 'upload_escudo') {
+        $input = get_post_data();
+        $time = isset($input['time']) ? $input['time'] : '';
+        $src = isset($input['src']) ? $input['src'] : '';
+
+        if (!$time) {
+            respond_error('Parametro "time" obrigatorio.');
+        }
+        if ($time !== 'A' && $time !== 'B' && $time !== 'timeA' && $time !== 'timeB') {
+            respond_error('Parametro "time" deve ser "A" ou "B".');
+        }
+        if (!$src) {
+            respond_error('Parametro "src" obrigatorio (base64 data-uri).');
+        }
+
+        if (!is_dir(ESCUDOS_DIR)) {
+            mkdir(ESCUDOS_DIR, 0755, true);
+        }
+
+        $path = ESCUDOS_DIR . '/' . $time . '.png';
+        $result = save_data_uri($src, $path);
+        if ($result === false) {
+            respond_error('Falha ao decodificar ou salvar imagem.', 500);
+        }
+
+        // Update estado with escudo path
+        $estado = load_estado();
+        $field = ($time === 'timeA') ? 'escudoA' : 'escudoB';
+        $estado['times'][$field] = 'escudos/' . $time . '.png?v=' . time();
+        $estado['estadoVersao'] = intval($estado['estadoVersao']) + 1;
+        save_estado($estado);
+
+        respond(array('ok' => true, 'src' => 'escudos/' . $time . '.png?v=' . time()));
+    }
+
+    if ($acao === 'upload_escudos_batch') {
+        $input = get_post_data();
+        $arquivos = isset($input['arquivos']) ? $input['arquivos'] : array();
+
+        if (!is_array($arquivos) || empty($arquivos)) {
+            respond_error('Parametro "arquivos" deve ser um array nao vazio.');
+        }
+
+        if (!is_dir(ESCUDOS_DIR)) {
+            mkdir(ESCUDOS_DIR, 0755, true);
+        }
+
+        $results = array();
+        foreach ($arquivos as $arq) {
+            $nome = isset($arq['nome']) ? $arq['nome'] : '';
+            $src = isset($arq['src']) ? $arq['src'] : '';
+
+            if (!$nome || !$src) {
+                $results[] = array('nome' => $nome, 'ok' => false, 'erro' => 'nome e src obrigatorios');
+                continue;
+            }
+            if (strpos($nome, '/') !== false || strpos($nome, '\\') !== false || $nome === '.' || $nome === '..') {
+                $results[] = array('nome' => $nome, 'ok' => false, 'erro' => 'Nome invalido');
+                continue;
+            }
+
+            $path = ESCUDOS_DIR . '/' . $nome . '.png';
+            $result = save_data_uri($src, $path);
+            $results[] = array(
+                'nome' => $nome,
+                'ok' => ($result !== false),
+                'erro' => ($result !== false) ? null : 'Falha ao salvar'
+            );
+        }
+
+        $ok_count = 0;
+        foreach ($results as $r) { if ($r['ok']) $ok_count++; }
+        respond(array('ok' => true, 'count' => $ok_count, 'resultados' => $results));
+    }
+
+    if ($acao === 'atribuir_escudo') {
+        $input = get_post_data();
+        $nome = isset($input['nome']) ? $input['nome'] : '';
+        $time = isset($input['time']) ? $input['time'] : '';
+
+        if (!$nome) {
+            respond_error('Parametro "nome" obrigatorio.');
+        }
+        if (!$time) {
+            respond_error('Parametro "time" obrigatorio.');
+        }
+        if ($time !== 'A' && $time !== 'B' && $time !== 'timeA' && $time !== 'timeB') {
+            respond_error('Parametro "time" deve ser "A" ou "B".');
+        }
+        $time_short = ($time === 'timeA' || $time === 'A') ? 'A' : 'B';
+
+        $src = 'escudos/' . $nome . '.png?v=' . time();
+
+        $estado = load_estado();
+        $field = ($time_short === 'A') ? 'escudoA' : 'escudoB';
+        $estado['times'][$field] = $src;
+        $estado['estadoVersao'] = intval($estado['estadoVersao']) + 1;
+        save_estado($estado);
+
+        respond(array('ok' => true, 'src' => $src));
+    }
+
+    if ($acao === 'remover_escudos') {
+        $input = get_post_data();
+        $nomes = isset($input['nomes']) ? $input['nomes'] : array();
+
+        if (!is_array($nomes)) {
+            respond_error('Parametro "nomes" deve ser um array.');
+        }
+
+        $results = array();
+        foreach ($nomes as $nome) {
+            if ($nome === 'timeA' || $nome === 'timeB') {
+                $results[] = array('nome' => $nome, 'ok' => false, 'erro' => 'Protegido: nao pode remover timeA/timeB');
+                continue;
+            }
+            if (strpos($nome, '/') !== false || strpos($nome, '\\') !== false || $nome === '.' || $nome === '..') {
+                $results[] = array('nome' => $nome, 'ok' => false, 'erro' => 'Nome invalido');
+                continue;
+            }
+
+            $path = ESCUDOS_DIR . '/' . $nome . '.png';
+            if (file_exists($path)) {
+                unlink($path);
+                $results[] = array('nome' => $nome, 'ok' => true);
+            } else {
+                $results[] = array('nome' => $nome, 'ok' => false, 'erro' => 'Arquivo nao encontrado');
+            }
+        }
+
+        $ok_count = 0;
+        foreach ($results as $r) { if ($r['ok']) $ok_count++; }
+        respond(array('ok' => true, 'removidos' => $ok_count, 'resultados' => $results));
+    }
+
+    if ($acao === 'upload_midia') {
+        $input = get_post_data();
+        $id = isset($input['id']) ? $input['id'] : '';
+        $src = isset($input['src']) ? $input['src'] : '';
+        $tipo = isset($input['tipo']) ? $input['tipo'] : '';
+        $nome = isset($input['nome']) ? $input['nome'] : '';
+        $transicao = isset($input['transicao']) ? $input['transicao'] : 'fade';
+        $duracao = isset($input['duracao']) ? $input['duracao'] : '';
+        $intervalo = isset($input['intervalo']) ? $input['intervalo'] : '';
+
+        if (!$id) {
+            respond_error('Parametro "id" obrigatorio.');
+        }
+        if (!$src && $tipo !== 'texto') {
+            respond_error('Parametro "src" obrigatorio.');
+        }
+        if (strpos($id, '/') !== false || strpos($id, '\\') !== false || $id === '.' || $id === '..') {
+            respond_error('ID invalido.');
+        }
+
+        if (!is_dir(MIDIAS_DIR)) {
+            mkdir(MIDIAS_DIR, 0755, true);
+        }
+
+        // Determine extension from tipo and data URL
+        $ext = 'png';
+        if ($tipo === 'video') {
+            $ext = 'mp4';
+        } elseif ($tipo === 'imagem' || $tipo === 'gif') {
+            if (strpos($src, 'data:image/gif') === 0) {
+                $ext = 'gif';
+            } elseif (strpos($src, 'data:image/webp') === 0) {
+                $ext = 'webp';
+            } elseif (strpos($src, 'data:image/svg') === 0) {
+                $ext = 'svg';
+            } elseif (strpos($src, 'data:image/jpeg') === 0 || strpos($src, 'data:image/jpg') === 0) {
+                $ext = 'jpg';
+            } else {
+                $ext = 'png';
+            }
+        } else if ($tipo === 'texto') {
+            $ext = '';   // notificacao em texto: fica so no estado
+        } else {
+            $ext = 'bin';
+        }
+        if ($tipo === 'texto') {
+            $ext = '';
+            $result = true;          // texto nao gera arquivo
+        } else {
+            $filepath = MIDIAS_DIR . '/' . $id . '.' . $ext;
+            $result = save_data_uri($src, $filepath);
+            if ($result === false) {
+                respond_error('Falha ao salvar midia.', 500);
+            }
+        }
+
+        // Read existing midias list from estado
+        $estado = load_estado();
+        $midiasList = json_decode($estado['midia']['midias'], true);
+        if (!is_array($midiasList)) {
+            $midiasList = array();
+        }
+
+        // Check if id already exists, update or add
+        $found = false;
+        foreach ($midiasList as &$m) {
+            if (isset($m['id']) && $m['id'] === $id) {
+                $m['tipo'] = $tipo;
+                $m['nome'] = $nome;
+                $m['transicao'] = $transicao;
+                $m['duracao'] = $duracao;
+                $m['intervalo'] = $intervalo;
+                $m['src'] = ($tipo === 'texto') ? '' : ('midias/' . $id . '.' . $ext);
+                if ($tipo === 'texto') {
+                    $m['texto'] = isset($input['texto']) ? $input['texto'] : '';
+                    $m['notif'] = isset($input['notif']) ? $input['notif'] : '';
+                }
+                $found = true;
+                break;
+            }
+        }
+        unset($m);
+
+        if (!$found) {
+            $midiasList[] = array(
+                'id' => $id,
+                'tipo' => $tipo,
+                'nome' => $nome,
+                'transicao' => $transicao,
+                'duracao' => $duracao,
+                'intervalo' => $intervalo,
+                'src' => ($tipo === 'texto') ? '' : ('midias/' . $id . '.' . $ext)
+            );
+            if ($tipo === 'texto') {
+                $ultimo = count($midiasList) - 1;
+                $midiasList[$ultimo]['texto'] = isset($input['texto']) ? $input['texto'] : '';
+                $midiasList[$ultimo]['notif'] = isset($input['notif']) ? $input['notif'] : '';
+            }
+        }
+
+        $estado['midia']['midias'] = json_encode($midiasList);
+        $estado['estadoVersao'] = intval($estado['estadoVersao']) + 1;
+        save_estado($estado);
+
+        respond(array('ok' => true, 'id' => $id));
+    }
+
+    if ($acao === 'remover_midia') {
+        $input = get_post_data();
+        $id = isset($input['id']) ? $input['id'] : '';
+
+        if (!$id) {
+            respond_error('Parametro "id" obrigatorio.');
+        }
+        if (strpos($id, '/') !== false || strpos($id, '\\') !== false || $id === '.' || $id === '..') {
+            respond_error('ID invalido.');
+        }
+
+        // Remove file(s) - try both extensions
+        foreach (array('mp4', 'png', 'gif', 'jpg', 'jpeg', 'webm', 'bin') as $ext) {
+            $path = MIDIAS_DIR . '/' . $id . '.' . $ext;
+            if (file_exists($path)) {
+                unlink($path);
+            }
+        }
+
+        // Remove from estado midias list
+        $estado = load_estado();
+        $midiasList = json_decode($estado['midia']['midias'], true);
+        if (is_array($midiasList)) {
+            $newList = array();
+            foreach ($midiasList as $m) {
+                if (isset($m['id']) && $m['id'] !== $id) {
+                    $newList[] = $m;
+                }
+            }
+            $estado['midia']['midias'] = json_encode($newList);
+        }
+        // Also remove from midiasAtivas
+        $midiasAtivas = json_decode($estado['midia']['midiasAtivas'], true);
+        if (is_array($midiasAtivas)) {
+            $newAtivas = array();
+            foreach ($midiasAtivas as $ma) {
+                if ($ma !== $id) {
+                    $newAtivas[] = $ma;
+                }
+            }
+            $estado['midia']['midiasAtivas'] = json_encode($newAtivas);
+        }
+
+        $estado['estadoVersao'] = intval($estado['estadoVersao']) + 1;
+        save_estado($estado);
+
+        respond(array('ok' => true));
+    }
+
+    if ($acao === 'editar_midia') {
+        $input = get_post_data();
+        $id = isset($input['id']) ? $input['id'] : '';
+        $duracao = isset($input['duracao']) ? $input['duracao'] : null;
+        $intervalo = isset($input['intervalo']) ? $input['intervalo'] : null;
+        $transicao = isset($input['transicao']) ? $input['transicao'] : null;
+
+        if (!$id) {
+            respond_error('Parametro "id" obrigatorio.');
+        }
+
+        $estado = load_estado();
+        $midiasList = json_decode($estado['midia']['midias'], true);
+        if (!is_array($midiasList)) {
+            respond_error('Lista de midias vazia.', 404);
+        }
+
+        $found = false;
+        foreach ($midiasList as &$m) {
+            if (isset($m['id']) && $m['id'] === $id) {
+                if ($duracao !== null) $m['duracao'] = $duracao;
+                if ($intervalo !== null) $m['intervalo'] = $intervalo;
+                if ($transicao !== null) $m['transicao'] = $transicao;
+                $found = true;
+                break;
+            }
+        }
+        unset($m);
+
+        if (!$found) {
+            respond_error('Midia nao encontrada.', 404);
+        }
+
+        $estado['midia']['midias'] = json_encode($midiasList);
+        $estado['estadoVersao'] = intval($estado['estadoVersao']) + 1;
+        save_estado($estado);
+
+        respond(array('ok' => true));
+    }
+
+    if ($acao === 'upload_logo') {
+        $input = get_post_data();
+        $nome = isset($input['nome']) ? $input['nome'] : '';
+        $src = isset($input['src']) ? $input['src'] : '';
+        if (!$src) {
+            respond_error('Parametro "src" obrigatorio (base64 data-uri).');
+        }
+        if (!is_dir(BASE_DIR . '/torneios')) {
+            mkdir(BASE_DIR . '/torneios', 0755, true);
+        }
+        $ext = 'png';
+        if (strpos($src, 'data:image/jpeg') === 0 || strpos($src, 'data:image/jpg') === 0) $ext = 'jpg';
+        elseif (strpos($src, 'data:image/gif') === 0) $ext = 'gif';
+        elseif (strpos($src, 'data:image/webp') === 0) $ext = 'webp';
+        elseif (strpos($src, 'data:image/svg') === 0) $ext = 'svg';
+
+        $base = $nome !== '' ? $nome : ('logo_' . time());
+        $base = preg_replace('/[^A-Za-z0-9_\-]/', '_', pathinfo($base, PATHINFO_FILENAME));
+        if ($base === '' || $base === '.' || $base === '..') $base = 'logo_' . time();
+        $arquivo = $base . '.' . $ext;
+        if (save_data_uri($src, BASE_DIR . '/torneios/' . $arquivo) === false) {
+            respond_error('Falha ao salvar logo.', 500);
+        }
+        respond(array('ok' => true, 'arquivo' => $arquivo));
+    }
+
+    if ($acao === 'importar_escudos') {
+        $input = get_post_data();
+        $itens = isset($input['itens']) ? $input['itens'] : array();
+        if (!is_array($itens) || !count($itens)) {
+            respond_error('Envie {itens:[{nome,src}]}.');
+        }
+        if (!is_dir(ESCUDOS_DIR)) {
+            mkdir(ESCUDOS_DIR, 0755, true);
+        }
+        $salvos = array();
+        foreach ($itens as $it) {
+            $nome = isset($it['nome']) ? $it['nome'] : '';
+            $src = isset($it['src']) ? $it['src'] : '';
+            if (!$src) continue;
+            $base = preg_replace('/[^A-Za-z0-9_\-]/', '_', $nome);
+            if ($base === '' || $base === '.' || $base === '..') $base = 'escudo_' . time();
+            $ext = 'png';
+            if (strpos($src, 'data:image/jpeg') === 0 || strpos($src, 'data:image/jpg') === 0) $ext = 'jpg';
+            elseif (strpos($src, 'data:image/gif') === 0) $ext = 'gif';
+            elseif (strpos($src, 'data:image/webp') === 0) $ext = 'webp';
+            $arquivo = $base . '.' . $ext;
+            if (save_data_uri($src, ESCUDOS_DIR . '/' . $arquivo) === false) continue;
+            $salvos[] = array('nome' => $nome, 'arquivo' => 'escudos/' . $arquivo);
+        }
+        respond(array('ok' => true, 'salvos' => $salvos));
+    }
+
+    // Default POST: merge state (flat or nested) into estado.json
+    $input = get_post_data();
+    if (empty($input)) {
+        respond_error('Corpo da requisicao vazio ou JSON invalido.');
+    }
+
+    $estado = load_estado();
+    $estado = deep_merge($estado, $input);
+    $estado['estadoVersao'] = intval($estado['estadoVersao']) + 1;
+    save_estado($estado);
+
+    respond($estado);
+}
+
+// Any other method
+respond_error('Metodo nao suportado.', 405);
