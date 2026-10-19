@@ -72,7 +72,7 @@ Controle._postMerge=function(flat){
 };
 
 Controle._postIncrementar=function(campo,delta){
-    return fetch(API+'?acao=incrementar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({campo:campo,delta:delta})})
+    return fetch(API+API_AND+'acao=incrementar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({campo:campo,delta:delta})})
     .then(function(r){if(!r.ok)throw new Error(r.status);return r.json();})
     .then(function(d){if(d&&d.erro)throw new Error(d.erro);
         if(d&&d.campos){Object.assign(Controle.estado,d.campos);Controle.aplicarEstado();}
@@ -117,7 +117,7 @@ Controle._flush=function(){
 Controle.cronometro=function(op,valor){
     var body={op:op};
     if(typeof valor!=='undefined')body.valor=valor;
-    fetch(API+'?acao=cronometro',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    fetch(API+API_AND+'acao=cronometro',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
     .then(function(r){if(!r.ok)throw new Error(r.status);return r.json();})
     .then(function(d){
         if(d&&d.erro){Controle.status('erro','❌ '+d.erro);return;}
@@ -135,7 +135,7 @@ Controle.sincronizar=function(){
     var ctl=(typeof AbortController!=='undefined')?new AbortController():null;
     var timer=ctl?setTimeout(function(){ctl.abort();},3000):null;
     var t0=Date.now();
-    fetch(API+'?v='+Controle.ultimaVersao,ctl?{signal:ctl.signal}:{})
+    fetch(API+API_AND+'v='+Controle.ultimaVersao,ctl?{signal:ctl.signal}:{})
     .then(function(r){if(!r.ok)throw new Error(r.status);return r.json();})
     .then(function(data){
         if(timer)clearTimeout(timer);

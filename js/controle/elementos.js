@@ -39,7 +39,7 @@ Controle.selecionarLogoTorneio=function(){
 
 Controle.recarregarLogos=async function(){
     try{
-        var r=await fetch(API+'?acao=listar_logos');
+        var r=await fetch(API+API_AND+'acao=listar_logos');
         var data=await r.json();
         var sel=document.getElementById('logoTorneio');
         if(!sel)return;
@@ -65,7 +65,7 @@ Controle.uploadLogo=function(){
         r.onload=async function(){
             var nome=f.name.replace(/\.[^.]+$/,'');
             try{
-                var resp=await fetch(API+'?acao=upload_logo',{method:'POST',headers:{'Content-Type':'application/json'},
+                var resp=await fetch(API+API_AND+'acao=upload_logo',{method:'POST',headers:{'Content-Type':'application/json'},
                     body:JSON.stringify({nome:nome,src:r.result})});
                 var rj=await resp.json();
                 if(!resp.ok||!rj.arquivo)throw new Error(rj.erro||('Erro '+resp.status));
@@ -99,7 +99,7 @@ Controle.definirEscudo=function(idImg){
         var f=e.target.files[0];if(!f)return;
         var r=new FileReader();
         r.onload=async function(){
-            var resp=await fetch(API+'?acao=upload_escudo',{method:'POST',
+            var resp=await fetch(API+API_AND+'acao=upload_escudo',{method:'POST',
                 headers:{'Content-Type':'application/json'},
                 body:JSON.stringify({time:(idImg==='escudoA'?'A':'B'),src:r.result})});
             var data=await resp.json();
@@ -115,7 +115,7 @@ Controle._escudos=[];
 
 Controle.listarEscudos=async function(){
     try{
-        var r=await fetch(API+'?acao=listar_escudos');
+        var r=await fetch(API+API_AND+'acao=listar_escudos');
         var data=await r.json();
         Controle._escudos=data.escudos||[];
         Controle.renderEscudos();
@@ -165,7 +165,7 @@ Controle.uploadEscudosBatch=function(){
         }
         if(arquivos.length===0)return;
         try{
-            var r=await fetch(API+'?acao=upload_escudos_batch',{method:'POST',
+            var r=await fetch(API+API_AND+'acao=upload_escudos_batch',{method:'POST',
                 headers:{'Content-Type':'application/json'},
                 body:JSON.stringify({arquivos:arquivos})});
             var data=await r.json();
@@ -181,7 +181,7 @@ Controle.uploadEscudosBatch=function(){
 
 Controle.atribuirEscudo=async function(nome,time){
     try{
-        var r=await fetch(API+'?acao=atribuir_escudo',{method:'POST',
+        var r=await fetch(API+API_AND+'acao=atribuir_escudo',{method:'POST',
             headers:{'Content-Type':'application/json'},
             body:JSON.stringify({nome:nome,time:time})});
         var data=await r.json();
@@ -195,7 +195,7 @@ Controle.atribuirEscudo=async function(nome,time){
 Controle.removerEscudo=async function(nome){
     if(!confirm('Remover escudo "'+nome+'" da biblioteca?'))return;
     try{
-        var r=await fetch(API+'?acao=remover_escudos',{method:'POST',
+        var r=await fetch(API+API_AND+'acao=remover_escudos',{method:'POST',
             headers:{'Content-Type':'application/json'},
             body:JSON.stringify({nomes:[nome]})});
         var data=await r.json();
@@ -215,7 +215,7 @@ Controle.removerEscudosMarcados=function(){
     if(!confirm('Remover '+nomes.length+' escudo(s) da biblioteca?'))return;
     (async function(){
         try{
-            var r=await fetch(API+'?acao=remover_escudos',{method:'POST',
+            var r=await fetch(API+API_AND+'acao=remover_escudos',{method:'POST',
                 headers:{'Content-Type':'application/json'},
                 body:JSON.stringify({nomes:nomes})});
             var data=await r.json();
@@ -293,7 +293,7 @@ Controle.listarPresets=async function(){
         var fl=document.getElementById('filtroLocal');if(fl&&fl.value)params.push('local='+encodeURIComponent(fl.value));
         if(fb&&fb.value.trim())params.push('busca='+encodeURIComponent(fb.value.trim()));
         var q=params.length?'&'+params.join('&'):'';
-        var isFiltered=!!q;var r=await fetch(API+'?acao=listar_presets'+q);
+        var isFiltered=!!q;var r=await fetch(API+API_AND+'acao=listar_presets'+q);
         var data=await r.json();
         Controle._presets=data.presets||[];
         if(!isFiltered)Controle._presetsTodos=Controle._presets.length;
@@ -426,7 +426,7 @@ Controle.salvarPreset=async function(){
         midias:e.midias||'[]',midiasAtivas:e.midiasAtivas||'[]'
     };
     try{
-        var r=await fetch(API+'?acao=salvar_preset',{method:'POST',
+        var r=await fetch(API+API_AND+'acao=salvar_preset',{method:'POST',
             headers:{'Content-Type':'application/json'},
             body:JSON.stringify({nome:nome,dados:dados})});
         var data=await r.json();
@@ -466,7 +466,7 @@ Controle.atualizarNomePreset=function(){
 
 Controle.carregarPreset=async function(nome){
     try{
-        var r=await fetch(API+'?acao=carregar_preset&nome='+encodeURIComponent(nome));
+        var r=await fetch(API+API_AND+'acao=carregar_preset&nome='+encodeURIComponent(nome));
         var dados=await r.json();
         if(dados.erro){Controle.status('erro','❌ '+dados.erro);return;}
         // Sanitiza tema e fonte pra valores validos do futebol
@@ -497,7 +497,7 @@ Controle.removerPresetsMarcados=function(){
         var ok=0;
         for(var i=0;i<nomes.length;i++){
             try{
-                var r=await fetch(API+'?acao=remover_preset',{method:'POST',
+                var r=await fetch(API+API_AND+'acao=remover_preset',{method:'POST',
                     headers:{'Content-Type':'application/json'},
                     body:JSON.stringify({nome:nomes[i]})});
                 var data=await r.json();
@@ -512,7 +512,7 @@ Controle.removerPresetsMarcados=function(){
 Controle.removerPreset=async function(nome){
     if(!confirm('Remover preset "'+nome+'"?'))return;
     try{
-        var r=await fetch(API+'?acao=remover_preset',{method:'POST',
+        var r=await fetch(API+API_AND+'acao=remover_preset',{method:'POST',
             headers:{'Content-Type':'application/json'},
             body:JSON.stringify({nome:nome})});
         var data=await r.json();
@@ -525,7 +525,7 @@ Controle.resolveEscudo = function(url) {
     if (!url) return '';
     url = url.replace(/\?.*$/, '');
     if (url.match(/^https?:\/\//)) {
-        return API + '?acao=proxy_imagem&url=' + encodeURIComponent(url);
+        return API+API_AND+'acao=proxy_imagem&url=' + encodeURIComponent(url);
     }
     return url;
 };
@@ -550,7 +550,7 @@ Controle.adicionarThumbnailMidia = function(nome) {
         var id = 'thumb_' + Date.now();
         var nomeMidia = '📋 ' + (p.siglaA || 'A') + ' × ' + (p.siglaB || 'B');
         Controle.thumbCache[id] = dataURL;
-        fetch(API + '?acao=upload_midia', {
+        fetch(API+API_AND+'acao=upload_midia', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
@@ -606,7 +606,7 @@ Controle.importarPresets=function(){
                         if(!p.logoTorneio&&p.competicao)p.logoTorneio=Controle._derivarLogoTorneio(p.competicao);
                         var nome=p.nome||(f.name.replace(/\.json$/,'').replace(/[^a-zA-Z0-9_\-]/g,'_')+'_'+j);
                         try{
-                            var r=await fetch(API+'?acao=salvar_preset',{method:'POST',
+                            var r=await fetch(API+API_AND+'acao=salvar_preset',{method:'POST',
                                 headers:{'Content-Type':'application/json'},
                                 body:JSON.stringify({nome:nome,dados:p})});
                             if(!r.ok){erros.push(nome+' (HTTP '+r.status+')');continue;}
@@ -620,7 +620,7 @@ Controle.importarPresets=function(){
                     // Auto-deriva logoTorneio da competicao
                     if(!dados.logoTorneio&&dados.competicao)dados.logoTorneio=Controle._derivarLogoTorneio(dados.competicao);
                     try{
-                        var r=await fetch(API+'?acao=salvar_preset',{method:'POST',
+                        var r=await fetch(API+API_AND+'acao=salvar_preset',{method:'POST',
                             headers:{'Content-Type':'application/json'},
                             body:JSON.stringify({nome:nome,dados:dados})});
                         if(!r.ok){erros.push(nome+' (HTTP '+r.status+')');continue;}
@@ -645,7 +645,7 @@ Controle.importarPresets=function(){
 Controle.exportarPresets=async function(){
     // Fetch all presets (sem filtro), build JSON, download
     try{
-        var r=await fetch(API+'?acao=listar_presets');
+        var r=await fetch(API+API_AND+'acao=listar_presets');
         var data=await r.json();
         var presets=data.presets||[];
         if(presets.length===0){alert('Nenhum preset para exportar');return;}
@@ -654,7 +654,7 @@ Controle.exportarPresets=async function(){
         for(var i=0;i<presets.length;i++){
             var nome=presets[i].nome;
             try{
-                var rr=await fetch(API+'?acao=carregar_preset&nome='+encodeURIComponent(nome));
+                var rr=await fetch(API+API_AND+'acao=carregar_preset&nome='+encodeURIComponent(nome));
                 var dd=await rr.json();
                 if(!dd.erro)tudo.push(dd);
             }catch(e){}
@@ -912,7 +912,7 @@ Controle.filtrarPresets=function(){
 
 Controle.carregarFiltros=async function(){
     try{
-        var r=await fetch(API+'?acao=listar_filtros');
+        var r=await fetch(API+API_AND+'acao=listar_filtros');
         var data=await r.json();
         ['competicao','categoria','grupo','fase','data','hora','local'].forEach(function(t){
             var sel=document.getElementById('filtro'+t.charAt(0).toUpperCase()+t.slice(1));

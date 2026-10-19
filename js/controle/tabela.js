@@ -399,7 +399,7 @@ Controle.conferirEscudos = function (silencioso) {
         if (c) itens.push({ nome: t.name, url: c });
     });
     if (!itens.length) { if (el && !silencioso) el.innerHTML += '<br>⚠ classificação sem escudos (importe o CSV)'; return; }
-    fetch(API + '?acao=listar_escudos').then(function (r) { return r.json(); }).then(function (j) {
+    fetch(API+API_AND+'acao=listar_escudos').then(function (r) { return r.json(); }).then(function (j) {
         var falta = Controle.escudosFaltando(itens, (j && j.escudos) || []);
         var sem = falta.novos.map(function (x) { return x.nome; });
         var curto = function (n) { return n.split(/[\s,]+/).slice(0, 2).join(' '); };
@@ -419,7 +419,7 @@ Controle.baixarEscudos = function (itens) {
     var pronto = false;
 
     var enviar = function (lista, cb) {
-        fetch(API + '?acao=importar_escudos', {
+        fetch(API+API_AND+'acao=importar_escudos', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ itens: lista })
         }).then(function (r) { return r.json(); }).then(function (j) {
@@ -449,7 +449,7 @@ Controle.baixarEscudos = function (itens) {
             else proximo(i + 1);
             return;
         }
-        fetch(API + '?acao=proxy_imagem&url=' + encodeURIComponent(it.url))
+        fetch(API+API_AND+'acao=proxy_imagem&url=' + encodeURIComponent(it.url))
             .then(function (r) { return r.ok ? r.blob() : null; })
             .then(function (b) {
                 if (!b || b.size < 60) { falhas.push(it.nome); proximo(i + 1); return; }
@@ -486,7 +486,7 @@ Controle.baixarEscudos = function (itens) {
     };
 
     dizer('🔎 conferindo a biblioteca de escudos…');
-    fetch(API + '?acao=listar_escudos')
+    fetch(API+API_AND+'acao=listar_escudos')
         .then(function (r) { return r.json(); })
         .then(function (j) {
             (j.escudos || []).forEach(function (n) { naBiblioteca[String(n).toLowerCase()] = true; });

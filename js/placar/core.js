@@ -40,7 +40,7 @@ Placar.sincronizar=function(){
     Placar._syncEmAndamento=true;
     var ctl=(typeof AbortController!=='undefined')?new AbortController():null;
     var timer=ctl?setTimeout(function(){ctl.abort();},3000):null;
-    fetch(API+'?v='+Placar.ultimaVersao,ctl?{signal:ctl.signal}:{})
+    fetch(API+API_AND+'v='+Placar.ultimaVersao,ctl?{signal:ctl.signal}:{})
     .then(function(r){if(!r.ok)throw new Error(r.status);return r.json();})
     .then(function(data){
         if(timer)clearTimeout(timer);

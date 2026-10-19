@@ -27,7 +27,7 @@ Controle.adicionarMidia=function(){
             var trans=document.getElementById('midiaTransicaoSelect').value;
             Controle.thumbCache[id]=src;
             try{
-                var resp=await fetch(API+'?acao=upload_midia',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id,tipo:tipo,src:src,nome:nome,transicao:trans,duracao:duracao,intervalo:intervalo})});
+                var resp=await fetch(API+API_AND+'acao=upload_midia',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id,tipo:tipo,src:src,nome:nome,transicao:trans,duracao:duracao,intervalo:intervalo})});
                 if(!resp.ok)throw new Error((await resp.json()).erro||resp.status);
                 var rj=await resp.json();
                 var midias=Controle.getMidiasCtrl();
@@ -121,7 +121,7 @@ Controle.removerMidia=async function(id){
         Controle.renderMidias();Controle.status('ok','Item removido');return;
     }
     try{
-        var resp=await fetch(API+'?acao=remover_midia',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id})});
+        var resp=await fetch(API+API_AND+'acao=remover_midia',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id})});
         if(!resp.ok)throw new Error('Erro '+resp.status);
         var rj=await resp.json();
         midias=midias.filter(function(x){return x.id!==id;});
@@ -151,7 +151,7 @@ Controle.editarMidia=async function(id){
         Controle.status('ok','Notificação atualizada');return;
     }
     try{
-        var resp=await fetch(API+'?acao=editar_midia',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id,duracao:duracao,intervalo:intervalo,transicao:transicao})});
+        var resp=await fetch(API+API_AND+'acao=editar_midia',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id,duracao:duracao,intervalo:intervalo,transicao:transicao})});
         if(!resp.ok)throw new Error((await resp.json()).erro||resp.status);
         var rj=await resp.json();
         Controle.estado.midias=JSON.stringify(midias);

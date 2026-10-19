@@ -24,6 +24,16 @@
 - Perfil guarda o pacote completo: times, competição, tabela/classificação
   (`tabelaTimes`), tema/cores e cenas.
 
+**Fase C — Placar parametrizado (`Placar.html?i=<id>`)**
+
+- `comum.js` agora detecta `?i=` da URL e monta `API` com a instância, além de
+  expor `API_AND` (separador `&`/`?`) — 32 pontos de `fetch` migrados para
+  `API+API_AND+…`, preservando o merge POST (`fetch(API, …)`).
+- Abrir `Placar.html?i=equipeA` faz o overlay ler/gravar só na instância
+  `equipeA`; o mesmo vale para `Controle.html?i=equipeA`. Sem `?i`, comportamento
+  antigo.
+- Versão de cache-busting dos scripts alterados bumpada para `20261019g1`.
+
 ## 2026-10-19
 
 **Fase 1 (Blindagem) + Fase 3 (Rede robusta)**

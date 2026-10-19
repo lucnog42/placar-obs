@@ -1,5 +1,8 @@
 // comum.js — compartilhado entre Placar e Controle
-var API='api.php';
+var INSTANCIA='';
+try{var _mi=location.search.match(/[?&]i=([A-Za-z0-9_-]+)/);if(_mi)INSTANCIA=_mi[1];}catch(e){}
+var API='api.php'+(INSTANCIA?('?i='+encodeURIComponent(INSTANCIA)):'');
+var API_AND=(API.indexOf('?')>=0)?'&':'?';
 var CORES_DEFAULT={timeA:'#ff0000',timeB:'#0000ff'};
 var MS={golsA:'placar',golsB:'placar',tempo:'placar',tempoInicio:'placar',rodando:'placar',esporte:'placar',periodo:'placar',
 timeA:'times',timeB:'times',siglaA:'times',siglaB:'times',escudoA:'times',escudoB:'times',timeACor:'times',timeBCor:'times',

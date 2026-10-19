@@ -203,7 +203,7 @@ Placar.Tabela = {
         if (this._pubT && (agora - this._pubT) < 700) return;
         this._pubCena = k; this._pubT = agora;
         try {
-            fetch(API + '?acao=cena_atual', {
+            fetch(API+API_AND+'acao=cena_atual', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ k: k })
             });
