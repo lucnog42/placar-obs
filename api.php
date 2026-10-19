@@ -26,6 +26,8 @@ define('ESTADO_FILE', BASE_DIR . '/estado.json');
 define('PRESETS_DIR', BASE_DIR . '/presets');
 define('ESCUDOS_DIR', BASE_DIR . '/escudos');
 define('MIDIAS_DIR', BASE_DIR . '/midias');
+define('LOCK_FILE', BASE_DIR . '/estado.lock');
+define('ESTADO_BAK', BASE_DIR . '/estado.json.bak');
 
 function ensure_dirs() {
     $dirs = array(PRESETS_DIR, ESCUDOS_DIR, MIDIAS_DIR);
@@ -37,26 +39,67 @@ function ensure_dirs() {
 }
 ensure_dirs();
 
-function load_estado() {
-    if (!file_exists(ESTADO_FILE)) {
-        return default_estado();
+$MUTATE_LOCK = null;
+
+function estado_lock($mode) {
+    $fp = @fopen(LOCK_FILE, 'c');
+    if (!$fp) return false;
+    @flock($fp, $mode);
+    return $fp;
+}
+
+// leitura sem lock: o chamador ja deve segurar o lock apropriado
+function load_estado_raw() {
+    $raw = @file_get_contents(ESTADO_FILE);
+    if ($raw === false) {
+        $raw = @file_get_contents(ESTADO_BAK);
+        if ($raw === false) return default_estado();
     }
-    $raw = file_get_contents(ESTADO_FILE);
     $data = json_decode($raw, true);
-    if (!$data) {
-        return default_estado();
+    if (!is_array($data)) {
+        $raw = @file_get_contents(ESTADO_BAK);
+        if ($raw !== false) { $data = json_decode($raw, true); }
     }
+    if (!is_array($data)) return default_estado();
     return $data;
+}
+
+function load_estado() {
+    global $MUTATE_LOCK;
+    if ($MUTATE_LOCK) {
+        return load_estado_raw(); // ja estamos em lock exclusivo (evita deadlock)
+    }
+    $fp = estado_lock(LOCK_SH);
+    $data = load_estado_raw();
+    if ($fp) { @flock($fp, LOCK_UN); fclose($fp); }
+    return $data;
+}
+
+function mutate_begin() {
+    global $MUTATE_LOCK;
+    $MUTATE_LOCK = estado_lock(LOCK_EX);
 }
 
 function save_estado($data) {
     $json = json_encode($data);
-    file_put_contents(ESTADO_FILE, $json, LOCK_EX);
+    if ($json === false) return false;
+    $tmp = ESTADO_FILE . '.tmp.' . getmypid();
+    if (@file_put_contents($tmp, $json, LOCK_EX) === false) {
+        @unlink($tmp);
+        return false;
+    }
+    if (!@rename($tmp, ESTADO_FILE)) {
+        @unlink($tmp);
+        return false;
+    }
+    // backup = ultimo estado bom (recuperacao sem perda)
+    @copy(ESTADO_FILE, ESTADO_BAK);
+    return true;
 }
 
 function default_estado() {
     return array(
-        'placar' => array('golsA' => '0', 'golsB' => '0', 'tempo' => '0', 'rodando' => 'false', 'esporte' => 'futebol', 'periodo' => ''),
+        'placar' => array('golsA' => '0', 'golsB' => '0', 'tempo' => '0', 'tempoInicio' => '0', 'rodando' => 'false', 'esporte' => 'futebol', 'periodo' => ''),
         'times' => array(
             'timeA' => '', 'timeB' => '',
             'siglaA' => '', 'siglaB' => '',
@@ -69,7 +112,7 @@ function default_estado() {
         'estilo' => array(
             'tema' => 'laliga', 'fonte' => 'arial',
             'nomesExpandidos' => 'false', 'notifAnimacao' => 'esquerda',
-            'mostrarStatus' => 'true'
+            'mostrarStatus' => 'false'
         ),
         'penaltes' => array(
             'penaltesAtivos' => 'false',
@@ -128,7 +171,9 @@ function respond($data) {
 }
 
 function respond_error($msg, $code = 400) {
-    // status code handled by response body
+    $texts = array(400 => 'Bad Request', 404 => 'Not Found', 405 => 'Method Not Allowed', 500 => 'Internal Server Error');
+    $text = isset($texts[$code]) ? $texts[$code] : 'Error';
+    header('HTTP/1.1 ' . $code . ' ' . $text);
     respond(array('erro' => $msg));
 }
 
@@ -262,10 +307,26 @@ if ($method === 'GET') {
         $url = isset($_GET['url']) ? $_GET['url'] : '';
         if (!$url) { respond_error('Parametro url obrigatorio.'); }
         // Seguranca: so permite URLs http/https
-        if (strpos($url, 'http://') !== 0 && strpos($url, 'https://') !== 0) {
+        if (!preg_match('#^https?://#i', $url)) {
             respond_error('URL invalida.');
         }
-        $imgData = @file_get_contents($url);
+        // SSRF: rejeita IPs privados / loopback / reservados
+        $host = parse_url($url, PHP_URL_HOST);
+        if (!$host) { respond_error('URL invalida.'); }
+        $ip = @gethostbyname($host);
+        if ($ip === $host && !filter_var($ip, FILTER_VALIDATE_IP)) {
+            respond_error('Host nao resolvivel.');
+        }
+        if (filter_var($ip, FILTER_VALIDATE_IP) === false ||
+            filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) {
+            respond_error('Host nao permitido.');
+        }
+        // Timeout e limite de tamanho (~2MB)
+        $ctx = stream_context_create(array(
+            'http' => array('timeout' => 5, 'follow_location' => 1, 'max_redirects' => 3, 'ignore_errors' => true),
+            'https' => array('timeout' => 5)
+        ));
+        $imgData = @file_get_contents($url, false, $ctx, 0, 2000000);
         if ($imgData === false) {
             // Retorna 1x1 pixel transparente como fallback
             header('Content-Type: image/png');
@@ -360,16 +421,19 @@ if ($method === 'GET') {
     $clientVersion = isset($_GET['v']) ? intval($_GET['v']) : 0;
     $estado = load_estado();
     $serverVersion = intval($estado['estadoVersao']);
+    $nowMs = round(microtime(true) * 1000);
 
     if ($clientVersion > 0 && $clientVersion === $serverVersion) {
-        respond(array('_same' => true, 'v' => $serverVersion));
+        respond(array('_same' => true, 'v' => $serverVersion, '_ts' => $nowMs));
     }
+    $estado['_ts'] = $nowMs;
     respond($estado);
 }
 
 // ---------- POST ----------
 
 if ($method === 'POST') {
+    mutate_begin();
 
     if ($acao === 'salvar_preset') {
         $input = get_post_data();
@@ -794,6 +858,90 @@ if ($method === 'POST') {
             $salvos[] = array('nome' => $nome, 'arquivo' => 'escudos/' . $arquivo);
         }
         respond(array('ok' => true, 'salvos' => $salvos));
+    }
+
+    if ($acao === 'incrementar') {
+        $input = get_post_data();
+        $campo = isset($input['campo']) ? $input['campo'] : '';
+        $delta = isset($input['delta']) ? intval($input['delta']) : 0;
+        $map = array(
+            'golsA' => array('placar', 'golsA'),
+            'golsB' => array('placar', 'golsB'),
+            'faltasA' => array('basquete', 'faltasA'),
+            'faltasB' => array('basquete', 'faltasB'),
+            'timeoutsA' => array('basquete', 'timeoutsA'),
+            'timeoutsB' => array('basquete', 'timeoutsB')
+        );
+        if (!isset($map[$campo])) {
+            respond_error('Campo invalido para incremento.');
+        }
+        $estado = load_estado();
+        $sec = $map[$campo][0];
+        $key = $map[$campo][1];
+        $atual = isset($estado[$sec][$key]) ? intval($estado[$sec][$key]) : 0;
+        $novo = $atual + $delta;
+        if ($novo < 0) $novo = 0;
+        $estado[$sec][$key] = (string)$novo;
+        $estado['estadoVersao'] = intval($estado['estadoVersao']) + 1;
+        save_estado($estado);
+        respond(array('ok' => true, 'campos' => array($campo => (string)$novo), 'estadoVersao' => $estado['estadoVersao']));
+    }
+
+    if ($acao === 'cronometro') {
+        $input = get_post_data();
+        $op = isset($input['op']) ? $input['op'] : '';
+        $valor = isset($input['valor']) ? intval($input['valor']) : 0;
+        $estado = load_estado();
+        $p = &$estado['placar'];
+        $nowMs = round(microtime(true) * 1000);
+        switch ($op) {
+            case 'start':
+                if (!isset($p['tempoInicio'])) $p['tempoInicio'] = '0';
+                if ($p['rodando'] !== 'true') { $p['tempoInicio'] = (string)$nowMs; }
+                $p['rodando'] = 'true';
+                break;
+            case 'pause':
+                if ($p['rodando'] === 'true') {
+                    $inicio = isset($p['tempoInicio']) ? intval($p['tempoInicio']) : 0;
+                    $base = isset($p['tempo']) ? intval($p['tempo']) : 0;
+                    $elapsed = ($inicio > 0) ? floor(($nowMs - $inicio) / 1000) : 0;
+                    if ($elapsed < 0) $elapsed = 0;
+                    $p['tempo'] = (string)($base + $elapsed);
+                }
+                $p['tempoInicio'] = '0';
+                $p['rodando'] = 'false';
+                break;
+            case 'reset':
+                $p['tempo'] = '0';
+                $p['tempoInicio'] = '0';
+                $p['rodando'] = 'false';
+                break;
+            case 'set':
+                $p['tempo'] = (string)$valor;
+                $p['tempoInicio'] = '0';
+                $p['rodando'] = 'false';
+                break;
+            default:
+                respond_error('Operacao invalida para cronometro.');
+        }
+        $estado['estadoVersao'] = intval($estado['estadoVersao']) + 1;
+        save_estado($estado);
+        respond(array(
+            'ok' => true,
+            'campos' => array('tempo' => $p['tempo'], 'tempoInicio' => $p['tempoInicio'], 'rodando' => $p['rodando']),
+            'estadoVersao' => $estado['estadoVersao'],
+            '_ts' => $nowMs
+        ));
+    }
+
+    if ($acao === 'cena_atual') {
+        $input = get_post_data();
+        $k = isset($input['k']) ? $input['k'] : '';
+        $estado = load_estado();
+        $estado['tabela']['tabelaCenaAtual'] = $k;
+        // nao incrementa estadoVersao: nao deve causar reload nos clientes
+        save_estado($estado);
+        respond(array('ok' => true));
     }
 
     // Default POST: merge state (flat or nested) into estado.json

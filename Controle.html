@@ -377,9 +377,9 @@
 <section class="full">
     <p>Tempo</p>
     <div class="tempo-row">
-        <button onclick="Controle.setEstado({rodando:'true'})">▶ Iniciar</button>
-        <button onclick="Controle.setEstado({rodando:'false'})">⏸ Pausar</button>
-        <button onclick="Controle.setEstado({tempo:'0.'+Date.now(),rodando:'false'})">🔄 Resetar</button>
+        <button onclick="Controle.cronometro('start')">▶ Iniciar</button>
+        <button onclick="Controle.cronometro('pause')">⏸ Pausar</button>
+        <button onclick="Controle.cronometro('reset')">🔄 Resetar</button>
         <span>Definir:</span>
         <input type="number" id="minutos" placeholder="MM" style="width:50px;">
         <input type="number" id="segundos" placeholder="SS" style="width:50px;">
@@ -586,12 +586,11 @@
 
 
 <script src="js/eventbus.js?v=20260624c"></script>
-<script src="js/comum.js?v=20260624c"></script>
-<script src="js/controle/core.js?v=20260624c"></script>
-<script src="js/controle/elementos.js?v=20261017b"></script>
+<script src="js/comum.js?v=20261019f13"></script>
+<script src="js/controle/core.js?v=20261019f13"></script>
+<script src="js/controle/elementos.js?v=20261019f13"></script>
 <script src="js/controle/estilo.js?v=20260624c"></script>
 <script src="js/controle/midia.js?v=20261017b"></script>
-<script src="js/controle/basquete.js?v=20260624c"></script>
 <script src="js/controle/tabela.js?v=20261017b"></script>
 <script>
 /* ====== DEBUG ====== */

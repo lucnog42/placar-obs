@@ -233,14 +233,15 @@ Controle.resetarCor=function(){Controle.setEstado({timeACor:'#ff0000',timeBCor:'
 
 Controle.adicionarGol=function(gol,time){
     var ch=time==='A'?'golsA':'golsB';var at=parseInt(Controle.estado[ch])||0;
-    if(gol<0&&at===0)return;at+=gol;var d={};d[ch]=String(at);Controle.setEstado(d);
+    if(gol<0&&at===0)return;
+    Controle.incrementar(ch,gol);
 };
 Controle.zerarGols=function(){Controle.setEstado({golsA:'0',golsB:'0'});};
 
 Controle.definirTempo=function(){
     var m=parseInt(document.getElementById('minutos').value)||0;
     var s=parseInt(document.getElementById('segundos').value)||0;
-    Controle.setEstado({tempo:String(m*60+s)});
+    Controle.cronometro('set',m*60+s);
 };
 
 Controle.alternarPenalte=function(btn){

@@ -1,5 +1,37 @@
 # Histórico
 
+## 2026-10-19
+
+**Fase 1 (Blindagem) + Fase 3 (Rede robusta)**
+
+- **Persistência segura.** `estado.json` agora é gravado de forma atômica
+  (arquivo temporário + `rename()`), com `estado.json.bak` espelhando o último
+  estado válido. Leitura com `flock(LOCK_SH)`, e mutações serializadas com
+  `flock(LOCK_EX)` cobrindo o ciclo ler→alterar→gravar. Um estado corrompido
+  recupera do `.bak` em vez de cair no padrão (fim do "placar zera sozinho").
+- **Incremento no servidor.** Nova ação `?acao=incrementar` calcula gol/falta no
+  servidor (atômico), em vez de gravar o valor absoluto calculado no painel —
+  dois operadores ou dois cliques rápidos não se atropelam mais.
+- **Cronômetro por epoch.** Nova ação `?acao=cronometro` (start/pause/reset/set)
+  guarda `tempoInicio` (epoch) e `tempo` (acumulado); o relógio sobrevive a
+  recarregar o Placar no OBS e a dois operadores. O servidor envia `_ts` para
+  corrigir o relógio do cliente.
+- **Poll encadeado no Placar** (sem `setInterval` empilhando requisições), com
+  timeout de 3 s, descarte de resposta fora de ordem e watchdog de conexão.
+- **Painel vivo.** O `Controle.html` agora também consulta `?v=N` e vê mudanças
+  de outra aba/operador (sem sobrescrever um campo em edição).
+- **Fila de gravação no painel** com retry/backoff: um gol não se perde mais
+  quando a rede falha; ações rápidas são coalescidas num único POST.
+- **`publicarCena` sem ruído.** A troca de cena do overlay usa `?acao=cena_atual`,
+  que não incrementa `estadoVersao` (não dispara reload nos clientes).
+- **SSRF no `proxy_imagem`.** Timeout de 5 s, limite de ~2 MB e bloqueio de IPs
+  privados/loopback/reservados.
+- **Status HTTP real.** `respond_error` agora envia o código correto (400/404/500)
+  em vez de 200.
+- **Basquete removido.** As tags de `js/controle/basquete.js` e
+  `js/placar/basquete.js` (que não existiam, 404) foram retiradas.
+- `mostrarStatus` passa a vir `false` por padrão (o indicador não sai no ar).
+
 ## 2026-10-17
 
 **Overlay de classificação — rodada de ajustes**

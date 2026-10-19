@@ -1,7 +1,7 @@
 // comum.js — compartilhado entre Placar e Controle
 var API='api.php';
 var CORES_DEFAULT={timeA:'#ff0000',timeB:'#0000ff'};
-var MS={golsA:'placar',golsB:'placar',tempo:'placar',rodando:'placar',esporte:'placar',periodo:'placar',
+var MS={golsA:'placar',golsB:'placar',tempo:'placar',tempoInicio:'placar',rodando:'placar',esporte:'placar',periodo:'placar',
 timeA:'times',timeB:'times',siglaA:'times',siglaB:'times',escudoA:'times',escudoB:'times',timeACor:'times',timeBCor:'times',
 competicao:'times',categoria:'times',grupo:'times',fase:'times',data:'times',hora:'times',local:'times',logoTorneio:'times',
 tema:'estilo',fonte:'estilo',nomesExpandidos:'estilo',notifAnimacao:'estilo',
