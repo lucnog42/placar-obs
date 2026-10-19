@@ -13,6 +13,17 @@
 - Escudos/mídias/logos continuam compartilhados entre instâncias (só o estado é
   por instância).
 
+**Fase B — Perfis**
+
+- Novo `perfis/` com ações: `salvar_perfil`, `listar_perfis`, `carregar_perfil`,
+  `remover_perfil` (escrita atômica, validação de nome).
+- `aplicar_perfil` (`?i=<id>` + `{perfil}`) aplica um perfil à instância: mapeia o
+  perfil "flat" para o estado aninhado (mapa `ms_section` espelhando o `MS` do
+  `js/comum.js`) e preserva o placar/tempo em andamento.
+- `criar_instancia {perfil}` agora semeia o estado da instância a partir do perfil.
+- Perfil guarda o pacote completo: times, competição, tabela/classificação
+  (`tabelaTimes`), tema/cores e cenas.
+
 ## 2026-10-19
 
 **Fase 1 (Blindagem) + Fase 3 (Rede robusta)**
