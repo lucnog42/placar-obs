@@ -1,5 +1,18 @@
 # Histórico
 
+## 2026-10-19 (refatoração multi-instância)
+
+**Fase A — Fundação multi-instância (servidor)**
+
+- `api.php` agora roteia por instância via `?i=<id>` (ou `?instancia=`): cada
+  sub-controle tem seu próprio `estado-<id>.json` (+ `.bak` + `.lock`).
+- Sem `?i`, segue usando `estado.json` (retrocompatível — instância padrão).
+- Novo registro `instancias.json` com CRUD: `criar_instancia`, `listar_instancias`,
+  `renomear_instancia`, `remover_instancia`. `id` validado por
+  `^[A-Za-z0-9_-]+$` (rejeita path traversal).
+- Escudos/mídias/logos continuam compartilhados entre instâncias (só o estado é
+  por instância).
+
 ## 2026-10-19
 
 **Fase 1 (Blindagem) + Fase 3 (Rede robusta)**

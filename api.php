@@ -39,10 +39,64 @@ function ensure_dirs() {
 }
 ensure_dirs();
 
+// ---------- instancias (multi-placar) ----------
+
+$INSTANCIA = '';
+if (isset($_GET['i'])) {
+    $INSTANCIA = preg_replace('/[^A-Za-z0-9_\-]/', '', $_GET['i']);
+} elseif (isset($_GET['instancia'])) {
+    $INSTANCIA = preg_replace('/[^A-Za-z0-9_\-]/', '', $_GET['instancia']);
+}
+if ($INSTANCIA === '.' || $INSTANCIA === '..') { $INSTANCIA = ''; }
+
+function estado_path() {
+    global $INSTANCIA;
+    return ($INSTANCIA === '') ? (BASE_DIR . '/estado.json') : (BASE_DIR . '/estado-' . $INSTANCIA . '.json');
+}
+
+function estado_bak_path() {
+    global $INSTANCIA;
+    return ($INSTANCIA === '') ? (BASE_DIR . '/estado.json.bak') : (BASE_DIR . '/estado-' . $INSTANCIA . '.json.bak');
+}
+
+function estado_lock_path() {
+    global $INSTANCIA;
+    return ($INSTANCIA === '') ? (BASE_DIR . '/estado.lock') : (BASE_DIR . '/estado-' . $INSTANCIA . '.lock');
+}
+
+function instancias_path() {
+    return BASE_DIR . '/instancias.json';
+}
+
+function load_instancias() {
+    $raw = @file_get_contents(instancias_path());
+    $data = json_decode($raw, true);
+    if (!is_array($data)) { $data = array(); }
+    return $data;
+}
+
+function save_instancias($lista) {
+    $json = json_encode($lista);
+    if ($json === false) { return false; }
+    $tmp = instancias_path() . '.tmp.' . getmypid();
+    if (@file_put_contents($tmp, $json, LOCK_EX) === false) { @unlink($tmp); return false; }
+    if (!@rename($tmp, instancias_path())) { @unlink($tmp); return false; }
+    return true;
+}
+
+function save_estado_for($id, $data) {
+    global $INSTANCIA;
+    $prev = $INSTANCIA;
+    $INSTANCIA = $id;
+    $ok = save_estado($data);
+    $INSTANCIA = $prev;
+    return $ok;
+}
+
 $MUTATE_LOCK = null;
 
 function estado_lock($mode) {
-    $fp = @fopen(LOCK_FILE, 'c');
+    $fp = @fopen(estado_lock_path(), 'c');
     if (!$fp) return false;
     @flock($fp, $mode);
     return $fp;
@@ -50,14 +104,14 @@ function estado_lock($mode) {
 
 // leitura sem lock: o chamador ja deve segurar o lock apropriado
 function load_estado_raw() {
-    $raw = @file_get_contents(ESTADO_FILE);
+    $raw = @file_get_contents(estado_path());
     if ($raw === false) {
-        $raw = @file_get_contents(ESTADO_BAK);
+        $raw = @file_get_contents(estado_bak_path());
         if ($raw === false) return default_estado();
     }
     $data = json_decode($raw, true);
     if (!is_array($data)) {
-        $raw = @file_get_contents(ESTADO_BAK);
+        $raw = @file_get_contents(estado_bak_path());
         if ($raw !== false) { $data = json_decode($raw, true); }
     }
     if (!is_array($data)) return default_estado();
@@ -83,17 +137,17 @@ function mutate_begin() {
 function save_estado($data) {
     $json = json_encode($data);
     if ($json === false) return false;
-    $tmp = ESTADO_FILE . '.tmp.' . getmypid();
+    $tmp = estado_path() . '.tmp.' . getmypid();
     if (@file_put_contents($tmp, $json, LOCK_EX) === false) {
         @unlink($tmp);
         return false;
     }
-    if (!@rename($tmp, ESTADO_FILE)) {
+    if (!@rename($tmp, estado_path())) {
         @unlink($tmp);
         return false;
     }
     // backup = ultimo estado bom (recuperacao sem perda)
-    @copy(ESTADO_FILE, ESTADO_BAK);
+    @copy(estado_path(), estado_bak_path());
     return true;
 }
 
@@ -396,6 +450,10 @@ if ($method === 'GET') {
         respond(array('escudos' => list_escudo_files()));
     }
 
+    if ($acao === 'listar_instancias') {
+        respond(array('instancias' => load_instancias()));
+    }
+
     if ($acao === 'carregar_preset') {
         $nome = isset($_GET['nome']) ? $_GET['nome'] : '';
         if (!$nome) {
@@ -434,6 +492,69 @@ if ($method === 'GET') {
 
 if ($method === 'POST') {
     mutate_begin();
+
+    if ($acao === 'criar_instancia') {
+        $input = get_post_data();
+        $id = isset($input['id']) ? $input['id'] : '';
+        if (!preg_match('/^[A-Za-z0-9_\-]+$/', $id)) { respond_error('Parametro "id" invalido (so letras, numeros, _ e -).'); }
+        $nome = isset($input['nome']) ? $input['nome'] : '';
+        $perfil = isset($input['perfil']) ? $input['perfil'] : '';
+        if ($id === '' || $id === '.' || $id === '..') {
+            respond_error('Parametro "id" obrigatorio (so letras, numeros, _ e -).');
+        }
+        $instancias = load_instancias();
+        foreach ($instancias as $it) {
+            if (isset($it['id']) && $it['id'] === $id) {
+                respond_error('Ja existe uma instancia com este id.');
+            }
+        }
+        $instancias[] = array('id' => $id, 'nome' => $nome, 'perfil' => $perfil);
+        save_instancias($instancias);
+        save_estado_for($id, default_estado());
+        respond(array('ok' => true, 'id' => $id, 'url' => 'Placar.html?i=' . $id));
+    }
+
+    if ($acao === 'remover_instancia') {
+        $input = get_post_data();
+        $id = isset($input['id']) ? $input['id'] : '';
+        if (!preg_match('/^[A-Za-z0-9_\-]+$/', $id)) { respond_error('Parametro "id" invalido (so letras, numeros, _ e -).'); }
+        if ($id === '' || $id === '.' || $id === '..') {
+            respond_error('Parametro "id" obrigatorio.');
+        }
+        $instancias = load_instancias();
+        $novas = array();
+        foreach ($instancias as $it) {
+            if (isset($it['id']) && $it['id'] === $id) { continue; }
+            $novas[] = $it;
+        }
+        save_instancias($novas);
+        foreach (array('estado-' . $id . '.json', 'estado-' . $id . '.json.bak', 'estado-' . $id . '.lock') as $f) {
+            $p = BASE_DIR . '/' . $f;
+            if (file_exists($p)) { @unlink($p); }
+        }
+        respond(array('ok' => true));
+    }
+
+    if ($acao === 'renomear_instancia') {
+        $input = get_post_data();
+        $id = isset($input['id']) ? $input['id'] : '';
+        if (!preg_match('/^[A-Za-z0-9_\-]+$/', $id)) { respond_error('Parametro "id" invalido (so letras, numeros, _ e -).'); }
+        $nome = isset($input['nome']) ? $input['nome'] : '';
+        if ($id === '' || $id === '.' || $id === '..') {
+            respond_error('Parametro "id" obrigatorio.');
+        }
+        $instancias = load_instancias();
+        $achou = false;
+        foreach ($instancias as $k => $it) {
+            if (isset($it['id']) && $it['id'] === $id) {
+                $instancias[$k]['nome'] = $nome;
+                $achou = true;
+                break;
+            }
+        }
+        save_instancias($instancias);
+        respond(array('ok' => true, 'achou' => $achou));
+    }
 
     if ($acao === 'salvar_preset') {
         $input = get_post_data();
