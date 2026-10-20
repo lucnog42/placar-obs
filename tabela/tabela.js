@@ -826,6 +826,50 @@ function drawScene(g,t,c){
   else if(s.k==='lower') drawLower(g,s.local,t,c);
   return s;
 }
+
+/* ---------- notificacao (overlay temporaria no mesmo canvas/motor) ---------- */
+var NOTIF = null;
+function setNotif(o){
+  if(!o || !o.texto){ NOTIF = null; return; }
+  NOTIF = { tipo: o.tipo || 'info', texto: o.texto, born: Date.now(), dur: Math.max(1, (o.dur || 4)) * 1000 };
+}
+function clearNotif(){ NOTIF = null; }
+function temNotif(){ return !!NOTIF; }
+function drawNotif(g){
+  if(!NOTIF) return;
+  var age = Date.now() - NOTIF.born;
+  if(age >= NOTIF.dur){ NOTIF = null; return; }
+  var enter = cl(age / 350, 0, 1);
+  var exit  = cl((NOTIF.dur - age) / 350, 0, 1);
+  var a = Math.min(enter, exit);
+  var col = NOTIF.tipo === 'gol' ? RED :
+            NOTIF.tipo === 'amarelo' ? '#facc15' :
+            NOTIF.tipo === 'vermelho' ? RED : ACC;
+  var titulo = NOTIF.tipo === 'gol' ? 'GOOOOL!' :
+               NOTIF.tipo === 'amarelo' ? 'CARTÃO AMARELO' :
+               NOTIF.tipo === 'vermelho' ? 'CARTÃO VERMELHO' : 'AVISO';
+  var y = H * 0.44 - (1 - easeOut(enter)) * 80 + (1 - easeOut(exit)) * 60;
+  var bw = W * 0.84, bh = 150, bx = (W - bw) / 2, by = y - bh / 2;
+  g.save();
+  g.globalAlpha = a;
+  field(g, bx, by, bw, bh, { bg: rd(.90), bd: 'rgba(' + TH.glow + ',.45)', r: 20 });
+  rr(g, bx, by, 12, bh, 6); g.fillStyle = col; g.fill();
+  g.beginPath(); g.arc(bx + 76, y, 30, 0, 7); g.fillStyle = col; g.fill();
+  g.beginPath(); g.arc(bx + 76, y, 30, 0, 7); g.strokeStyle = 'rgba(0,0,0,.25)'; g.lineWidth = 2; g.stroke();
+  txt(g, titulo, bx + 128, y - 26, { f: '900 28px ' + FF, c: col, al: 'left', bl: 'middle', ls: 3, max: bw - 158 });
+  txt(g, NOTIF.texto, bx + 128, y + 30, { f: '700 36px ' + FF, c: rw(.97), al: 'left', bl: 'middle', max: bw - 158, shrink: 22 });
+  g.restore();
+  g.globalAlpha = 1;
+}
+function renderNotif(opts){
+  opts = opts || {};
+  var g = opts.g, w = opts.w || W, h = opts.h || H;
+  if(!g) return;
+  g.setTransform(w / W, 0, 0, h / H, 0, 0);
+  g.clearRect(0, 0, W, H);
+  drawNotif(g);
+}
+
 function renderFrame(t, opts){
   opts = opts || {};
   const g = opts.g, c = opts.c || CFG, w = opts.w || W, h = opts.h || H;
@@ -834,6 +878,7 @@ function renderFrame(t, opts){
   g.clearRect(0, 0, W, H);
   paintBg(g, c);
   drawScene(g, t, c);
+  drawNotif(g);
 }
 
 
@@ -919,6 +964,7 @@ return {
   getColors:function(){return {a:A_COL,b:B_COL,c:C_COL};},
   setEscudoTime:setEscudoTime,
   setLineups:setLineups, setPatrocinadores:setPatrocinadores, loadCrests:loadCrests, loadLogo:loadLogo,
+  setNotif:setNotif, clearNotif:clearNotif, temNotif:temNotif, renderNotif:renderNotif,
   timeline:timeline, sceneAt:sceneAt, teams:function(){ return TEAMS; },
   nomes:function(){ return TEAMS.map(function(t){ return t.name; }); },
   escudo:function(i){ return imgs[i] || null; }

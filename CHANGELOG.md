@@ -41,6 +41,22 @@
   (`Placar.html?i=<id>`) com botões "📺 OBS" (abre o overlay) e "🎛 Editar"
   (abre o `Controle.html?i=<id>`).
 
+**Fase D — Notificação no motor/canvas da tabela**
+
+- Notificação agora é desenhada pelo motor (`tabela/tabela.js`) no mesmo canvas
+  e no mesmo tema, em vez do elemento DOM `#notificacao` separado — elimina a
+  sobreposição de overlays.
+- Novo `Tabela.setNotif({tipo, texto, dur})` + `clearNotif`/`temNotif` e
+  `renderNotif` (fundo transparente, só a notificação). Tipos: `gol` (vermelho),
+  `amarelo`, `vermelho`, `info` (acento do tema), com entrada/saída animadas e
+  auto-expiração.
+- `js/placar/midia.js` (`_mostrarTexto`/`_esconderTexto`) e `js/placar/notificacao.js`
+  agora disparam via `Placar.Tabela.dispararNotif(...)`; o DOM antigo fica só
+  como fallback se o motor não carregar.
+- Com a tabela desligada, `dispararNotif` mostra só a notificação (fundo
+  transparente) por cima, sem mexer no placar.
+- Cache-busting dos scripts alterados para `20261020a`.
+
 ## 2026-10-19
 
 **Fase 1 (Blindagem) + Fase 3 (Rede robusta)**

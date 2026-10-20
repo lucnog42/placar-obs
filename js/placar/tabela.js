@@ -14,6 +14,7 @@ Placar.Tabela = {
     _ctx: null,
     _chave: null,          // cenas|tema|times|auto — para saber quando recomecar
     _timesChave: null,
+    _notifRaf: null,
 
     /* tema do overlay que corresponde a cada tema do placar */
     TEMA_PLACAR: { laliga: 'escuro', colorido: 'neon', simples: 'matchfacts' },
@@ -346,6 +347,31 @@ Placar.Tabela = {
     pararLoop: function () {
         if (this.raf) cancelAnimationFrame(this.raf);
         this.raf = null;
+    },
+
+    /* ---------- notificacao (Fase D: desenhada no mesmo canvas do motor) ---------- */
+    dispararNotif: function (tipo, texto, dur) {
+        if (!window.Tabela || !window.Tabela.setNotif) return;
+        window.Tabela.setNotif({ tipo: tipo, texto: texto, dur: dur || 4 });
+        if (this.ativo) return;
+        var self = this, cam = this.camada();
+        if (cam) cam.classList.add('ativa');
+        var passo = function () {
+            var g = self.ctx2d(), cv = self.canvas();
+            if (g && cv && window.Tabela.renderNotif) window.Tabela.renderNotif({ g: g, w: cv.width, h: cv.height });
+            if (!window.Tabela.temNotif()) {
+                if (cam) cam.classList.remove('ativa');
+                self._notifRaf = null;
+                return;
+            }
+            self._notifRaf = requestAnimationFrame(passo);
+        };
+        if (this._notifRaf) cancelAnimationFrame(this._notifRaf);
+        this._notifRaf = requestAnimationFrame(passo);
+    },
+
+    limparNotif: function () {
+        if (window.Tabela && window.Tabela.clearNotif) window.Tabela.clearNotif();
     },
 
     /* ---------- entrada ---------- */

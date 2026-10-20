@@ -12,6 +12,12 @@ Placar.on('notif:changed', function() {
     if (!tipo || !texto || !id || id === Placar.ultimaNotifId) return;
     Placar.ultimaNotifId = id;
 
+    // Fase D: notificacao desenhada no motor/canvas da tabela (mesmo tema)
+    if (window.Tabela && Placar.Tabela && Placar.Tabela.dispararNotif) {
+        Placar.Tabela.dispararNotif(tipo, texto, 4);
+        return;
+    }
+
     var c = tipo === 'gol' ? texto :
             tipo === 'amarelo' ? '\u{1F7E8} ' + texto :
             '\u{1F7E5} ' + texto;
