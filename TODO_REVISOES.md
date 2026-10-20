@@ -11,3 +11,9 @@ Lista de revisões para uma próxima rodada. Branch: `multi-instancia`.
    e ligá-los às notificações (nome do jogador ao notificar).
 6. **Separar repertório de mídia do histórico de notificações** — o repertório (mídias)
    e o histórico (notificações enviadas) devem ser listas/abas separadas.
+7. **Patrocinador → cena no repertório de mídias** — ao adicionar um patrocinador,
+   criar automaticamente uma entrada (tipo "cena") no repertório, disparável manualmente.
+8. **Cenas automáticas de abertura/intervalo/encerramento** — o overlay cria/aciona essas
+   cenas (menu "Intervalos" da Tela 10); exige novas cenas no motor (intervalo e encerramento).
+9. **Substituições** — cena/notificação de substituição de jogadores.
+10. **Fila de reprodução real** — ordenação/agendamento da fila (não só o ciclo individual de mídia).
