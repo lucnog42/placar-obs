@@ -812,9 +812,9 @@ function lowerFull(g,l,t,c){
 }
 
 /* ---------- render principal ---------- */
-function drawScene(g,t,c){
+function drawScene(g,t,c,kForca){
   const {segs}=timeline(c);
-  const s=sceneAt(segs,t);
+  const s=kForca?{k:kForca,local:t,p:0,t0:0,d:8}:sceneAt(segs,t);
   if(s.k!=='intro') drawHeader(g,t,c);
   if(s.k==='intro') drawIntro(g,s.local,t,c);
   else if(s.k==='table') drawTable(g,s.local,t,c);
@@ -877,7 +877,7 @@ function renderFrame(t, opts){
   g.setTransform(w/W, 0, 0, h/H, 0, 0);
   g.clearRect(0, 0, W, H);
   paintBg(g, c);
-  drawScene(g, t, c);
+  drawScene(g, t, c, opts.cena);
   drawNotif(g);
 }
 

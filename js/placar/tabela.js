@@ -15,6 +15,8 @@ Placar.Tabela = {
     _chave: null,          // cenas|tema|times|auto — para saber quando recomecar
     _timesChave: null,
     _notifRaf: null,
+    _proxSponsor: 0,
+    _sponsorChave: '',
 
     /* tema do overlay que corresponde a cada tema do placar */
     TEMA_PLACAR: { laliga: 'escuro', colorido: 'neon', simples: 'matchfacts' },
@@ -161,7 +163,7 @@ Placar.Tabela = {
             vTime: e.tabelaHora || e.hora || '',
             vW: e.clima || '',
             vIcon: e.climaIcone || '',
-            spText: d.spText || 'PATROCINADORES'
+            spText: e.spText || d.spText || 'PATROCINADORES'
         };
     },
 
@@ -230,6 +232,39 @@ Placar.Tabela = {
             cfg.ttl, cfg.sub, cfg.vName, cfg.vTime, cfg.vW, cfg.vIcon, cfg.logo].join('|');
     },
 
+    /* ---------- patrocinadores (sp1..spN) ---------- */
+    sponsorNomes: function () {
+        var e = Placar.estado || {}, out = [];
+        for (var i = 1; i <= 30; i++) { var v = e['sp' + i]; if (v) out.push(String(v)); }
+        return out;
+    },
+    carregarPatrocinadores: function () {
+        if (!window.Tabela) return;
+        var self = this;
+        var nomes = this.sponsorNomes();
+        var chave = nomes.join('|');
+        if (chave === this._sponsorChave) return;
+        this._sponsorChave = chave;
+        if (!nomes.length) { window.Tabela.setPatrocinadores([null, null, null]); return; }
+        var imgs = [], pend = nomes.length;
+        nomes.forEach(function (nome, i) {
+            var im = new Image();
+            im.onload = function () { imgs[i] = im; if (--pend === 0) fim(); };
+            im.onerror = function () { imgs[i] = null; if (--pend === 0) fim(); };
+            im.src = 'torneios/' + nome;
+        });
+        function fim() { window.Tabela.setPatrocinadores(imgs); if (self.ativo) self.desenhar(performance.now()); }
+    },
+    sponsorAtivo: function () { return String((Placar.estado || {}).sponsorsAtivo) === 'true'; },
+    _sponsorIntervaloMs: function () { var v = parseInt((Placar.estado || {}).sponsorsIntervalo, 10); return (isNaN(v) || v < 5) ? 120000 : v * 1000; },
+    _sponsorDuracaoMs: function () { var v = parseInt((Placar.estado || {}).sponsorsDuracao, 10); return (isNaN(v) || v < 1) ? 8000 : v * 1000; },
+    /* notificação ou mídia manual no ar têm prioridade sobre a rotação */
+    prioridadeManual: function () {
+        if (window.Tabela && window.Tabela.temNotif && window.Tabela.temNotif()) return true;
+        var cam = document.getElementById('camadaMidia');
+        return !!(cam && cam.querySelector('.ativo'));
+    },
+
     /* ---------- ciclo de vida ---------- */
     aplicar: function () {
         if (!window.Tabela) return;
@@ -259,6 +294,7 @@ Placar.Tabela = {
             window.Tabela.setColors(e.timeACor || '#22d3ee', e.timeBCor || '#f472b6');
             window.Tabela.setEscudoTime(cfg.a, e.escudoA || '');
             window.Tabela.setEscudoTime(cfg.b, e.escudoB || '');
+            this.carregarPatrocinadores();
             window.Tabela.setCfg(cfg);
             window.Tabela.loadLogo(cfg.logo, function () { if (Placar.Tabela.ativo) Placar.Tabela.desenhar(); });
             this.cfg = cfg;
@@ -280,6 +316,7 @@ Placar.Tabela = {
         var cam = this.camada(), wrap = document.getElementById('placarWrapper');
         if (!cam) return;
         this.ativo = true;
+        this._proxSponsor = 0;
         if (wrap) wrap.classList.add('saindo');        // 1) o placar sai
         clearTimeout(this._t1);
         this._t1 = setTimeout(function () {            // 2) so entao o overlay entra
@@ -318,7 +355,7 @@ Placar.Tabela = {
         var cfg = this.cfg || window.Tabela.cfg();
         var cv = this.canvas();
         var el = ((now || performance.now()) - this.t0) / 1000;
-        var t, cena = null;
+        var t, cena = null, forca = null;
         if (cfg.auto) {
             var tl = window.Tabela.timeline(cfg);
             t = tl.total > 0 ? (el % tl.total) : 0;
@@ -328,9 +365,18 @@ Placar.Tabela = {
             t = Math.min(el, d);                       // anima a entrada e segura
             cena = cfg.scenes[0] && cfg.scenes[0].k;
         }
+        // rotacao de patrocinadores (prioridade abaixo de notif/midia manual)
+        if (cfg.auto && this.sponsorAtivo()) {
+            var iv = this._sponsorIntervaloMs(), du = this._sponsorDuracaoMs();
+            if (!this._proxSponsor) this._proxSponsor = now + iv;
+            var loc = now - this._proxSponsor;
+            if (loc >= 0 && loc < du) { cena = 'sponsors'; t = loc / 1000; forca = 'sponsors'; }
+            else if (loc >= du) { this._proxSponsor = this.prioridadeManual() ? (now + 1000) : (now + iv); }
+            else if (this.prioridadeManual()) { this._proxSponsor = now + iv; }
+        } else { this._proxSponsor = 0; }
         this.aplicarLayout(cena);                      // tamanho + posicao da cena
         this.publicarCena(cena);
-        window.Tabela.render(t, { g: g, c: cfg, w: cv.width, h: cv.height });
+        window.Tabela.render(t, { g: g, c: cfg, w: cv.width, h: cv.height, cena: forca });
     },
 
     iniciarLoop: function () {

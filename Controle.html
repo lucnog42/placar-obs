@@ -380,13 +380,24 @@ h2.titulo{text-align:left}
       <span class="hint">Texto exibido na cena "Patrocinadores" do overlay.</span>
     </section>
     <section class="full">
-      <p>Logos dos patrocinadores (até 3)</p>
-      <div style="display:flex;gap:10px;flex-wrap:wrap" id="sponsorSlots">
-        <div style="text-align:center"><div id="spPrev1" style="width:80px;height:80px;border:1px dashed #2a3a55;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#5b6f88">logo 1</div><button onclick="Controle.uploadSponsor(1)" style="font-size:10px">Subir</button></div>
-        <div style="text-align:center"><div id="spPrev2" style="width:80px;height:80px;border:1px dashed #2a3a55;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#5b6f88">logo 2</div><button onclick="Controle.uploadSponsor(2)" style="font-size:10px">Subir</button></div>
-        <div style="text-align:center"><div id="spPrev3" style="width:80px;height:80px;border:1px dashed #2a3a55;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#5b6f88">logo 3</div><button onclick="Controle.uploadSponsor(3)" style="font-size:10px">Subir</button></div>
+      <p>Rotação <span class="hint">patrocinadores a cada intervalo</span></p>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <label class="toggle-sw" title="Liga/desliga a rotação automática"><input type="checkbox" id="sponsorsAtivo" onchange="Controle.definirSponsorRotacao('ativo', this.checked)"><span class="slider"></span></label>
+        <span id="sponsorsAtivoLabel" style="font-size:12px;color:#93a4c0">desligada</span>
       </div>
-      <span class="hint" id="sponsorInfo">Os logos aparecem na cena "Patrocinadores" do overlay.</span>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px">
+        <div><label style="font-size:10px;color:#aaa">A cada (segundos)</label><input type="number" id="sponsorsIntervalo" min="10" step="5" placeholder="120" style="width:100%;box-sizing:border-box" onchange="Controle.definirSponsorRotacao('intervalo', this.value)"></div>
+        <div><label style="font-size:10px;color:#aaa">Duração (segundos)</label><input type="number" id="sponsorsDuracao" min="1" step="1" placeholder="8" style="width:100%;box-sizing:border-box" onchange="Controle.definirSponsorRotacao('duracao', this.value)"></div>
+      </div>
+      <span class="hint">Notificações e cenas manuais têm prioridade sobre os patrocinadores.</span>
+    </section>
+    <section class="full">
+      <p>Logos dos patrocinadores</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap" id="sponsorSlots"></div>
+      <div style="margin-top:8px">
+        <button onclick="Controle.adicionarPatrocinador()" style="background:#2196F3;color:#fff">➕ Adicionar Patrocinador</button>
+      </div>
+      <span class="hint" id="sponsorInfo">Cada patrocinador entra na rotação do overlay.</span>
     </section>
   </div>
 </section>
@@ -962,6 +973,62 @@ Controle.definirSpText = function(v) {
   Controle.setEstado({ spText: v });
 };
 
+Controle._sponsorsN = 3;
+Controle.renderSponsors = function() {
+  var el = document.getElementById('sponsorSlots');
+  if(!el) return;
+  var e = Controle.estado || {};
+  var max = 0;
+  for(var k in e){ var m = /^sp(\d+)$/.exec(k); if(m){ var n = parseInt(m[1],10); if(n > max) max = n; } }
+  var N = Math.max(3, max, Controle._sponsorsN || 3);
+  Controle._sponsorsN = N;
+  var h = '';
+  for(var i = 1; i <= N; i++){
+    var nome = e['sp'+i] || '';
+    var img = nome ? ('<img src="torneios/'+nome+'" style="max-width:76px;max-height:76px;object-fit:contain" onerror="this.style.display=\'none\'">') : ('logo '+i);
+    h += '<div style="text-align:center">';
+    h += '<div id="spPrev'+i+'" style="width:80px;height:80px;border:1px dashed #2a3a55;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#5b6f88">'+img+'</div>';
+    h += '<div style="margin-top:4px;display:flex;gap:4px;justify-content:center">';
+    h += '<button onclick="Controle.uploadSponsor('+i+')" style="font-size:10px;padding:2px 6px">Subir</button>';
+    h += '<button onclick="Controle.removerPatrocinador('+i+')" style="font-size:10px;padding:2px 6px;color:#f87171" title="Remover logo">✕</button>';
+    h += '</div></div>';
+  }
+  el.innerHTML = h;
+};
+Controle.adicionarPatrocinador = function() {
+  var N = (Controle._sponsorsN || 3) + 1;
+  if(N > 30){ Controle.status('erro','Máximo de 30 patrocinadores'); return; }
+  Controle._sponsorsN = N;
+  Controle.renderSponsors();
+  Controle.status('ok','✅ Patrocinador '+N+' adicionado');
+};
+Controle.removerPatrocinador = function(n) {
+  var st = {}; st['sp'+n] = '';
+  Controle.setEstado(st);
+  Controle.renderSponsors();
+  Controle.status('ok','Patrocinador '+n+' removido');
+};
+Controle.definirSponsorRotacao = function(campo, val) {
+  var d = {};
+  if(campo === 'ativo') d.sponsorsAtivo = val ? 'true' : 'false';
+  else if(campo === 'intervalo') d.sponsorsIntervalo = String(val);
+  else if(campo === 'duracao') d.sponsorsDuracao = String(val);
+  Controle.setEstado(d);
+  Controle.syncSponsors();
+};
+Controle.syncSponsors = function() {
+  var e = Controle.estado || {};
+  var chk = document.getElementById('sponsorsAtivo');
+  if(chk) chk.checked = e.sponsorsAtivo === 'true';
+  var lbl = document.getElementById('sponsorsAtivoLabel');
+  if(lbl) lbl.textContent = (e.sponsorsAtivo === 'true') ? 'ligada' : 'desligada';
+  var iv = document.getElementById('sponsorsIntervalo');
+  if(iv && !iv.value) iv.value = e.sponsorsIntervalo || '120';
+  var du = document.getElementById('sponsorsDuracao');
+  if(du && !du.value) du.value = e.sponsorsDuracao || '8';
+  Controle.renderSponsors();
+};
+
 Controle.uploadSponsor = function(n) {
   var input = document.createElement('input');
   input.type = 'file';
@@ -981,8 +1048,7 @@ Controle.uploadSponsor = function(n) {
         if(d && d.arquivo) {
           var st = {}; st['sp'+n] = d.arquivo;
           Controle.setEstado(st);
-          var prev = document.getElementById('spPrev'+n);
-          if(prev){ prev.innerHTML = '<img src="' + r.result + '" style="max-width:76px;max-height:76px;object-fit:contain">'; }
+          if(Controle.renderSponsors) Controle.renderSponsors();
           Controle.status('ok', '✅ Logo do patrocinador ' + n + ' salvo');
         } else { Controle.status('erro', '❌ ' + (d && d.erro ? d.erro : 'erro ao subir logo')); }
       })
@@ -1008,6 +1074,7 @@ setTimeout(function(){ Controle.listarCores(); }, 800);
 setTimeout(function(){ Controle.atualizarNomePreset(); }, 900);
 setTimeout(function(){ Controle.recarregarLogos(); }, 1000);
 setTimeout(function(){ Controle.listarLogos(); }, 1000);
+setTimeout(function(){ Controle.syncSponsors(); }, 1000);
 
 /* Monkey-patch setEstado AFTER init (garantido que existe) */
 var _origSetEstado = Controle.setEstado;

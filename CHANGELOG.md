@@ -1,5 +1,22 @@
 # Histórico
 
+## 2026-10-20 (patrocinadores: rotação automática com prioridade)
+
+- **Patrocinadores agora renderizam de verdade** (pendência antiga): os logos
+  `sp1..spN` carregam e alimentam `setPatrocinadores` do motor (cena "sponsors").
+- **Causa-raiz corrigida**: `spText`/`sp1..sp30`/`sponsorsAtivo`/`sponsorsIntervalo`/
+  `sponsorsDuracao` não estavam no mapa `MS` (js/comum.js) nem no `ms_section`
+  (api.php) — o upload ficava preso no Controle e nunca chegava ao estado
+  compartilhado. Agora mapeados para a seção `torneio` (com defaults em `default_estado`).
+- **Rotação**: a cada `sponsorsIntervalo` s (padrão 120) a cena "Patrocinadores"
+  entra por `sponsorsDuracao` s (padrão 8). Toggle liga/desliga na Tela 7.
+- **Prioridade**: notificações e mídias manuais no ar suspendem/adiram a rotação
+  (o overlay e as cenas manuais têm prioridade sobre os patrocinadores).
+- **Tela 7**: controles de rotação + "➕ Adicionar Patrocinador" (slots dinâmicos
+  até 30, com Subir/✕ por logo).
+- Motor (`tabela/tabela.js`): `drawScene`/`renderFrame` aceitam cena forçada
+  (`opts.cena`) para injetar a cena de patrocinadores fora da linha do tempo.
+
 ## 2026-10-20 (refinos do Controle — preview, logos, CSV, Tela 10)
 
 - Removido o slider de zoom do preview; preview agora carrega `Placar.html?i=<id>`
