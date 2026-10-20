@@ -1,5 +1,28 @@
 # Histórico
 
+## 2026-10-20 (Fase E — diagramação do Controle em wizard)
+
+- **Controle.html reestruturado em um wizard de 10 telas** (uma por vez), com
+  navegação passo a passo automática:
+  1 Instâncias → 2 Equipes → 3 Competição → 4 Patrocinadores → 5 Tabela →
+  6 Cenas → 7 Tema → 8 Repertório → 9 Resumo & Salvar → 10 Operar ao vivo.
+- **Shell global**: header fixo com **☰ menu** (drawer lateral deslizante, adaptado
+  para mobile) + instância ativa + indicador de sync; **stepper** "Etapa X de 10";
+  barra fixa **Voltar / Avançar**.
+- **Tela 1 — Instâncias**: lista com **Editar** e **Excluir em pop-ups** (confirmação
+  de exclusão), **+ Criar Instância** (pop-up com id/nome/perfil via
+  `criar_instancia`/`renomear_instancia`/`remover_instancia`).
+- **Tela 9 — Resumo & Salvar**: resumo dinâmico de tudo que foi personalizado
+  (instância, equipes, competição, cenas, tema, patrocinadores) + salvar
+  instância / salvar como perfil (reaproveita `salvarPreset`/presets).
+- **Tela 10 — Operar ao vivo**: placar/tempo, cartões, overlay/cenas,
+  notificações rápidas (⚽/🟨/🟥/ℹ) e mídias.
+- **Tela 4 — Patrocinadores** (nova): título dos patrocinadores (`spText`) + 3
+  slots de logo (upload via `upload_logo`). Imagens ainda não desenhadas no
+  engine da tabela (pendência de wiring).
+- Novo `js/controle/navegacao.js` (stepper/drawer/modais/resumo); Debug movido
+  para painel recolhível no rodapé.
+
 ## 2026-10-19 (refatoração multi-instância)
 
 **Fase A — Fundação multi-instância (servidor)**
