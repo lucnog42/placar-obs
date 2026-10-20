@@ -519,6 +519,30 @@
 
 
 <!-- ====== ABA 6: DEBUG ====== -->
+<div class="acc-section open">
+  <div class="acc-header" onclick="Controle.toggleAccordion(this)">
+    <span class="icon">🎛</span>
+    <span class="title">Sub-controles</span>
+    <span class="badge">placares por URL</span>
+    <span class="arrow">▼</span>
+  </div>
+  <div class="acc-body">
+    <div class="grid-inner">
+
+      <section class="full">
+        <p>🔗 Instâncias de placar <span class="hint">cada uma com URL própria para o OBS</span></p>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+          <input type="text" id="subctrlId" placeholder="id (ex.: equipeA)" style="flex:1;min-width:130px;padding:8px;border-radius:6px;border:1px solid #444;background:#1a1a1a;color:#eee">
+          <input type="text" id="subctrlNome" placeholder="nome (ex.: Equipe A)" style="flex:1;min-width:130px;padding:8px;border-radius:6px;border:1px solid #444;background:#1a1a1a;color:#eee">
+          <button onclick="Controle.criarInstancia()" style="padding:8px 14px;border-radius:6px;background:#2196F3;color:#fff;border:none;cursor:pointer;font-weight:bold">➕ Criar</button>
+        </div>
+        <div id="listaInstancias" style="display:flex;flex-direction:column;gap:6px"></div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
 <div class="acc-section">
   <div class="acc-header" onclick="Controle.toggleAccordion(this)">
     <span class="icon">🛠</span>
@@ -734,6 +758,64 @@ Controle.forcarEstado = function() {
   }
 };
 
+/* ====== SUB-CONTROLES (multi-instancia) ====== */
+
+Controle.listarInstancias = function() {
+  fetch(API+API_AND+'acao=listar_instancias')
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    var el = document.getElementById('listaInstancias');
+    if(!el) return;
+    var lista = (d && d.instancias) || [];
+    if(!lista.length){ el.innerHTML = '<span style="color:#888;font-size:11px">Nenhum sub-controle. Crie o primeiro acima.</span>'; return; }
+    var h = '';
+    for(var i=0;i<lista.length;i++){
+      var it = lista[i];
+      var url = 'Placar.html?i=' + encodeURIComponent(it.id);
+      h += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px;border:1px solid #333;border-radius:6px;background:#151515">'
+        + '<span style="font-weight:bold;color:#fff;min-width:120px">' + (it.nome || it.id) + '</span>'
+        + '<code style="color:#9cf;font-size:11px">' + it.id + '</code>'
+        + '<a href="' + url + '" target="_blank" style="color:#4caf50;font-size:11px;flex:1;min-width:150px">' + url + '</a>'
+        + '<button onclick="window.open(\'' + url + '\',\'_blank\')" style="padding:4px 8px;border-radius:4px;border:none;background:#2196F3;color:#fff;cursor:pointer">📺 OBS</button>'
+        + '<button onclick="window.open(\'Controle.html?i=' + encodeURIComponent(it.id) + '\',\'_blank\')" style="padding:4px 8px;border-radius:4px;border:none;background:#555;color:#fff;cursor:pointer">🎛 Editar</button>'
+        + '<button onclick="Controle.removerInstancia(\'' + it.id + '\')" style="padding:4px 8px;border-radius:4px;border:none;background:#f44336;color:#fff;cursor:pointer">✕</button>'
+        + '</div>';
+    }
+    el.innerHTML = h;
+  })
+  .catch(function(e){ Controle.status('erro','❌ listar instancias: ' + e.message); });
+};
+
+Controle.criarInstancia = function() {
+  var id = document.getElementById('subctrlId').value.trim();
+  var nome = document.getElementById('subctrlNome').value.trim();
+  if(!id){ alert('Informe o id (ex.: equipeA)'); return; }
+  fetch(API+API_AND+'acao=criar_instancia', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ id:id, nome:nome })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    if(d && d.erro){ alert('Erro: ' + d.erro); return; }
+    document.getElementById('subctrlId').value = '';
+    document.getElementById('subctrlNome').value = '';
+    Controle.listarInstancias();
+    Controle.status('ok', '✅ Sub-controle "' + id + '" criado');
+  })
+  .catch(function(e){ Controle.status('erro','❌ ' + e.message); });
+};
+
+Controle.removerInstancia = function(id) {
+  if(!confirm('Remover o sub-controle "' + id + '" e todo o estado dele?')) return;
+  fetch(API+API_AND+'acao=remover_instancia', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ id:id })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(){ Controle.listarInstancias(); Controle.status('ok','Sub-controle removido'); })
+  .catch(function(e){ Controle.status('erro','❌ ' + e.message); });
+};
+
 /* Monkey-patch movido para depois do init */
 
 /* Hook status movido para depois do init */
@@ -745,6 +827,7 @@ Controle.toggleAccordion = function(header) {
   section.classList.toggle("open");
 };
 Controle.init();
+setTimeout(function(){ Controle.listarInstancias(); }, 600);
 setTimeout(function(){ Controle.resizePreview(); }, 500);
 setTimeout(function(){ Controle.listarPresets(); }, 800);
 setTimeout(function(){ Controle.listarEscudos(); }, 800);

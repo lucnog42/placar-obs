@@ -34,6 +34,13 @@
   antigo.
 - Versão de cache-busting dos scripts alterados bumpada para `20261019g1`.
 
+**Sub-controles no painel (parte da Fase E)**
+
+- Nova seção "Sub-controles" no `Controle.html`: lista as instâncias, cria
+  (`criarInstancia`), remove (`removerInstancia`) e expõe a URL de cada uma
+  (`Placar.html?i=<id>`) com botões "📺 OBS" (abre o overlay) e "🎛 Editar"
+  (abre o `Controle.html?i=<id>`).
+
 ## 2026-10-19
 
 **Fase 1 (Blindagem) + Fase 3 (Rede robusta)**
