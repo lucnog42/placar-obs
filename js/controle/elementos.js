@@ -2,9 +2,8 @@
 var Controle=window.Controle||{};
 
 Controle.definirTimes=function(){
-    var d={};var ta=document.getElementById('timeA').value,tb=document.getElementById('timeB').value;
-    var sa=document.getElementById('siglaA').value,sb=document.getElementById('siglaB').value;
-    if(ta)d.timeA=ta;if(tb)d.timeB=tb;if(sa)d.siglaA=sa;if(sb)d.siglaB=sb;
+    var d={};var ta=document.getElementById('timeA'),tb=document.getElementById('timeB');
+    if(ta&&ta.value)d.timeA=ta.value;if(tb&&tb.value)d.timeB=tb.value;
     if(Object.keys(d).length){Controle._presetAtual=null;Controle.setEstado(d);Controle.atualizarNomePreset();}
 };
 

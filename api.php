@@ -27,6 +27,7 @@ define('PRESETS_DIR', BASE_DIR . '/presets');
 define('ESCUDOS_DIR', BASE_DIR . '/escudos');
 define('MIDIAS_DIR', BASE_DIR . '/midias');
 define('PERFIS_DIR', BASE_DIR . '/perfis');
+define('CORES_FILE', BASE_DIR . '/cores.json');
 define('LOCK_FILE', BASE_DIR . '/estado.lock');
 define('ESTADO_BAK', BASE_DIR . '/estado.json.bak');
 
@@ -67,6 +68,26 @@ function estado_lock_path() {
 
 function instancias_path() {
     return BASE_DIR . '/instancias.json';
+}
+
+function cores_path() {
+    return CORES_FILE;
+}
+
+function load_cores() {
+    $raw = @file_get_contents(cores_path());
+    $data = json_decode($raw, true);
+    if (!is_array($data)) { $data = array(); }
+    return $data;
+}
+
+function save_cores($lista) {
+    $json = json_encode($lista);
+    if ($json === false) { return false; }
+    $tmp = cores_path() . '.tmp.' . getmypid();
+    if (@file_put_contents($tmp, $json, LOCK_EX) === false) { @unlink($tmp); return false; }
+    if (!@rename($tmp, cores_path())) { @unlink($tmp); return false; }
+    return true;
 }
 
 function load_instancias() {
@@ -490,6 +511,10 @@ if ($method === 'GET') {
         respond(array('instancias' => load_instancias()));
     }
 
+    if ($acao === 'listar_cores') {
+        respond(array('cores' => load_cores()));
+    }
+
     if ($acao === 'listar_perfis') {
         $perfis = array();
         if (is_dir(PERFIS_DIR)) {
@@ -606,6 +631,35 @@ if ($method === 'POST') {
         }
         save_estado_for($id, $seed);
         respond(array('ok' => true, 'id' => $id, 'url' => 'Placar.html?i=' . $id));
+    }
+
+    if ($acao === 'salvar_cor') {
+        $input = get_post_data();
+        $nome = isset($input['nome']) ? trim($input['nome']) : '';
+        $hex = isset($input['hex']) ? trim($input['hex']) : '';
+        if ($nome === '') { respond_error('Parametro "nome" obrigatorio.'); }
+        if (!preg_match('/^#[0-9a-fA-F]{6}$/', $hex)) { respond_error('Cor invalida (use #RRGGBB).'); }
+        $cores = load_cores();
+        $achou = false;
+        foreach ($cores as $i => $c) {
+            if (isset($c['nome']) && $c['nome'] === $nome) { $cores[$i]['hex'] = $hex; $achou = true; break; }
+        }
+        if (!$achou) { $cores[] = array('nome' => $nome, 'hex' => $hex); }
+        save_cores($cores);
+        respond(array('ok' => true));
+    }
+
+    if ($acao === 'remover_cor') {
+        $input = get_post_data();
+        $nome = isset($input['nome']) ? trim($input['nome']) : '';
+        $cores = load_cores();
+        $novas = array();
+        foreach ($cores as $c) {
+            if (isset($c['nome']) && $c['nome'] === $nome) continue;
+            $novas[] = $c;
+        }
+        save_cores($novas);
+        respond(array('ok' => true));
     }
 
     if ($acao === 'remover_instancia') {

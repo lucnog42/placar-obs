@@ -1,14 +1,14 @@
-// js/controle/navegacao.js — shell do wizard (10 telas, stepper, drawer, modais, resumo)
+// js/controle/navegacao.js — shell do wizard (10 telas, drawer, modais, resumo, cores)
 var Controle = window.Controle || {};
 
 Controle.TELAS = [
   { n: 1, titulo: 'Instâncias' },
   { n: 2, titulo: 'Equipes' },
   { n: 3, titulo: 'Competição' },
-  { n: 4, titulo: 'Patrocinadores' },
-  { n: 5, titulo: 'Tabela' },
-  { n: 6, titulo: 'Cenas' },
-  { n: 7, titulo: 'Tema' },
+  { n: 4, titulo: 'Tabela' },
+  { n: 5, titulo: 'Cenas' },
+  { n: 6, titulo: 'Tema' },
+  { n: 7, titulo: 'Patrocinadores' },
   { n: 8, titulo: 'Repertório' },
   { n: 9, titulo: 'Resumo & Salvar' },
   { n: 10, titulo: 'Operar ao vivo' }
@@ -16,20 +16,6 @@ Controle.TELAS = [
 Controle.NUM_TELAS = Controle.TELAS.length;
 Controle.telaAtual = 1;
 Controle._instanciaNome = null;
-
-/* ---------- stepper ---------- */
-Controle.renderStepper = function () {
-  var el = document.getElementById('stepper');
-  if (!el) return;
-  var h = '';
-  for (var i = 0; i < Controle.TELAS.length; i++) {
-    var cls = 'step';
-    if (i + 1 === Controle.telaAtual) cls += ' ativo';
-    else if (i + 1 < Controle.telaAtual) cls += ' feito';
-    h += '<span class="' + cls + '" onclick="Controle.irPara(' + (i + 1) + ')" title="' + (i + 1) + ' · ' + Controle.TELAS[i].titulo + '">' + (i + 1) + '</span>';
-  }
-  el.innerHTML = h;
-};
 
 /* ---------- navegação ---------- */
 Controle.mostrarTela = function (n) {
@@ -44,14 +30,25 @@ Controle.mostrarTela = function (n) {
   if (btnAvancar) btnAvancar.textContent = (n >= Controle.NUM_TELAS) ? '✓ Ao vivo' : 'Avançar →';
   var lbl = document.getElementById('stepperLabel');
   if (lbl) lbl.textContent = 'Etapa ' + n + ' de ' + Controle.NUM_TELAS;
-  Controle.renderStepper();
+  var items = document.querySelectorAll('.drawer-item');
+  for (var j = 0; j < items.length; j++) items[j].classList.remove('ativo');
+  if (items[n - 1]) items[n - 1].classList.add('ativo');
   Controle.fecharMenu();
   if (n === 9) Controle.gerarResumo();
   window.scrollTo(0, 0);
 };
 
 Controle.irPara = function (n) { Controle.mostrarTela(n); };
-Controle.avancar = function () { if (Controle.telaAtual < Controle.NUM_TELAS) Controle.mostrarTela(Controle.telaAtual + 1); };
+Controle.avancar = function () {
+  if (Controle.telaAtual === 1) {
+    var id = (typeof INSTANCIA !== 'undefined') ? INSTANCIA : '';
+    if (!id) {
+      Controle.status('erro', '⚠ Selecione (ou crie) uma instância para continuar.');
+      return;
+    }
+  }
+  if (Controle.telaAtual < Controle.NUM_TELAS) Controle.mostrarTela(Controle.telaAtual + 1);
+};
 Controle.voltar = function () { if (Controle.telaAtual > 1) Controle.mostrarTela(Controle.telaAtual - 1); };
 
 /* ---------- drawer ---------- */
@@ -75,6 +72,21 @@ Controle.notifRapida = function (tipo) {
   Controle.enviarNotificacao(true);
 };
 
+/* ---------- siglas (Tela 10) ---------- */
+Controle.definirSiglas = function () {
+  var d = {};
+  var sa = document.getElementById('siglaA'), sb = document.getElementById('siglaB');
+  if (sa && sa.value) d.siglaA = sa.value;
+  if (sb && sb.value) d.siglaB = sb.value;
+  if (Object.keys(d).length) { Controle._presetAtual = null; Controle.setEstado(d); }
+};
+
+/* ---------- popup de categorias do overlay (Tela 10) ---------- */
+Controle.toggleOverlayPop = function () {
+  var el = document.getElementById('overlayPop');
+  if (el) el.classList.toggle('aberto');
+};
+
 /* ---------- instância ativa (topbar + drawer) ---------- */
 Controle.atualizarInstanciaAtiva = function () {
   var id = (typeof INSTANCIA !== 'undefined') ? INSTANCIA : '';
@@ -96,6 +108,60 @@ Controle._resolverInstanciaNome = function () {
       }
       Controle.atualizarInstanciaAtiva();
     }).catch(function () {});
+};
+
+/* ---------- biblioteca de cores ---------- */
+Controle.listarCores = function () {
+  fetch(API + API_AND + 'acao=listar_cores')
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      var el = document.getElementById('listaCores');
+      if (!el) return;
+      var lista = (d && d.cores) || [];
+      if (!lista.length) { el.innerHTML = '<span style="color:#888;font-size:11px">Nenhuma cor salva. Adicione a primeira.</span>'; return; }
+      var h = '';
+      for (var i = 0; i < lista.length; i++) {
+        var c = lista[i];
+        var hex = c.hex || '#888';
+        var nome = c.nome || hex;
+        h += '<div class="cor-item">';
+        h += '<span class="swatch" style="background:' + hex + '"></span>';
+        h += '<span class="cor-nome">' + nome + '</span>';
+        h += '<button class="A" onclick="Controle.aplicarCor(\'timeA\',\'' + hex + '\')">Casa</button>';
+        h += '<button class="B" onclick="Controle.aplicarCor(\'timeB\',\'' + hex + '\')">Visit.</button>';
+        h += '<button class="btn-remover" onclick="Controle.removerCor(\'' + String(nome).replace(/'/g, "\\'") + '\')">✕</button>';
+        h += '</div>';
+      }
+      el.innerHTML = h;
+    }).catch(function () {});
+};
+Controle.adicionarCor = function () {
+  var inp = document.createElement('input');
+  inp.type = 'color';
+  inp.onchange = function () {
+    var hex = inp.value;
+    var nome = prompt('Nome da cor (ex.: Vermelho Time A):', hex);
+    if (!nome) { inp.remove(); return; }
+    fetch(API + API_AND + 'acao=salvar_cor', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nome: nome, hex: hex })
+    })
+    .then(function (r) { return r.json(); })
+    .then(function () { inp.remove(); Controle.listarCores(); })
+    .catch(function () { inp.remove(); });
+    inp.remove();
+  };
+  document.body.appendChild(inp);
+  inp.click();
+};
+Controle.aplicarCor = function (time, hex) { var d = {}; d[time + 'Cor'] = hex; Controle.setEstado(d); };
+Controle.removerCor = function (nome) {
+  fetch(API + API_AND + 'acao=remover_cor', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nome: nome })
+  })
+  .then(function (r) { return r.json(); })
+  .then(function () { Controle.listarCores(); });
 };
 
 /* ---------- resumo (Tela 9) ---------- */
@@ -127,7 +193,6 @@ Controle.gerarResumo = function () {
 };
 
 /* ---------- init ---------- */
-Controle.renderStepper();
 Controle.mostrarTela(1);
 Controle.atualizarInstanciaAtiva();
 setTimeout(function () { Controle._resolverInstanciaNome(); }, 700);

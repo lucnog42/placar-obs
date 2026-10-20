@@ -1,5 +1,24 @@
 # Histórico
 
+## 2026-10-20 (ajustes de layout do Controle — desktop)
+
+- **CSS desktop corrigido**: removido o `body{display:grid}` legado (do
+  `css/controle.css` ≥1100px) e o `button{height:24px}` global que quebrava
+  botões grandes (ligar overlay, notificação rápida); agora `button{height:auto}`.
+- **Stepper numérico removido**: só o texto "Etapa X de 10" (sem os círculos 1–10).
+- **Tela 1** agora exige seleção de instância (gate no Avançar) e mostra os
+  **presets** da instância ativa (aplicar/remover) — botão "▶ Usar" por instância.
+- **Equipes**: cores em fileira própria + **biblioteca de cores salvas**
+  (adicionar/aplicar Casa/Visitante/remover) — novo backend `salvar_cor`/
+  `listar_cores`/`remover_cor` (`cores.json`); siglas movidas para a Tela 10.
+- **Removido** o formulário redundante "Cabeçalho do overlay" e a opção
+  "Animação da notificação".
+- **Reordenação**: Patrocinadores virou Tela 7 (Tabela→4, Cenas→5, Tema→6).
+- **Tema unificado** (overlay + placar) numa tela só.
+- **Tela 10**: botão de ligar overlay corrigido; pop-up de **categorias do
+  overlay** (linha do tempo / cena fixa / reiniciar sequência); notificação
+  rápida e pênaltis em fileira própria.
+
 ## 2026-10-20 (Fase E — diagramação do Controle em wizard)
 
 - **Controle.html reestruturado em um wizard de 10 telas** (uma por vez), com
