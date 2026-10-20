@@ -132,7 +132,6 @@ h2.titulo{text-align:left}
 <div id="previewWrapper">
   <div id="previewBar">
     <span>👁 Preview do Placar</span>
-    <span id="previewZoomBox">🔍 <input type="range" id="previewZoom" min="35" max="100" step="1" value="100" oninput="Controle.zoomPreview(this.value)" onchange="Controle.salvarZoomPreview()"> <span id="previewZoomVal">100%</span></span>
     <button onclick="Controle.togglePreview()">Esconder</button>
   </div>
   <div id="previewContainer">
@@ -182,10 +181,12 @@ h2.titulo{text-align:left}
   <h2 class="titulo">👥 Equipes</h2>
   <div class="grid-inner">
     <section class="full">
-      <p>Times</p>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+      <p>Times <span class="hint">nome + sigla</span></p>
+      <div style="display:grid;grid-template-columns:2fr 1fr 2fr 1fr;gap:6px">
         <div><label style="font-size:10px;color:#aaa">Nome (Casa)</label><input id="timeA" placeholder="Time A" style="width:100%;box-sizing:border-box"></div>
+        <div><label style="font-size:10px;color:#aaa">Sigla (Casa)</label><input id="siglaA" placeholder="Sigla A" maxlength="6" style="width:100%;box-sizing:border-box"></div>
         <div><label style="font-size:10px;color:#aaa">Nome (Visitante)</label><input id="timeB" placeholder="Time B" style="width:100%;box-sizing:border-box"></div>
+        <div><label style="font-size:10px;color:#aaa">Sigla (Visit.)</label><input id="siglaB" placeholder="Sigla B" maxlength="6" style="width:100%;box-sizing:border-box"></div>
       </div>
       <button onclick="Controle.definirTimes()" style="margin-top:8px">Definir Times</button>
     </section>
@@ -253,8 +254,10 @@ h2.titulo{text-align:left}
         <img id="logoTorneioPreview" src="" style="width:60px;height:60px;object-fit:contain;border-radius:8px;background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.1);display:none" onerror="this.style.display='none'">
         <select id="logoTorneio" onchange="Controle.selecionarLogoTorneio()" style="flex:1;font-size:11px"><option value="">Nenhum</option></select>
         <button onclick="Controle.uploadLogo()" style="font-size:10px;padding:2px 6px;background:#2196F3;color:#fff">📤 Subir logo</button>
-        <button onclick="Controle.recarregarLogos()" style="font-size:10px;padding:2px 6px">🔄</button>
+        <button onclick="Controle.listarLogos()" style="font-size:10px;padding:2px 6px">🔄</button>
       </div>
+      <p style="margin-top:8px;font-size:10px;color:#aaa">📚 Biblioteca de Logos</p>
+      <div id="listaLogos"><span style="color:#888;font-size:11px">Carregando...</span></div>
     </section>
   </div>
 </section>
@@ -287,6 +290,7 @@ h2.titulo{text-align:left}
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
         <label style="font-size:11px;color:#ddd">📄 Importar CSV da classificação:</label>
         <input type="file" id="tabelaCsvFile" accept=".csv,text/csv" onchange="Controle.importarClassificacao(this)" style="font-size:11px">
+        <button onclick="Controle.baixarModeloCsv()" style="font-size:10px;padding:3px 8px" title="Baixa um CSV de exemplo com o cabeçalho">📄 Modelo CSV</button>
         <button onclick="Controle.sincronizarEscudos()" style="font-size:10px;padding:3px 8px" title="Confere a biblioteca escudos/ e baixa só o que falta">📥 Sincronizar escudos</button>
         <button onclick="Controle.conferirEscudos()" style="font-size:10px;padding:3px 8px" title="Diz quais times estão sem escudo na biblioteca, sem baixar nada">🔍 Conferir biblioteca</button>
         <span class="hint">importa os times e leva todos os escudos do CSV para a biblioteca (escudos/), baixando só os que ainda não estão lá</span>
@@ -317,24 +321,6 @@ h2.titulo{text-align:left}
         <span class="hint">marque, mude a duração (s) e ordene com ↑↓</span>
       </div>
     </section>
-    <section>
-      <p>Modo de exibição</p>
-      <div class="modo-row">
-        <label class="toggle-sw" title="Ligado = cena fixa · Desligado = linha do tempo">
-          <input type="checkbox" id="tabelaFixa" onchange="Controle.alternarModoTabela(this.checked)"><span class="slider"></span>
-        </label>
-        <span class="modo-lbl auto" id="tabelaModoLabel">Linha do tempo</span>
-        <button class="btn-play" id="btnTabelaPlay" onclick="Controle.tocarSequencia()" title="Recomeça a sequência agora">▶ Tocar</button>
-      </div>
-      <select id="tabelaModo" class="escondido">
-        <option value="auto">Linha do tempo (sequência)</option>
-        <option value="fixa">Cena fixa</option>
-      </select>
-      <div id="blocoCenaFixa" class="escondido">
-        <p>Cena fixa <span class="hint">(ao ligar o modo fixo ele já vem com a cena que estava no ar)</span></p>
-        <select id="tabelaCena" onchange="Controle.definirCenaTabela(this.value)"></select>
-      </div>
-    </section>
   </div>
 </section>
 
@@ -354,7 +340,6 @@ h2.titulo{text-align:left}
           <button class="tema-btn" data-tema="laliga" onclick="Controle.definirTema('laliga')">🏆 La Liga</button>
           <button class="tema-btn" data-tema="colorido" onclick="Controle.definirTema('colorido')">🎨 Colorido</button>
           <button class="tema-btn" data-tema="simples" onclick="Controle.definirTema('simples')">⬛ Simples</button>
-          <button id="toggleNomesBtn" onclick="Controle.alternarNomes()">📝 Expandir Nomes</button>
         </div>
       </div>
     </section>
@@ -480,32 +465,43 @@ h2.titulo{text-align:left}
   <h2 class="titulo">🎯 Operar ao vivo</h2>
   <div class="grid-inner">
     <section class="full">
-      <p>Overlay <span class="hint">ligar/desligar + categorias</span></p>
+      <p>Overlay <span class="hint">ligar/desligar + configuração</span></p>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <button id="btnTabela" class="btn-tabela" onclick="Controle.alternarTabela()" style="width:auto;min-width:170px">▶ Ligar overlay</button>
         <span class="badge" id="tabelaBadge">fora do ar</span>
-        <button onclick="Controle.toggleOverlayPop()" style="background:#2a3a55">🎛 Categorias</button>
+        <button id="toggleNomesBtn" onclick="Controle.alternarNomes()" style="background:#2a3a55">📝 Nomes</button>
+        <button onclick="Controle.toggleOverlayPop()" style="background:#2a3a55">⚙️ Configuração</button>
       </div>
       <div class="overlay-pop" id="overlayPop">
-        <div class="overlay-cat" onclick="Controle.definirModoTabela('auto')"><span>📊 Tabela — linha do tempo</span><span style="color:#8ad9a0;font-size:10px">sequência</span></div>
-        <div class="overlay-cat" onclick="Controle.definirModoTabela('fixa')"><span>🎯 Cena fixa</span><span style="color:#93a4c0;font-size:10px">entra na cena do ar</span></div>
-        <div class="overlay-cat" onclick="Controle.tocarSequencia()"><span>▶ Iniciar / reiniciar sequência</span></div>
-        <div class="overlay-cat" onclick="Controle.irPara(5)"><span>🎬 Ajustar cenas…</span><span style="color:#93a4c0;font-size:10px">tela Cenas</span></div>
+        <p style="font-size:11px;color:#93a4c0;margin:0 0 6px">Modo de exibição</p>
+        <div class="modo-row">
+          <label class="toggle-sw" title="Ligado = cena fixa · Desligado = linha do tempo">
+            <input type="checkbox" id="tabelaFixa" onchange="Controle.alternarModoTabela(this.checked)"><span class="slider"></span>
+          </label>
+          <span class="modo-lbl auto" id="tabelaModoLabel">Linha do tempo</span>
+          <button class="btn-play" id="btnTabelaPlay" onclick="Controle.tocarSequencia()" title="Recomeça a sequência agora">▶ Tocar</button>
+        </div>
+        <select id="tabelaModo" class="escondido">
+          <option value="auto">Linha do tempo (sequência)</option>
+          <option value="fixa">Cena fixa</option>
+        </select>
+        <div id="blocoCenaFixa" class="escondido">
+          <p style="font-size:11px;color:#93a4c0;margin:6px 0 3px">Cena fixa <span class="hint">(entra na cena que estava no ar)</span></p>
+          <select id="tabelaCena" onchange="Controle.definirCenaTabela(this.value)" style="width:100%"></select>
+        </div>
+        <div class="overlay-cat" onclick="Controle.irPara(5)" style="margin-top:8px"><span>🎬 Ajustar cenas…</span><span style="color:#93a4c0;font-size:10px">tela Cenas</span></div>
       </div>
     </section>
     <section class="full">
-      <p>Siglas <span class="hint">exibidas no placar</span></p>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-        <div><label style="font-size:10px;color:#aaa">Sigla (Casa)</label><input id="siglaA" placeholder="Sigla A" maxlength="6" onchange="Controle.definirSiglas()" style="width:100%;box-sizing:border-box"></div>
-        <div><label style="font-size:10px;color:#aaa">Sigla (Visitante)</label><input id="siglaB" placeholder="Sigla B" maxlength="6" onchange="Controle.definirSiglas()" style="width:100%;box-sizing:border-box"></div>
-      </div>
-    </section>
-    <section class="full">
-      <p>⚡ Notificação rápida</p>
+      <p>⚡ Menu rápido</p>
       <div style="display:flex;gap:6px;flex-wrap:wrap">
-        <button onclick="Controle.notifRapida('gol')" style="background:#dc2626;color:#fff;font-size:13px;padding:10px 14px">⚽ GOL</button>
-        <button onclick="Controle.notifRapida('amarelo')" style="background:#facc15;color:#000;font-size:13px;padding:10px 14px">🟨 Amarelo</button>
-        <button onclick="Controle.notifRapida('vermelho')" style="background:#7f1d1d;color:#fff;font-size:13px;padding:10px 14px">🟥 Vermelho</button>
+        <button onclick="Controle.notifRapida('gol')" style="background:#dc2626;color:#fff;font-size:13px;padding:10px 14px">⚽ Gol</button>
+        <button onclick="Controle.notifRapida('amarelo')" style="background:#facc15;color:#000;font-size:13px;padding:10px 14px">🟨 Faltas</button>
+        <button onclick="Controle.notifRapida('vermelho')" style="background:#7f1d1d;color:#fff;font-size:13px;padding:10px 14px">🟥 Expulsão</button>
+        <button onclick="Controle.irPara(8)" style="background:#2a3a55;font-size:13px;padding:10px 14px">🖼 Mídias</button>
+        <button onclick="Controle.status('erro','⚠ Substituições: em breve')" style="background:#2a3a55;font-size:13px;padding:10px 14px">🔁 Substituições</button>
+        <button onclick="Controle.status('erro','⚠ Fila de reprodução: em breve')" style="background:#2a3a55;font-size:13px;padding:10px 14px">▶ Fila</button>
+        <button onclick="Controle.status('erro','⚠ Intervalos (abertura/intervalo/encerramento): em breve')" style="background:#2a3a55;font-size:13px;padding:10px 14px">⏸ Intervalos</button>
       </div>
     </section>
     <section>
@@ -735,30 +731,9 @@ Controle.togglePreview = function() {
     document.getElementById('previewFrame').src = '';
   } else {
     btn.textContent = 'Esconder';
-    document.getElementById('previewFrame').src = 'Placar.html';
-    setTimeout(function(){ if (Controle.restaurarZoomPreview) Controle.restaurarZoomPreview(); Controle.resizePreview(); }, 300);
+    document.getElementById('previewFrame').src = Controle.placarUrl();
+    setTimeout(function(){ Controle.resizePreview(); }, 300);
   }
-};
-
-Controle.zoomPreview = function(v) {
-  Controle._zoom = Math.min(1, Math.max(0.35, (parseInt(v, 10) || 100) / 100));
-  var el = document.getElementById('previewZoomVal');
-  if (el) el.textContent = Math.round(Controle._zoom * 100) + '%';
-  Controle.resizePreview();
-};
-Controle.salvarZoomPreview = function() {
-  Controle.setEstado({ previewZoom: String(Math.round((Controle._zoom || 1) * 100)) });
-};
-Controle.restaurarZoomPreview = function() {
-  if (Controle._zoomRestaurado) return;
-  var v = parseInt((Controle.estado || {}).previewZoom, 10);
-  if (isNaN(v) || v < 35 || v > 100) return;
-  Controle._zoomRestaurado = true;
-  Controle._zoom = v / 100;
-  var sl = document.getElementById('previewZoom'), tx = document.getElementById('previewZoomVal');
-  if (sl && 'value' in sl) sl.value = String(v);
-  if (tx) tx.textContent = v + '%';
-  Controle.resizePreview();
 };
 
 Controle.resizePreview = function() {
@@ -1023,6 +998,8 @@ Controle.uploadSponsor = function(n) {
 
 <script>
 Controle.init();
+Controle.placarUrl = function(){ return 'Placar.html' + ((typeof INSTANCIA !== 'undefined' && INSTANCIA) ? ('?i=' + encodeURIComponent(INSTANCIA)) : ''); };
+var _pf = document.getElementById('previewFrame'); if (_pf) _pf.src = Controle.placarUrl();
 setTimeout(function(){ Controle.listarInstancias(); }, 600);
 setTimeout(function(){ Controle.resizePreview(); }, 500);
 setTimeout(function(){ Controle.listarPresets(); }, 800);
@@ -1030,6 +1007,7 @@ setTimeout(function(){ Controle.listarEscudos(); }, 800);
 setTimeout(function(){ Controle.listarCores(); }, 800);
 setTimeout(function(){ Controle.atualizarNomePreset(); }, 900);
 setTimeout(function(){ Controle.recarregarLogos(); }, 1000);
+setTimeout(function(){ Controle.listarLogos(); }, 1000);
 
 /* Monkey-patch setEstado AFTER init (garantido que existe) */
 var _origSetEstado = Controle.setEstado;

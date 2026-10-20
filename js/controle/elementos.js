@@ -3,7 +3,9 @@ var Controle=window.Controle||{};
 
 Controle.definirTimes=function(){
     var d={};var ta=document.getElementById('timeA'),tb=document.getElementById('timeB');
+    var sa=document.getElementById('siglaA'),sb=document.getElementById('siglaB');
     if(ta&&ta.value)d.timeA=ta.value;if(tb&&tb.value)d.timeB=tb.value;
+    if(sa&&sa.value)d.siglaA=sa.value;if(sb&&sb.value)d.siglaB=sb.value;
     if(Object.keys(d).length){Controle._presetAtual=null;Controle.setEstado(d);Controle.atualizarNomePreset();}
 };
 

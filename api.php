@@ -1144,6 +1144,17 @@ if ($method === 'POST') {
         respond(array('ok' => true, 'arquivo' => $arquivo));
     }
 
+    if ($acao === 'remover_logo') {
+        $input = get_post_data();
+        $nome = isset($input['nome']) ? trim($input['nome']) : '';
+        if ($nome === '' || strpos($nome, '/') !== false || strpos($nome, '\\') !== false || $nome === '.' || $nome === '..') {
+            respond_error('Nome invalido.');
+        }
+        $path = BASE_DIR . '/torneios/' . $nome;
+        if (file_exists($path)) { @unlink($path); }
+        respond(array('ok' => true));
+    }
+
     if ($acao === 'importar_escudos') {
         $input = get_post_data();
         $itens = isset($input['itens']) ? $input['itens'] : array();

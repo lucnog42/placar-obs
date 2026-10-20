@@ -72,19 +72,67 @@ Controle.notifRapida = function (tipo) {
   Controle.enviarNotificacao(true);
 };
 
-/* ---------- siglas (Tela 10) ---------- */
-Controle.definirSiglas = function () {
-  var d = {};
-  var sa = document.getElementById('siglaA'), sb = document.getElementById('siglaB');
-  if (sa && sa.value) d.siglaA = sa.value;
-  if (sb && sb.value) d.siglaB = sb.value;
-  if (Object.keys(d).length) { Controle._presetAtual = null; Controle.setEstado(d); }
-};
-
 /* ---------- popup de categorias do overlay (Tela 10) ---------- */
 Controle.toggleOverlayPop = function () {
   var el = document.getElementById('overlayPop');
   if (el) el.classList.toggle('aberto');
+};
+
+/* ---------- biblioteca de logos (torneios) ---------- */
+Controle.listarLogos = function () {
+  fetch(API + API_AND + 'acao=listar_logos')
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      var el = document.getElementById('listaLogos');
+      if (!el) return;
+      var lista = (d && d.logos) || [];
+      if (!lista.length) { el.innerHTML = '<span style="color:#888;font-size:11px">Nenhum logo salvo. Suba o primeiro acima.</span>'; return; }
+      var ts = Date.now();
+      var h = '';
+      for (var i = 0; i < lista.length; i++) {
+        var nome = lista[i];
+        var url = 'torneios/' + nome + '?v=' + ts;
+        h += '<div class="escudo-item">';
+        h += '<img src="' + url + '" onerror="this.style.opacity=0.2" alt="">';
+        h += '<span class="escudo-nome">' + nome + '</span>';
+        h += '<button style="background:#2196F3;color:#fff" onclick="Controle.usarLogo(\'' + nome + '\')">Usar</button>';
+        h += '<button class="btn-remover" onclick="Controle.removerLogo(\'' + String(nome).replace(/'/g, "\\'") + '\')">✕</button>';
+        h += '</div>';
+      }
+      el.innerHTML = h;
+    }).catch(function () {});
+};
+Controle.usarLogo = function (nome) {
+  var sel = document.getElementById('logoTorneio');
+  if (sel) {
+    var tem = false;
+    for (var i = 0; i < sel.options.length; i++) if (sel.options[i].value === nome) tem = true;
+    if (!tem) { var o = document.createElement('option'); o.value = nome; o.textContent = nome; sel.appendChild(o); }
+    sel.value = nome;
+  }
+  Controle.selecionarLogoTorneio();
+};
+Controle.removerLogo = function (nome) {
+  fetch(API + API_AND + 'acao=remover_logo', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nome: nome })
+  })
+  .then(function (r) { return r.json(); })
+  .then(function () { Controle.listarLogos(); if (Controle.recarregarLogos) Controle.recarregarLogos(); });
+};
+
+/* ---------- modelo CSV (download) ---------- */
+Controle.baixarModeloCsv = function () {
+  var header = 'Pos;Equip;Punts;J;G;E;P;GF;GC;DG;Ultims;Sancio;PosSite;Escut';
+  var exemplo = '1;EXEMPLO FC;0;0;0;0;0;0;0;0;0;E;0;1;';
+  var csv = '\ufeff' + header + '\n' + exemplo + '\n';
+  var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'modelo_classificacao.csv';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 300);
 };
 
 /* ---------- instância ativa (topbar + drawer) ---------- */

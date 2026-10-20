@@ -1,5 +1,21 @@
 # Histórico
 
+## 2026-10-20 (refinos do Controle — preview, logos, CSV, Tela 10)
+
+- Removido o slider de zoom do preview; preview agora carrega `Placar.html?i=<id>`
+  (bug do placar errado por instância corrigido).
+- **Biblioteca de logos de torneio** (igual escudos/cores): `listar_logos` +
+  `remover_logo` (novo endpoint) + UI "Usar / ✕".
+- **Botão "📄 Modelo CSV"** baixa um CSV de exemplo com o cabeçalho
+  `Pos;Equip;Punts;J;G;E;P;GF;GC;DG;Ultims;Sancio;PosSite;Escut`.
+- **Siglas voltaram pra junto do nome** (Tela 2); botão de alternar
+  abreviação/completo (`toggleNomesBtn`) movido pra Tela 10.
+- Removido o **toggle de modo de exibição** da tela Cenas; o modo (linha do
+  tempo/cena fixa) agora vive no pop-up "⚙️ Configuração" da Tela 10.
+- Tela 10: botão "Categorias" → "⚙️ Configuração"; **menu rápido** com Gol,
+  Faltas, Expulsão, Mídias + (em breve) Substituições, Fila de reprodução,
+  Intervalos (abertura/intervalo/encerramento automáticos).
+
 ## 2026-10-20 (ajustes de layout do Controle — desktop)
 
 - **CSS desktop corrigido**: removido o `body{display:grid}` legado (do
