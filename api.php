@@ -29,11 +29,12 @@ define('MIDIAS_DIR', BASE_DIR . '/midias');
 define('PERFIS_DIR', BASE_DIR . '/perfis');
 define('CORES_FILE', BASE_DIR . '/cores.json');
 define('GRUPOS_FILE', BASE_DIR . '/grupos.json');
+define('CSVS_DIR', BASE_DIR . '/csvs');
 define('LOCK_FILE', BASE_DIR . '/estado.lock');
 define('ESTADO_BAK', BASE_DIR . '/estado.json.bak');
 
 function ensure_dirs() {
-    $dirs = array(PRESETS_DIR, ESCUDOS_DIR, MIDIAS_DIR, PERFIS_DIR);
+    $dirs = array(PRESETS_DIR, ESCUDOS_DIR, MIDIAS_DIR, PERFIS_DIR, CSVS_DIR);
     foreach ($dirs as $d) {
         if (!is_dir($d)) {
             mkdir($d, 0755, true);
@@ -525,6 +526,55 @@ if ($method === 'GET') {
 
     if ($acao === 'listar_escudos') {
         respond(array('escudos' => list_escudo_files()));
+    }
+
+    if ($acao === 'listar_csvs') {
+        $files = array();
+        if (is_dir(CSVS_DIR)) {
+            $dh = opendir(CSVS_DIR);
+            if ($dh) {
+                while (($f = readdir($dh)) !== false) {
+                    if ($f === '.' || $f === '..') continue;
+                    if (strtolower(pathinfo($f, PATHINFO_EXTENSION)) !== 'csv') continue;
+                    $files[] = pathinfo($f, PATHINFO_FILENAME);
+                }
+                closedir($dh);
+            }
+        }
+        sort($files);
+        respond(array('csvs' => $files));
+    }
+
+    if ($acao === 'salvar_csv') {
+        $input = get_post_data();
+        $nome = isset($input['nome']) ? trim($input['nome']) : '';
+        $conteudo = isset($input['conteudo']) ? $input['conteudo'] : '';
+        if ($nome === '') { respond_error('Parametro "nome" obrigatorio.'); }
+        $base = preg_replace('/[^A-Za-z0-9_\- ]/', '_', $nome);
+        if ($base === '' || $base === '.' || $base === '..') { $base = 'csv_' . time(); }
+        if (!is_dir(CSVS_DIR)) { mkdir(CSVS_DIR, 0755, true); }
+        if (@file_put_contents(CSVS_DIR . '/' . $base . '.csv', $conteudo, LOCK_EX) === false) {
+            respond_error('Nao conseguiu gravar o CSV.');
+        }
+        respond(array('ok' => true, 'arquivo' => $base . '.csv'));
+    }
+
+    if ($acao === 'carregar_csv') {
+        $input = get_post_data();
+        $nome = isset($input['nome']) ? trim($input['nome']) : '';
+        $base = preg_replace('/[^A-Za-z0-9_\- ]/', '_', $nome);
+        $path = CSVS_DIR . '/' . $base . '.csv';
+        if (!is_file($path)) { respond_error('CSV nao encontrado.'); }
+        respond(array('ok' => true, 'conteudo' => file_get_contents($path)));
+    }
+
+    if ($acao === 'remover_csv') {
+        $input = get_post_data();
+        $nome = isset($input['nome']) ? trim($input['nome']) : '';
+        $base = preg_replace('/[^A-Za-z0-9_\- ]/', '_', $nome);
+        $path = CSVS_DIR . '/' . $base . '.csv';
+        if (is_file($path)) { @unlink($path); }
+        respond(array('ok' => true));
     }
 
     if ($acao === 'listar_instancias') {

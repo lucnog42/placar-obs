@@ -236,6 +236,7 @@ Controle.aplicarEstadoTabela = function () {
     if (sig !== Controle._timesSig) { Controle._timesSig = sig; Controle.renderSelectTimes(); }
     Controle.atualizarResumoTabela();
     Controle.renderCenas();
+    if (Controle.renderTimesCrest) Controle.renderTimesCrest();
 };
 
 /* o que o overlay esta puxando da aba Times & Competicao */
@@ -337,6 +338,7 @@ Controle.importarClassificacao = function (input) {
     r.onload = function () {
         try {
             var res = Controle.parseClassificacao(String(r.result));
+            Controle._ultimoCsv = { texto: String(r.result), tipo: 'tabela' };
             Controle.setEstado({ tabelaTimes: JSON.stringify(res.times) });
             Controle.renderSelectTimes();
             Controle.status('ok', '✅ Classificação: ' + res.times.length + ' times');
@@ -534,6 +536,7 @@ Controle.importarEscalacoes = function (input) {
             var map = Controle.parseEscalacoes(String(r.result));
             var n = Object.keys(map).length;
             if (!n) throw new Error('nenhum time reconhecido no CSV');
+            Controle._ultimoCsv = { texto: String(r.result), tipo: 'jogadores' };
             Controle.setEstado({ tabelaEscalacoes: JSON.stringify(map) });
             Controle.status('ok', '✅ Escalações: ' + n + ' times');
         } catch (err) {
@@ -545,6 +548,126 @@ Controle.importarEscalacoes = function (input) {
 };
 
 Controle.limparEscalacoes = function () { Controle.setEstado({ tabelaEscalacoes: '{}' }); };
+
+/* ---------- biblioteca de CSVs (tabela + jogadores) ---------- */
+Controle.listarCsvs = function () {
+  fetch(API + API_AND + 'acao=listar_csvs')
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      var el = document.getElementById('listaCsvs');
+      if (!el) return;
+      var lista = (d && d.csvs) || [];
+      if (!lista.length) { el.innerHTML = '<span style="color:#888;font-size:11px">Nenhum CSV salvo. Importe um e salve na biblioteca.</span>'; return; }
+      var h = '';
+      for (var i = 0; i < lista.length; i++) {
+        var n = lista[i];
+        var nm = String(n).replace(/'/g, "\\'");
+        h += '<div class="csv-item" data-item="' + n + '">';
+        h += '<span class="csv-nome">📄 ' + n + '</span>';
+        h += '<button onclick="Controle.carregarCsv(\'' + nm + '\',\'tabela\')" title="Aplicar como classificação">📥 Tabela</button>';
+        h += '<button onclick="Controle.carregarCsv(\'' + nm + '\',\'jogadores\')" title="Aplicar como escalações">📥 Jogadores</button>';
+        h += '<button class="btn-tag" onclick="Controle.agruparItem(\'csvs\',\'' + nm + '\')" title="Agrupar">🏷</button>';
+        h += '<button class="btn-remover" onclick="Controle.removerCsv(\'' + nm + '\')">✕</button>';
+        h += '</div>';
+      }
+      el.innerHTML = h;
+      if (Controle._aplicarFiltros) Controle._aplicarFiltros('csvs');
+    }).catch(function () {});
+};
+
+Controle.salvarCsvAtual = function () {
+  if (!Controle._ultimoCsv || !Controle._ultimoCsv.texto) {
+    alert('Importe um CSV antes de salvar na biblioteca.');
+    return;
+  }
+  var nome = prompt('Nome para este CSV na biblioteca:');
+  if (!nome || !nome.trim()) return;
+  fetch(API + API_AND + 'acao=salvar_csv', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nome: nome.trim(), conteudo: Controle._ultimoCsv.texto })
+  }).then(function (r) { return r.json(); })
+    .then(function (d) { if (d && d.erro) alert(d.erro); Controle.listarCsvs(); })
+    .catch(function () {});
+};
+
+Controle.carregarCsv = function (nome, tipo) {
+  fetch(API + API_AND + 'acao=carregar_csv', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nome: nome })
+  }).then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (!d || !d.conteudo) { alert(d && d.erro ? d.erro : 'CSV vazio.'); return; }
+      try {
+        if (tipo === 'jogadores') {
+          var map = Controle.parseEscalacoes(d.conteudo);
+          Controle.setEstado({ tabelaEscalacoes: JSON.stringify(map) });
+          Controle.status('ok', '✅ Escalações carregadas (' + Object.keys(map).length + ' times)');
+        } else {
+          var res = Controle.parseClassificacao(d.conteudo);
+          Controle.setEstado({ tabelaTimes: JSON.stringify(res.times) });
+          Controle.renderSelectTimes();
+          Controle.status('ok', '✅ Classificação carregada (' + res.times.length + ' times)');
+          if (res.urls.length) Controle.baixarEscudos(res.urls);
+        }
+      } catch (err) { Controle.status('erro', '❌ ' + err.message); }
+    }).catch(function () {});
+};
+
+Controle.removerCsv = function (nome) {
+  fetch(API + API_AND + 'acao=remover_csv', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nome: nome })
+  }).then(function (r) { return r.json(); })
+    .then(function () { Controle.listarCsvs(); })
+    .catch(function () {});
+};
+
+/* ---------- trocar escudo de um time da classificação (CSV) ---------- */
+Controle.renderTimesCrest = function () {
+  var el = document.getElementById('tabelaTimesCrest'); if (!el) return;
+  var times = Controle.timesTabela();
+  if (!times.length) { el.innerHTML = '<span class="hint">importe a classificação (CSV) para listar os times</span>'; return; }
+  var h = '';
+  times.forEach(function (t, i) {
+    var crest = (t.crest || '').split('?')[0];
+    var img = crest
+      ? '<img class="time-crest-img" src="' + crest + '" alt="" onerror="this.style.opacity=0.2">'
+      : '<span class="time-crest-vazio">sem</span>';
+    h += '<div class="time-crest-item">';
+    h += img;
+    h += '<span class="time-crest-nome">' + (t.pos || (i + 1)) + 'º ' + (t.name || 'Time ' + (i + 1)) + '</span>';
+    h += '<button onclick="Controle.trocarCrest(' + i + ')">🖼 Trocar</button>';
+    h += '</div>';
+  });
+  el.innerHTML = h;
+};
+
+Controle.trocarCrest = function (index) {
+  var times = Controle.timesTabela(); if (!times[index]) return;
+  var inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*,.png,.jpg,.jpeg,.webp,.svg,.gif'; inp.style.display = 'none';
+  inp.onchange = function (e) {
+    var f = e.target.files && e.target.files[0]; if (!f) return;
+    var r = new FileReader();
+    r.onload = function () {
+      Controle.status('sync', 'Enviando escudo...');
+      fetch(API + API_AND + 'acao=importar_escudos', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ itens: [{ nome: times[index].name, src: String(r.result) }] })
+      }).then(function (x) { return x.json(); }).then(function (j) {
+        var arq = (j.salvos && j.salvos[0] && j.salvos[0].arquivo) || '';
+        if (!arq) throw new Error('falha ao salvar imagem');
+        var ts = Controle.timesTabela();
+        ts[index].crest = arq + '?v=' + Date.now();
+        Controle.setEstado({ tabelaTimes: JSON.stringify(ts) });
+        Controle.renderTimesCrest();
+        Controle.status('ok', '✅ Escudo do time atualizado');
+      }).catch(function (err) { Controle.status('erro', '❌ ' + err.message); });
+      inp.remove();
+    };
+    r.readAsDataURL(f);
+  };
+  document.body.appendChild(inp); inp.click();
+};
 
 Controle.resumoEscalacoes = function (txt) {
     try {

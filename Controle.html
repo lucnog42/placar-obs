@@ -103,6 +103,14 @@ h2.titulo{text-align:left}
 .grupo-chip.on{background:#2196F3;color:#fff;border-color:#2196F3}
 .grupo-chip.grupo-add{background:#1d5c40;color:#fff;border-color:#1d5c40;font-weight:700}
 .btn-tag{background:#2a3a55;color:#e8eefc;border:1px solid #3a4d6e;padding:1px 5px;font-size:11px;cursor:pointer}
+/* times da classificação (trocar escudo) + biblioteca de CSVs */
+.times-crest-list{display:flex;flex-direction:column;gap:4px;max-height:340px;overflow-y:auto}
+.time-crest-item{display:flex;gap:8px;align-items:center;padding:4px 6px;border:1px solid #22304a;border-radius:8px;background:#0e1624}
+.time-crest-img,.time-crest-vazio{width:26px;height:26px;border-radius:6px;object-fit:contain;flex-shrink:0;background:rgba(255,255,255,.03)}
+.time-crest-vazio{display:inline-flex;align-items:center;justify-content:center;font-size:9px;color:#666}
+.time-crest-nome{flex:1;font-size:12px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.csv-item{display:flex;gap:6px;align-items:center;padding:5px 6px;border:1px solid #22304a;border-radius:8px;background:#0e1624;flex-wrap:wrap}
+.csv-nome{flex:1;font-size:12px;min-width:120px}
 </style>
 </head>
 <body>
@@ -322,6 +330,22 @@ h2.titulo{text-align:left}
         <button onclick="Controle.limparEscalacoes()" style="font-size:10px;padding:3px 7px">Limpar</button>
         <span id="tabelaEscInfo" style="font-size:10px;color:#8fb2c8">nenhuma escalação carregada</span>
       </div>
+    </section>
+    <section class="full">
+      <p>🎨 Escudos dos times <span class="hint">(trocar imagem)</span></p>
+      <div id="tabelaTimesCrest" class="times-crest-list"><span class="hint">importe a classificação para listar os times</span></div>
+    </section>
+    <section class="full">
+      <p>📚 Biblioteca de CSVs <span class="hint">(classificação e jogadores)</span></p>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:4px">
+        <button onclick="Controle.salvarCsvAtual()" style="background:#2196F3;color:#fff">💾 Salvar CSV atual</button>
+        <span class="hint">importe um CSV, clique em salvar e dê um nome</span>
+      </div>
+      <div class="biblioteca-toolbar">
+        <input id="buscaCsvs" placeholder="🔍 Buscar CSVs" oninput="Controle._aplicarFiltros('csvs')">
+        <div id="gruposBar-csvs" class="grupos-bar"></div>
+      </div>
+      <div id="listaCsvs"><span style="color:#888;font-size:11px">Carregando...</span></div>
     </section>
   </div>
 </section>
@@ -1186,13 +1210,14 @@ setTimeout(function(){ Controle.listarInstancias(); }, 600);
 setTimeout(function(){ Controle.resizePreview(); }, 500);
 setTimeout(function(){ Controle.listarPresets(); }, 800);
 setTimeout(function(){ Controle.listarEscudos(); }, 800);
+setTimeout(function(){ Controle.listarCsvs(); }, 800);
 setTimeout(function(){ Controle.listarCores(); }, 800);
 setTimeout(function(){ Controle.atualizarNomePreset(); }, 900);
 setTimeout(function(){ Controle.recarregarLogos(); }, 1000);
 setTimeout(function(){ Controle.listarLogos(); }, 1000);
 setTimeout(function(){ Controle.syncSponsors(); }, 1000);
 setTimeout(function(){ Controle.renderCustomizacoes(); Controle.renderMenuRapido(); }, 1000);
-setTimeout(function(){ Controle.carregarGrupos('escudos'); Controle.carregarGrupos('logos'); Controle.carregarGrupos('cores'); }, 1100);
+setTimeout(function(){ Controle.carregarGrupos('escudos'); Controle.carregarGrupos('logos'); Controle.carregarGrupos('cores'); Controle.carregarGrupos('csvs'); }, 1100);
 
 /* Monkey-patch setEstado AFTER init (garantido que existe) */
 var _origSetEstado = Controle.setEstado;
