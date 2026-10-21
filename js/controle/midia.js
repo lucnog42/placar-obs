@@ -160,20 +160,17 @@ Controle.editarMidia=async function(id){
     }catch(err){Controle.status('erro','Erro: '+err.message);}
 };
 
-Controle.renderMidias=function(){
-    var c=document.getElementById('listaMidias');
-    if(!c)return;
-    var midias=Controle.getMidiasCtrl();
-    var ativas=Controle.getAtivasCtrl();
-    if(!midias.length){c.innerHTML='<span style="color:#888;font-size:11px;">Nenhum item no repertório</span>';return;}
+Controle._renderItens=function(lista,ativas){
     var trs=['fade','slide-left','slide-right','zoom','none'];
     var html='';
-    for(var i=0;i<midias.length;i++){
-        var m=midias[i];var isAtiva=ativas.indexOf(m.id)>=0;
+    for(var i=0;i<lista.length;i++){
+        var m=lista[i];var isAtiva=ativas.indexOf(m.id)>=0;
         var texto=(m.tipo==='texto');
         var thumbH='';
         if(texto){
             thumbH='<span class="midia-tipo">💬</span>';
+        }else if(m.tipo==='cena'){
+            thumbH='<span class="midia-tipo">🎬</span>';
         }else if(Controle.thumbCache[m.id]){
             thumbH='<img src="'+Controle.thumbCache[m.id]+'">';
         }else if(m.ext){
@@ -192,7 +189,7 @@ Controle.renderMidias=function(){
             ? '<span class="midia-nome" title="'+m.nome+'">'+m.nome+'</span>'+
               '<input class="midia-texto" id="editTxt_'+m.id+'" value="'+String(m.texto||'').replace(/"/g,'&quot;')+'" onchange="Controle.editarMidia(\''+m.id+'\')">'
             : '<span class="midia-nome">'+m.nome+'</span>';
-        var botoes=texto
+        var botoes=(texto||m.tipo==='cena')
             ? '<button class="btn-enviar" onclick="Controle.dispararMidia(\''+m.id+'\')">▶ Enviar</button>'
             : '<button class="'+(isAtiva?'ativo':'')+'" onclick="Controle.toggleMidia(\''+m.id+'\')">'+(isAtiva?'Ativo':'Ativar')+'</button>';
         html+='<div class="midia-item'+(texto?' texto':'')+'">'+thumbH+nomeH+editH+
@@ -200,7 +197,18 @@ Controle.renderMidias=function(){
             botoes+
             '<button class="btn-remover" onclick="Controle.removerMidia(\''+m.id+'\')">X</button></div>';
     }
-    c.innerHTML=html;
+    return html;
+};
+
+Controle.renderMidias=function(){
+    var c=document.getElementById('listaMidias');
+    var n=document.getElementById('listaNotificacoes');
+    var midias=Controle.getMidiasCtrl();
+    var ativas=Controle.getAtivasCtrl();
+    var arquivos=[],textos=[];
+    for(var i=0;i<midias.length;i++){ (midias[i].tipo==='texto'?textos:arquivos).push(midias[i]); }
+    if(c) c.innerHTML = arquivos.length ? Controle._renderItens(arquivos,ativas) : '<span style="color:#888;font-size:11px;">Nenhuma mídia adicionada</span>';
+    if(n) n.innerHTML = textos.length ? Controle._renderItens(textos,ativas) : '<span style="color:#888;font-size:11px;">Nenhuma notificação no histórico</span>';
 };
 
 /* dispara um item do repertorio uma unica vez (notificacoes) */

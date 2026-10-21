@@ -92,6 +92,7 @@ Placar._desligar=function(id,cb){
 Placar._ativar=function(id){
     var midias=Placar.getMidias();var m=midias.find(function(x){return x.id===id;});
     if(!m)return;
+    if(m.tipo==='cena'){ if(Placar.Tabela && Placar.Tabela.mostrarCena) Placar.Tabela.mostrarCena(m.cena, m.duracao); return; }
     var dur=parseInt(m.duracao)||0;
     if(m.tipo==='texto'){
         Placar._mostrarTexto(m);

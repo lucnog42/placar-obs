@@ -408,7 +408,7 @@ h2.titulo{text-align:left}
   <div class="grid-inner">
     <section class="full">
       <p>Notificações</p>
-      <span class="hint">viram itens do repertório abaixo, com duração, transição e repetição próprias</span>
+      <span class="hint">viram itens do histórico de notificações abaixo, com duração e transição próprias</span>
       <div class="toggle-notificacao">
         <label><input type="radio" name="tipoNotif" value="gol" checked> ⚽ Gol <input type="text" id="textoGol" placeholder="GOOOLLL!!!"></label>
         <label><input type="radio" name="tipoNotif" value="amarelo"> 🟨 Amarelo <input type="text" id="textoAmarelo" placeholder="CARTÃO AMARELO"></label>
@@ -428,7 +428,7 @@ h2.titulo{text-align:left}
       </div>
     </section>
     <section class="full">
-      <p>🖼 Repertório de Mídias <span class="hint">imagem · GIF animado · vídeo · notificações de texto</span></p>
+      <p>🖼 Repertório de Mídias <span class="hint">imagem · GIF animado · vídeo</span></p>
       <div style="display:flex;gap:4px;margin-bottom:6px;align-items:center;flex-wrap:wrap">
         <input type="text" id="midiaNome" placeholder="Nome da mídia" style="flex:1;min-width:100px;">
         <select id="midiaTransicaoSelect">
@@ -443,6 +443,10 @@ h2.titulo{text-align:left}
         <button onclick="Controle.adicionarMidia()" style="background:#4CAF50;color:#fff;">+ Adicionar</button>
       </div>
       <div id="listaMidias" style="min-height:60px;"><span style="color:#888;font-size:11px;">Nenhuma mídia adicionada</span></div>
+    </section>
+    <section class="full">
+      <p>🔔 Histórico de Notificações <span class="hint">texto enviado/guardado</span></p>
+      <div id="listaNotificacoes" style="min-height:60px;"><span style="color:#888;font-size:11px;">Nenhuma notificação no histórico</span></div>
     </section>
   </div>
 </section>
@@ -996,7 +1000,11 @@ Controle.adicionarPatrocinador = function() {
   if(N > 30){ Controle.status('erro','Máximo de 30 patrocinadores'); return; }
   Controle._sponsorsN = N;
   Controle.renderSponsors();
-  Controle.status('ok','✅ Patrocinador '+N+' adicionado');
+  var midias = Controle.getMidiasCtrl();
+  midias.push({ id:'cena_patrocinadores_' + Date.now(), tipo:'cena', cena:'sponsors', nome:'Patrocinadores', duracao:8, intervalo:0, transicao:'fade' });
+  Controle.setEstado({ midias: JSON.stringify(midias) });
+  Controle.renderMidias();
+  Controle.status('ok','✅ Patrocinador '+N+' adicionado (+ cena no repertório)');
 };
 Controle.removerPatrocinador = function(n) {
   var st = {}; st['sp'+n] = '';

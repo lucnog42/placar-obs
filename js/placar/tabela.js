@@ -17,6 +17,7 @@ Placar.Tabela = {
     _notifRaf: null,
     _proxSponsor: 0,
     _sponsorChave: '',
+    _interromper: null,
 
     /* tema do overlay que corresponde a cada tema do placar */
     TEMA_PLACAR: { laliga: 'escuro', colorido: 'neon', simples: 'matchfacts' },
@@ -265,6 +266,11 @@ Placar.Tabela = {
         return !!(cam && cam.querySelector('.ativo'));
     },
 
+    /* forca uma cena manualmente (repertório tipo "cena") */
+    mostrarCena: function (k, d) {
+        this._interromper = { k: k, d: Math.max(1, (parseInt(d, 10) || 8)), t0: performance.now() };
+    },
+
     /* ---------- ciclo de vida ---------- */
     aplicar: function () {
         if (!window.Tabela) return;
@@ -356,24 +362,32 @@ Placar.Tabela = {
         var cv = this.canvas();
         var el = ((now || performance.now()) - this.t0) / 1000;
         var t, cena = null, forca = null;
-        if (cfg.auto) {
-            var tl = window.Tabela.timeline(cfg);
-            t = tl.total > 0 ? (el % tl.total) : 0;
-            cena = window.Tabela.sceneAt(tl.segs, t).k;
-        } else {
-            var d = (cfg.scenes[0] && cfg.scenes[0].d) || 8;
-            t = Math.min(el, d);                       // anima a entrada e segura
-            cena = cfg.scenes[0] && cfg.scenes[0].k;
+        // cena manual forçada (prioridade máxima)
+        if (this._interromper) {
+            var iel = (now - this._interromper.t0) / 1000;
+            if (iel < this._interromper.d) { cena = this._interromper.k; t = iel; forca = cena; }
+            else { this._interromper = null; }
         }
-        // rotacao de patrocinadores (prioridade abaixo de notif/midia manual)
-        if (cfg.auto && this.sponsorAtivo()) {
-            var iv = this._sponsorIntervaloMs(), du = this._sponsorDuracaoMs();
-            if (!this._proxSponsor) this._proxSponsor = now + iv;
-            var loc = now - this._proxSponsor;
-            if (loc >= 0 && loc < du) { cena = 'sponsors'; t = loc / 1000; forca = 'sponsors'; }
-            else if (loc >= du) { this._proxSponsor = this.prioridadeManual() ? (now + 1000) : (now + iv); }
-            else if (this.prioridadeManual()) { this._proxSponsor = now + iv; }
-        } else { this._proxSponsor = 0; }
+        if (!forca) {
+            if (cfg.auto) {
+                var tl = window.Tabela.timeline(cfg);
+                t = tl.total > 0 ? (el % tl.total) : 0;
+                cena = window.Tabela.sceneAt(tl.segs, t).k;
+            } else {
+                var d = (cfg.scenes[0] && cfg.scenes[0].d) || 8;
+                t = Math.min(el, d);                   // anima a entrada e segura
+                cena = cfg.scenes[0] && cfg.scenes[0].k;
+            }
+            // rotacao de patrocinadores (prioridade abaixo de notif/midia manual)
+            if (cfg.auto && this.sponsorAtivo()) {
+                var iv = this._sponsorIntervaloMs(), du = this._sponsorDuracaoMs();
+                if (!this._proxSponsor) this._proxSponsor = now + iv;
+                var loc = now - this._proxSponsor;
+                if (loc >= 0 && loc < du) { cena = 'sponsors'; t = loc / 1000; forca = 'sponsors'; }
+                else if (loc >= du) { this._proxSponsor = this.prioridadeManual() ? (now + 1000) : (now + iv); }
+                else if (this.prioridadeManual()) { this._proxSponsor = now + iv; }
+            } else { this._proxSponsor = 0; }
+        }
         this.aplicarLayout(cena);                      // tamanho + posicao da cena
         this.publicarCena(cena);
         window.Tabela.render(t, { g: g, c: cfg, w: cv.width, h: cv.height, cena: forca });

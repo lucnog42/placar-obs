@@ -1,5 +1,14 @@
 # Histórico
 
+## 2026-10-20 (revisões — repertório/histórico separados + cena de patrocinador)
+
+- **Repertório separado do histórico**: a Tela 8 agora divide "🖼 Repertório de Mídias"
+  (imagem · GIF · vídeo) de "🔔 Histórico de Notificações" (texto). `renderMidias`
+  foi refatorado em `_renderItens` + split por `tipo`.
+- **Patrocinador → cena no repertório**: adicionar um patrocinador cria automaticamente
+  um item `tipo:'cena'` (🎬) no repertório. Disparar essa cena força `mostrarCena('sponsors', d)`
+  no overlay via `_interromper` (prioridade máxima sobre a rotação automática).
+
 ## 2026-10-20 (revisões — preview fixo no mobile + toggles de customização)
 
 - **Preview fixo no mobile**: `#previewWrapper` agora é `position:sticky;top:48px`,
