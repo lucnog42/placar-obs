@@ -185,6 +185,7 @@ h2.titulo{text-align:left}
       <p>📂 Presets desta instância <span class="hint" id="contadorPresets" style="margin-left:8px"></span></p>
       <div style="display:flex;gap:4px;margin-bottom:4px;align-items:center">
         <label style="font-size:11px;cursor:pointer;display:flex;align-items:center;gap:3px"><input type="checkbox" id="selTodosPresets" onchange="Controle.toggleTodosPresets()"> Selecionar Todos</label>
+        <button onclick="Controle.importarPresets()" style="background:#2196F3;color:#fff;font-size:11px;padding:4px 9px">📁 Importar .json</button>
         <button onclick="Controle.removerPresetsMarcados()" class="btn-remover" style="margin-left:auto">✕ Remover Marcados</button>
       </div>
       <div style="display:flex;gap:4px;margin-bottom:6px;align-items:center;flex-wrap:wrap">
@@ -333,6 +334,7 @@ h2.titulo{text-align:left}
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
         <label style="font-size:11px;color:#ddd">📄 Importar CSV:</label>
         <input type="file" id="tabelaEscFile" accept=".csv,text/csv" onchange="Controle.importarEscalacoes(this)" style="font-size:11px">
+        <button onclick="Controle.baixarModeloCsvJogadores()" style="font-size:10px;padding:3px 8px" title="Baixa um CSV de exemplo (time;jogador;numero;posicao)">📄 Modelo</button>
         <button onclick="Controle.limparEscalacoes()" style="font-size:10px;padding:3px 7px">Limpar</button>
         <span id="tabelaEscInfo" style="font-size:10px;color:#8fb2c8">nenhuma escalação carregada</span>
       </div>
@@ -342,16 +344,28 @@ h2.titulo{text-align:left}
       <div id="tabelaTimesCrest" class="times-crest-list"><span class="hint">importe a classificação para listar os times</span></div>
     </section>
     <section class="full">
-      <p>📚 Biblioteca de CSVs <span class="hint">(classificação e jogadores)</span></p>
+      <p>📚 Biblioteca de CSVs — Classificação <span class="hint">(tabela)</span></p>
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:4px">
-        <button onclick="Controle.salvarCsvAtual()" style="background:#2196F3;color:#fff">💾 Salvar CSV atual</button>
-        <span class="hint">importe um CSV, clique em salvar e dê um nome</span>
+        <button onclick="Controle.salvarCsvAtual('tabela')" style="background:#2196F3;color:#fff">💾 Salvar classificação atual</button>
+        <span class="hint">importe o CSV da classificação, clique em salvar e dê um nome</span>
       </div>
       <div class="biblioteca-toolbar">
-        <input id="buscaCsvs" placeholder="🔍 Buscar CSVs" oninput="Controle._aplicarFiltros('csvs')">
-        <div id="gruposBar-csvs" class="grupos-bar"></div>
+        <input id="buscaCsvsTabela" placeholder="🔍 Buscar CSVs" oninput="Controle._aplicarFiltros('csvs_tabela')">
+        <div id="gruposBar-csvs_tabela" class="grupos-bar"></div>
       </div>
-      <div id="listaCsvs"><span style="color:#888;font-size:11px">Carregando...</span></div>
+      <div id="listaCsvsTabela"><span style="color:#888;font-size:11px">Carregando...</span></div>
+    </section>
+    <section class="full">
+      <p>📚 Biblioteca de CSVs — Jogadores <span class="hint">(escalações)</span></p>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:4px">
+        <button onclick="Controle.salvarCsvAtual('jogadores')" style="background:#2196F3;color:#fff">💾 Salvar jogadores atual</button>
+        <span class="hint">importe o CSV de escalações, clique em salvar e dê um nome</span>
+      </div>
+      <div class="biblioteca-toolbar">
+        <input id="buscaCsvsJogadores" placeholder="🔍 Buscar CSVs" oninput="Controle._aplicarFiltros('csvs_jogadores')">
+        <div id="gruposBar-csvs_jogadores" class="grupos-bar"></div>
+      </div>
+      <div id="listaCsvsJogadores"><span style="color:#888;font-size:11px">Carregando...</span></div>
     </section>
   </div>
 </section>
@@ -392,7 +406,7 @@ h2.titulo{text-align:left}
         </div>
       </div>
     </section>
-    <section>
+    <section class="full">
       <p>Fonte</p>
       <button class="fonte-btn" data-fonte="arial" onclick="Controle.definirFonte('arial')">Arial</button>
       <button class="fonte-btn" data-fonte="impact" onclick="Controle.definirFonte('impact')">Impact</button>
@@ -724,6 +738,17 @@ h2.titulo{text-align:left}
     <div class="modal-actions">
       <button class="cancel" onclick="Controle.fecharModal('modalExcluir')">Cancelar</button>
       <button class="danger" onclick="Controle.confirmarExcluirInstancia()">Excluir</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modalSemInstancia">
+  <div class="modal-box">
+    <h3>⚠ Instância necessária</h3>
+    <p style="font-size:13px;color:#e8eefc">Selecione (ou crie) uma instância para continuar.</p>
+    <div class="modal-actions">
+      <button class="cancel" onclick="Controle.fecharModal('modalSemInstancia')">Fechar</button>
+      <button class="ok" onclick="Controle.fecharModal('modalSemInstancia');Controle.abrirCriarInstancia()">➕ Criar instância</button>
     </div>
   </div>
 </div>
@@ -1206,14 +1231,14 @@ setTimeout(function(){ Controle.listarInstancias(); }, 600);
 setTimeout(function(){ Controle.resizePreview(); }, 500);
 setTimeout(function(){ Controle.listarPresets(); }, 800);
 setTimeout(function(){ Controle.listarEscudos(); }, 800);
-setTimeout(function(){ Controle.listarCsvs(); }, 800);
+setTimeout(function(){ Controle.listarCsvs('tabela'); Controle.listarCsvs('jogadores'); }, 800);
 setTimeout(function(){ Controle.listarCores(); }, 800);
 setTimeout(function(){ Controle.atualizarNomePreset(); }, 900);
 setTimeout(function(){ Controle.recarregarLogos(); }, 1000);
 setTimeout(function(){ Controle.listarLogos(); }, 1000);
 setTimeout(function(){ Controle.syncSponsors(); }, 1000);
 setTimeout(function(){ Controle.renderCustomizacoes(); Controle.renderMenuRapido(); Controle.renderTimesNotif(); }, 1000);
-setTimeout(function(){ Controle.carregarGrupos('escudos'); Controle.carregarGrupos('logos'); Controle.carregarGrupos('cores'); Controle.carregarGrupos('csvs'); }, 1100);
+setTimeout(function(){ Controle.carregarGrupos('escudos'); Controle.carregarGrupos('logos'); Controle.carregarGrupos('cores'); Controle.carregarGrupos('csvs_tabela'); Controle.carregarGrupos('csvs_jogadores'); }, 1100);
 
 /* Monkey-patch setEstado AFTER init (garantido que existe) */
 var _origSetEstado = Controle.setEstado;

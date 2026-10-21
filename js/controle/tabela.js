@@ -549,33 +549,35 @@ Controle.importarEscalacoes = function (input) {
 
 Controle.limparEscalacoes = function () { Controle.setEstado({ tabelaEscalacoes: '{}' }); };
 
-/* ---------- biblioteca de CSVs (tabela + jogadores) ---------- */
-Controle.listarCsvs = function () {
-  fetch(API + API_AND + 'acao=listar_csvs')
+/* ---------- biblioteca de CSVs (separada por tipo: tabela / jogadores) ---------- */
+Controle.listarCsvs = function (tipo) {
+  tipo = (tipo === 'jogadores') ? 'jogadores' : 'tabela';
+  var lib = tipo === 'jogadores' ? 'csvs_jogadores' : 'csvs_tabela';
+  var el = document.getElementById(tipo === 'jogadores' ? 'listaCsvsJogadores' : 'listaCsvsTabela');
+  fetch(API + API_AND + 'acao=listar_csvs&tipo=' + encodeURIComponent(tipo))
     .then(function (r) { return r.json(); })
     .then(function (d) {
-      var el = document.getElementById('listaCsvs');
       if (!el) return;
       var lista = (d && d.csvs) || [];
-      if (!lista.length) { el.innerHTML = '<span style="color:#888;font-size:11px">Nenhum CSV salvo. Importe um e salve na biblioteca.</span>'; return; }
+      if (!lista.length) { el.innerHTML = '<span style="color:#888;font-size:11px">Nenhum CSV salvo.</span>'; return; }
       var h = '';
       for (var i = 0; i < lista.length; i++) {
         var n = lista[i];
         var nm = String(n).replace(/'/g, "\\'");
         h += '<div class="csv-item" data-item="' + n + '">';
         h += '<span class="csv-nome">📄 ' + n + '</span>';
-        h += '<button onclick="Controle.carregarCsv(\'' + nm + '\',\'tabela\')" title="Aplicar como classificação">📥 Tabela</button>';
-        h += '<button onclick="Controle.carregarCsv(\'' + nm + '\',\'jogadores\')" title="Aplicar como escalações">📥 Jogadores</button>';
-        h += '<button class="btn-tag" onclick="Controle.agruparItem(\'csvs\',\'' + nm + '\')" title="Agrupar">🏷</button>';
-        h += '<button class="btn-remover" onclick="Controle.removerCsv(\'' + nm + '\')">✕</button>';
+        h += '<button onclick="Controle.carregarCsv(\'' + nm + '\',\'' + tipo + '\')" title="Aplicar">📥 Aplicar</button>';
+        h += '<button class="btn-tag" onclick="Controle.agruparItem(\'' + lib + '\',\'' + nm + '\')" title="Agrupar">🏷</button>';
+        h += '<button class="btn-remover" onclick="Controle.removerCsv(\'' + nm + '\',\'' + tipo + '\')">✕</button>';
         h += '</div>';
       }
       el.innerHTML = h;
-      if (Controle._aplicarFiltros) Controle._aplicarFiltros('csvs');
+      if (Controle._aplicarFiltros) Controle._aplicarFiltros(lib);
     }).catch(function () {});
 };
 
-Controle.salvarCsvAtual = function () {
+Controle.salvarCsvAtual = function (tipo) {
+  tipo = (tipo === 'jogadores') ? 'jogadores' : 'tabela';
   if (!Controle._ultimoCsv || !Controle._ultimoCsv.texto) {
     alert('Importe um CSV antes de salvar na biblioteca.');
     return;
@@ -584,16 +586,17 @@ Controle.salvarCsvAtual = function () {
   if (!nome || !nome.trim()) return;
   fetch(API + API_AND + 'acao=salvar_csv', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ nome: nome.trim(), conteudo: Controle._ultimoCsv.texto })
+    body: JSON.stringify({ nome: nome.trim(), conteudo: Controle._ultimoCsv.texto, tipo: tipo })
   }).then(function (r) { return r.json(); })
-    .then(function (d) { if (d && d.erro) alert(d.erro); Controle.listarCsvs(); })
+    .then(function (d) { if (d && d.erro) alert(d.erro); Controle.listarCsvs(tipo); })
     .catch(function () {});
 };
 
 Controle.carregarCsv = function (nome, tipo) {
+  tipo = (tipo === 'jogadores') ? 'jogadores' : 'tabela';
   fetch(API + API_AND + 'acao=carregar_csv', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ nome: nome })
+    body: JSON.stringify({ nome: nome, tipo: tipo })
   }).then(function (r) { return r.json(); })
     .then(function (d) {
       if (!d || !d.conteudo) { alert(d && d.erro ? d.erro : 'CSV vazio.'); return; }
@@ -613,12 +616,13 @@ Controle.carregarCsv = function (nome, tipo) {
     }).catch(function () {});
 };
 
-Controle.removerCsv = function (nome) {
+Controle.removerCsv = function (nome, tipo) {
+  tipo = (tipo === 'jogadores') ? 'jogadores' : 'tabela';
   fetch(API + API_AND + 'acao=remover_csv', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ nome: nome })
+    body: JSON.stringify({ nome: nome, tipo: tipo })
   }).then(function (r) { return r.json(); })
-    .then(function () { Controle.listarCsvs(); })
+    .then(function () { Controle.listarCsvs(tipo); })
     .catch(function () {});
 };
 

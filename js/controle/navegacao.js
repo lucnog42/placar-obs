@@ -18,11 +18,12 @@ Controle.telaAtual = 1;
 Controle._instanciaNome = null;
 
 /* ---------- navegação ---------- */
+Controle._bloquearSemInstancia = function () { Controle.abrirModal('modalSemInstancia'); };
 Controle.mostrarTela = function (n) {
   if (n > 1) {
     var id = (typeof INSTANCIA !== 'undefined') ? INSTANCIA : '';
     if (!id) {
-      Controle.status('erro', '⚠ Selecione (ou crie) uma instância para continuar.');
+      Controle._bloquearSemInstancia();
       return;
     }
   }
@@ -50,7 +51,7 @@ Controle.avancar = function () {
   if (Controle.telaAtual === 1) {
     var id = (typeof INSTANCIA !== 'undefined') ? INSTANCIA : '';
     if (!id) {
-      Controle.status('erro', '⚠ Selecione (ou crie) uma instância para continuar.');
+      Controle._bloquearSemInstancia();
       return;
     }
   }
@@ -131,6 +132,19 @@ Controle.baixarModeloCsv = function () {
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'modelo_classificacao.csv';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 300);
+};
+
+Controle.baixarModeloCsvJogadores = function () {
+  var header = 'time;jogador;numero;posicao';
+  var exemplo = 'Time A;João Silva;10;Atacante\nTime A;Pedro Santos;1;Goleiro\nTime A;Lucas Alves;7;Meia\nTime B;Carlos Lima;9;Atacante\nTime B;Marcos Rocha;5;Zagueiro';
+  var csv = '\ufeff' + header + '\n' + exemplo + '\n';
+  var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'modelo_jogadores.csv';
   document.body.appendChild(a);
   a.click();
   setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 300);
@@ -223,7 +237,8 @@ Controle._bibliotecaIds = {
   escudos: { lista: 'listaEscudos', busca: 'buscaEscudos' },
   logos:   { lista: 'listaLogos',   busca: 'buscaLogos' },
   cores:   { lista: 'listaCores',   busca: 'buscaCores' },
-  csvs:    { lista: 'listaCsvs',    busca: 'buscaCsvs' }
+  csvs_tabela:    { lista: 'listaCsvsTabela',    busca: 'buscaCsvsTabela' },
+  csvs_jogadores: { lista: 'listaCsvsJogadores', busca: 'buscaCsvsJogadores' }
 };
 
 /* aplica filtro de busca + grupo juntos sobre os itens já renderizados */

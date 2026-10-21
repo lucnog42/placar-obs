@@ -2,27 +2,31 @@
 
 Branch: `multi-instancia`.
 
+## 🔄 Rodada 4 — em andamento (lote 2026-10-21)
+
+1. Botão de importar preset na primeira tela (Instâncias).
+2. Pop-up ao tentar mudar de tela via menu sem selecionar instância.
+3. Botão de download de modelo de CSV para jogadores.
+4. CSV de jogadores separado por time (coluna "time").
+5. Biblioteca separada para CSV de jogadores (≠ tabela).
+6. Fontes ocuparem todo o espaço horizontal (não metade).
+7. Menu rápido = menu de notificação (Gol/Falta/Substituição abrem pop-up time→jogador); remover menu de notificação.
+8. Histórico de notificações vira submenu na tela "ao vivo".
+9. Repertório (mídias) abre como pop-up a partir do menu rápido (não navega).
+10. Cenas/linha do tempo vira pop-up do botão "Configuração" (ao vivo).
+11. Escala 2x em todo o layout mobile.
+12. Remover submenu "Customizações".
+13. "Intervalos e Cenários" sobem para ficar juntos (junto ao Overlay).
+
 ## ✅ Rodada 3 — concluída (lote de 2026-10-20)
 
-1. Impedir avançar tela pelo menu lateral sem definir instância.
-2. Permitir espaço no nome/id da instância.
-3. Preview NÃO ficar fixado (sticky) no desktop — só no mobile.
-4. Notificações saem da página de repertório e ficam só no "ao vivo" (Tela 10);
-   ao selecionar notificação → abrir o time → abrir lista de jogadores; o time
-   também é clicável como opção.
-5. Campo de pesquisa nas bibliotecas + agrupar itens e nomear o grupo.
-6. Botão de upload de escudos no mesmo card da biblioteca.
-7. Aumentar a escala de tudo no mobile (2x).
-8. Remover dropdown da seleção de logos do torneio; deixar só o logo selecionado.
-9. Campo de clima: setar só o número; °C hard-coded (aparece só quando número definido).
-10. Biblioteca de CSVs (tabela e jogadores).
-11. Sistema de alterar imagens do time vindo do CSV.
-12. Importar CSV baixa os escudos e referencia no servidor.
-13. Cor do time: botão de cor acompanha a cor; cor salva na biblioteca; contraste
-    automático de texto (preto em cor clara, branco em cor escura).
+1. Gate de instância na navegação. 2. Espaço no id. 3. Preview não fixo no desktop.
+4. Notificações no "ao vivo" (tipo→time→jogador). 5. Pesquisa + grupos nas bibliotecas.
+6. Upload escudos no card. 7. Escala 2x mobile. 8. Logo torneio sem dropdown.
+9. Clima número + °C hard-coded. 10. Biblioteca de CSVs. 11. Trocar escudo via CSV.
+12. Importar CSV baixa escudos. 13. Cor do time com contraste + salvar.
 
-Extra: cenas de abertura/intervalo/encerramento forçam o overlay a ligar
-(e só desligam ao desativar o botão).
+Extra: cenas de abertura/intervalo/encerramento forçam o overlay a ligar.
 
 ## ✅ Concluídas (rodada anterior)
 

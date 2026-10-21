@@ -529,9 +529,12 @@ if ($method === 'GET') {
     }
 
     if ($acao === 'listar_csvs') {
+        $tipo = isset($_GET['tipo']) ? $_GET['tipo'] : 'tabela';
+        $tipo = ($tipo === 'jogadores') ? 'jogadores' : 'tabela';
+        $dir = CSVS_DIR . '/' . $tipo;
         $files = array();
-        if (is_dir(CSVS_DIR)) {
-            $dh = opendir(CSVS_DIR);
+        if (is_dir($dir)) {
+            $dh = opendir($dir);
             if ($dh) {
                 while (($f = readdir($dh)) !== false) {
                     if ($f === '.' || $f === '..') continue;
@@ -549,11 +552,14 @@ if ($method === 'GET') {
         $input = get_post_data();
         $nome = isset($input['nome']) ? trim($input['nome']) : '';
         $conteudo = isset($input['conteudo']) ? $input['conteudo'] : '';
+        $tipo = isset($input['tipo']) ? $input['tipo'] : 'tabela';
+        $tipo = ($tipo === 'jogadores') ? 'jogadores' : 'tabela';
         if ($nome === '') { respond_error('Parametro "nome" obrigatorio.'); }
         $base = preg_replace('/[^A-Za-z0-9_\- ]/', '_', $nome);
         if ($base === '' || $base === '.' || $base === '..') { $base = 'csv_' . time(); }
-        if (!is_dir(CSVS_DIR)) { mkdir(CSVS_DIR, 0755, true); }
-        if (@file_put_contents(CSVS_DIR . '/' . $base . '.csv', $conteudo, LOCK_EX) === false) {
+        $dir = CSVS_DIR . '/' . $tipo;
+        if (!is_dir($dir)) { mkdir($dir, 0755, true); }
+        if (@file_put_contents($dir . '/' . $base . '.csv', $conteudo, LOCK_EX) === false) {
             respond_error('Nao conseguiu gravar o CSV.');
         }
         respond(array('ok' => true, 'arquivo' => $base . '.csv'));
@@ -562,8 +568,10 @@ if ($method === 'GET') {
     if ($acao === 'carregar_csv') {
         $input = get_post_data();
         $nome = isset($input['nome']) ? trim($input['nome']) : '';
+        $tipo = isset($input['tipo']) ? $input['tipo'] : 'tabela';
+        $tipo = ($tipo === 'jogadores') ? 'jogadores' : 'tabela';
         $base = preg_replace('/[^A-Za-z0-9_\- ]/', '_', $nome);
-        $path = CSVS_DIR . '/' . $base . '.csv';
+        $path = CSVS_DIR . '/' . $tipo . '/' . $base . '.csv';
         if (!is_file($path)) { respond_error('CSV nao encontrado.'); }
         respond(array('ok' => true, 'conteudo' => file_get_contents($path)));
     }
@@ -571,8 +579,10 @@ if ($method === 'GET') {
     if ($acao === 'remover_csv') {
         $input = get_post_data();
         $nome = isset($input['nome']) ? trim($input['nome']) : '';
+        $tipo = isset($input['tipo']) ? $input['tipo'] : 'tabela';
+        $tipo = ($tipo === 'jogadores') ? 'jogadores' : 'tabela';
         $base = preg_replace('/[^A-Za-z0-9_\- ]/', '_', $nome);
-        $path = CSVS_DIR . '/' . $base . '.csv';
+        $path = CSVS_DIR . '/' . $tipo . '/' . $base . '.csv';
         if (is_file($path)) { @unlink($path); }
         respond(array('ok' => true));
     }
