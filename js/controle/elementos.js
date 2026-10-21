@@ -121,17 +121,19 @@ Controle.renderEscudos=function(){
     }
     var h='',ts=Date.now();
     Controle._escudos.forEach(function(n){
-        h+='<div class="escudo-item">';
+        h+='<div class="escudo-item" data-item="'+n+'">';
         h+='<img src="escudos/'+n+'.png?v='+ts+'" alt="" onerror="this.style.display=\'none\'">';
         h+='<input type="checkbox" class="cb-escudo" value="'+n+'" style="flex-shrink:0">';
         h+='<span class="escudo-nome" title="'+n+'">'+n+'</span>';
         h+='<button class="btn-A" onclick="Controle.atribuirEscudo(\''+n+'\',\'A\')">Time A</button>';
         h+='<button class="btn-B" onclick="Controle.atribuirEscudo(\''+n+'\',\'B\')">Time B</button>';
+        h+='<button class="btn-tag" onclick="Controle.agruparItem(\'escudos\',\''+n+'\')" title="Agrupar">🏷</button>';
         h+='<button onclick="Controle.removerEscudo(\''+n+'\')" class="btn-remover">✕</button>';
         h+='</div>';
     });
     el.innerHTML=h;
     document.getElementById('selTodosEscudos').checked=false;
+    if(Controle._aplicarFiltros)Controle._aplicarFiltros('escudos');
 };
 
 Controle.uploadEscudosBatch=function(){

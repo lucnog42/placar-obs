@@ -28,6 +28,7 @@ define('ESCUDOS_DIR', BASE_DIR . '/escudos');
 define('MIDIAS_DIR', BASE_DIR . '/midias');
 define('PERFIS_DIR', BASE_DIR . '/perfis');
 define('CORES_FILE', BASE_DIR . '/cores.json');
+define('GRUPOS_FILE', BASE_DIR . '/grupos.json');
 define('LOCK_FILE', BASE_DIR . '/estado.lock');
 define('ESTADO_BAK', BASE_DIR . '/estado.json.bak');
 
@@ -87,6 +88,22 @@ function save_cores($lista) {
     $tmp = cores_path() . '.tmp.' . getmypid();
     if (@file_put_contents($tmp, $json, LOCK_EX) === false) { @unlink($tmp); return false; }
     if (!@rename($tmp, cores_path())) { @unlink($tmp); return false; }
+    return true;
+}
+
+function load_grupos() {
+    $raw = @file_get_contents(GRUPOS_FILE);
+    $data = json_decode($raw, true);
+    if (!is_array($data)) { $data = array(); }
+    return $data;
+}
+
+function save_grupos($lista) {
+    $json = json_encode($lista);
+    if ($json === false) { return false; }
+    $tmp = GRUPOS_FILE . '.tmp.' . getmypid();
+    if (@file_put_contents($tmp, $json, LOCK_EX) === false) { @unlink($tmp); return false; }
+    if (!@rename($tmp, GRUPOS_FILE)) { @unlink($tmp); return false; }
     return true;
 }
 
@@ -516,6 +533,67 @@ if ($method === 'GET') {
 
     if ($acao === 'listar_cores') {
         respond(array('cores' => load_cores()));
+    }
+
+    if ($acao === 'listar_grupos') {
+        $tipo = isset($_GET['tipo']) ? $_GET['tipo'] : '';
+        $g = load_grupos();
+        if ($tipo !== '') { respond(array('grupos' => isset($g[$tipo]) ? $g[$tipo] : array(), 'tipo' => $tipo)); }
+        respond(array('grupos' => $g));
+    }
+
+    if ($acao === 'salvar_grupo') {
+        $input = get_post_data();
+        $tipo = isset($input['tipo']) ? $input['tipo'] : '';
+        $nome = isset($input['nome']) ? trim($input['nome']) : '';
+        if ($tipo === '' || $nome === '') { respond_error('Parametros "tipo" e "nome" obrigatorios.'); }
+        $g = load_grupos();
+        if (!isset($g[$tipo])) { $g[$tipo] = array(); }
+        if (isset($g[$tipo][$nome])) { respond_error('Grupo "' . $nome . '" ja existe.'); }
+        $g[$tipo][$nome] = array();
+        save_grupos($g);
+        respond(array('ok' => true));
+    }
+
+    if ($acao === 'remover_grupo') {
+        $input = get_post_data();
+        $tipo = isset($input['tipo']) ? $input['tipo'] : '';
+        $nome = isset($input['nome']) ? trim($input['nome']) : '';
+        $g = load_grupos();
+        if (isset($g[$tipo][$nome])) { unset($g[$tipo][$nome]); }
+        save_grupos($g);
+        respond(array('ok' => true));
+    }
+
+    if ($acao === 'agrupar_item') {
+        $input = get_post_data();
+        $tipo = isset($input['tipo']) ? $input['tipo'] : '';
+        $grupo = isset($input['grupo']) ? trim($input['grupo']) : '';
+        $item = isset($input['item']) ? $input['item'] : '';
+        if ($tipo === '' || $grupo === '' || $item === '') { respond_error('Parametros "tipo", "grupo" e "item" obrigatorios.'); }
+        $g = load_grupos();
+        if (!isset($g[$tipo])) { $g[$tipo] = array(); }
+        if (!isset($g[$tipo][$grupo])) { $g[$tipo][$grupo] = array(); }
+        foreach ($g[$tipo] as $k => $itens) {   // remove o item de qualquer outro grupo deste tipo
+            $g[$tipo][$k] = array_values(array_diff($itens, array($item)));
+        }
+        if (!in_array($item, $g[$tipo][$grupo])) { $g[$tipo][$grupo][] = $item; }
+        save_grupos($g);
+        respond(array('ok' => true));
+    }
+
+    if ($acao === 'desagrupar_item') {
+        $input = get_post_data();
+        $tipo = isset($input['tipo']) ? $input['tipo'] : '';
+        $item = isset($input['item']) ? $input['item'] : '';
+        $g = load_grupos();
+        if (isset($g[$tipo])) {
+            foreach ($g[$tipo] as $k => $itens) {
+                $g[$tipo][$k] = array_values(array_diff($itens, array($item)));
+            }
+        }
+        save_grupos($g);
+        respond(array('ok' => true));
     }
 
     if ($acao === 'listar_perfis') {

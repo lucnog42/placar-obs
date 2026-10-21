@@ -92,8 +92,17 @@ h2.titulo{text-align:left}
   .tela section.full{grid-column:1/-1}
 }
 @media(max-width:759px){
+  body{zoom:2}
   #previewWrapper{position:sticky;top:48px;z-index:40}
 }
+/* biblioteca: pesquisa + grupos */
+.biblioteca-toolbar{display:flex;flex-direction:column;gap:4px;margin:4px 0 8px}
+.biblioteca-toolbar input{width:100%;box-sizing:border-box;font-size:12px;padding:6px 8px}
+.grupos-bar{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.grupo-chip{font-size:11px;padding:3px 8px;border-radius:999px;border:1px solid #2a3a55;background:#141d2e;color:#9fb3d1;cursor:pointer}
+.grupo-chip.on{background:#2196F3;color:#fff;border-color:#2196F3}
+.grupo-chip.grupo-add{background:#1d5c40;color:#fff;border-color:#1d5c40;font-weight:700}
+.btn-tag{background:#2a3a55;color:#e8eefc;border:1px solid #3a4d6e;padding:1px 5px;font-size:11px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -205,6 +214,10 @@ h2.titulo{text-align:left}
         <button onclick="Controle.adicionarCor()" style="background:#2196F3;color:#fff">➕ Adicionar Cor</button>
         <span style="font-size:10px;color:#aaa">salve cores para reusar em qualquer jogo</span>
       </div>
+      <div class="biblioteca-toolbar">
+        <input id="buscaCores" placeholder="🔍 Buscar cores" oninput="Controle._aplicarFiltros('cores')">
+        <div id="gruposBar-cores" class="grupos-bar"></div>
+      </div>
       <div id="listaCores"><span style="color:#888;font-size:11px">Carregando...</span></div>
     </section>
     <section class="full">
@@ -213,6 +226,10 @@ h2.titulo{text-align:left}
         <button onclick="Controle.uploadEscudosBatch()" style="background:#2196F3;color:#fff">📁 Selecionar PNGs</button>
         <label style="font-size:11px;cursor:pointer;display:flex;align-items:center;gap:3px"><input type="checkbox" id="selTodosEscudos" onchange="Controle.toggleTodosEscudos()"> Selecionar Todos</label>
         <button onclick="Controle.removerEscudosMarcados()" class="btn-remover" style="margin-left:auto">✕ Remover Marcados</button>
+      </div>
+      <div class="biblioteca-toolbar">
+        <input id="buscaEscudos" placeholder="🔍 Buscar escudos" oninput="Controle._aplicarFiltros('escudos')">
+        <div id="gruposBar-escudos" class="grupos-bar"></div>
       </div>
       <div id="listaEscudos"><span style="color:#888;font-size:11px">Carregando...</span></div>
     </section>
@@ -255,6 +272,10 @@ h2.titulo{text-align:left}
         <button onclick="Controle.listarLogos()" style="font-size:10px;padding:2px 6px">🔄</button>
       </div>
       <p style="margin-top:8px;font-size:10px;color:#aaa">📚 Biblioteca de Logos</p>
+      <div class="biblioteca-toolbar">
+        <input id="buscaLogos" placeholder="🔍 Buscar logos" oninput="Controle._aplicarFiltros('logos')">
+        <div id="gruposBar-logos" class="grupos-bar"></div>
+      </div>
       <div id="listaLogos"><span style="color:#888;font-size:11px">Carregando...</span></div>
     </section>
   </div>
@@ -1171,6 +1192,7 @@ setTimeout(function(){ Controle.recarregarLogos(); }, 1000);
 setTimeout(function(){ Controle.listarLogos(); }, 1000);
 setTimeout(function(){ Controle.syncSponsors(); }, 1000);
 setTimeout(function(){ Controle.renderCustomizacoes(); Controle.renderMenuRapido(); }, 1000);
+setTimeout(function(){ Controle.carregarGrupos('escudos'); Controle.carregarGrupos('logos'); Controle.carregarGrupos('cores'); }, 1100);
 
 /* Monkey-patch setEstado AFTER init (garantido que existe) */
 var _origSetEstado = Controle.setEstado;

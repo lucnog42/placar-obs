@@ -99,14 +99,17 @@ Controle.listarLogos = function () {
       for (var i = 0; i < lista.length; i++) {
         var nome = lista[i];
         var url = 'torneios/' + nome + '?v=' + ts;
-        h += '<div class="escudo-item">';
+        var nm = String(nome).replace(/'/g, "\\'");
+        h += '<div class="escudo-item" data-item="' + nome + '">';
         h += '<img src="' + url + '" onerror="this.style.opacity=0.2" alt="">';
         h += '<span class="escudo-nome">' + nome + '</span>';
         h += '<button style="background:#2196F3;color:#fff" onclick="Controle.usarLogo(\'' + nome + '\')">Usar</button>';
-        h += '<button class="btn-remover" onclick="Controle.removerLogo(\'' + String(nome).replace(/'/g, "\\'") + '\')">✕</button>';
+        h += '<button class="btn-tag" onclick="Controle.agruparItem(\'logos\',\'' + nm + '\')" title="Agrupar">🏷</button>';
+        h += '<button class="btn-remover" onclick="Controle.removerLogo(\'' + nm + '\')">✕</button>';
         h += '</div>';
       }
       el.innerHTML = h;
+      if (Controle._aplicarFiltros) Controle._aplicarFiltros('logos');
     }).catch(function () {});
 };
 Controle.usarLogo = function (nome) { Controle.setEstado({ logoTorneio: nome }); };
@@ -170,15 +173,18 @@ Controle.listarCores = function () {
         var c = lista[i];
         var hex = c.hex || '#888';
         var nome = c.nome || hex;
-        h += '<div class="cor-item">';
+        var nm = String(nome).replace(/'/g, "\\'");
+        h += '<div class="cor-item" data-item="' + nome + '">';
         h += '<span class="swatch" style="background:' + hex + '"></span>';
         h += '<span class="cor-nome">' + nome + '</span>';
         h += '<button class="A" onclick="Controle.aplicarCor(\'timeA\',\'' + hex + '\')">Casa</button>';
         h += '<button class="B" onclick="Controle.aplicarCor(\'timeB\',\'' + hex + '\')">Visit.</button>';
-        h += '<button class="btn-remover" onclick="Controle.removerCor(\'' + String(nome).replace(/'/g, "\\'") + '\')">✕</button>';
+        h += '<button class="btn-tag" onclick="Controle.agruparItem(\'cores\',\'' + nm + '\')" title="Agrupar">🏷</button>';
+        h += '<button class="btn-remover" onclick="Controle.removerCor(\'' + nm + '\')">✕</button>';
         h += '</div>';
       }
       el.innerHTML = h;
+      if (Controle._aplicarFiltros) Controle._aplicarFiltros('cores');
     }).catch(function () {});
 };
 Controle.adicionarCor = function () {
@@ -208,6 +214,111 @@ Controle.removerCor = function (nome) {
   })
   .then(function (r) { return r.json(); })
   .then(function () { Controle.listarCores(); });
+};
+
+/* ---------- bibliotecas: pesquisa + grupos ---------- */
+Controle._gruposCache = {};
+Controle._grupoFiltro = {};
+Controle._bibliotecaIds = {
+  escudos: { lista: 'listaEscudos', busca: 'buscaEscudos' },
+  logos:   { lista: 'listaLogos',   busca: 'buscaLogos' },
+  cores:   { lista: 'listaCores',   busca: 'buscaCores' },
+  csvs:    { lista: 'listaCsvs',    busca: 'buscaCsvs' }
+};
+
+/* aplica filtro de busca + grupo juntos sobre os itens já renderizados */
+Controle._aplicarFiltros = function (tipo) {
+  var ids = Controle._bibliotecaIds[tipo]; if (!ids) return;
+  var lista = document.getElementById(ids.lista); if (!lista) return;
+  var q = (document.getElementById(ids.busca) || {}).value || ''; q = q.trim().toLowerCase();
+  var nome = Controle._grupoFiltro[tipo] || '';
+  var g = Controle._gruposCache[tipo] || {};
+  var items = lista.children;
+  for (var i = 0; i < items.length; i++) {
+    var el = items[i];
+    var t = (el.textContent || '').toLowerCase();
+    var okBusca = (!q || t.indexOf(q) >= 0);
+    var key = el.getAttribute('data-item') || '';
+    var okGrupo = (!nome || (g[nome] && g[nome].indexOf(key) >= 0));
+    el.style.display = (okBusca && okGrupo) ? '' : 'none';
+  }
+};
+
+Controle.carregarGrupos = function (tipo, cb) {
+  fetch(API + API_AND + 'acao=listar_grupos&tipo=' + encodeURIComponent(tipo))
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      Controle._gruposCache[tipo] = (d && d.grupos) || {};
+      Controle.renderGruposBar(tipo);
+      Controle._aplicarFiltros(tipo);
+      if (cb) cb();
+    }).catch(function () {});
+};
+
+Controle.renderGruposBar = function (tipo) {
+  var el = document.getElementById('gruposBar-' + tipo); if (!el) return;
+  var g = Controle._gruposCache[tipo] || {};
+  var nomes = Object.keys(g).sort();
+  var ativo = Controle._grupoFiltro[tipo] || '';
+  var h = '<button class="grupo-chip' + (ativo === '' ? ' on' : '') + '" onclick="Controle.setGrupoFiltro(\'' + tipo + '\',\'\')">Todos</button>';
+  for (var i = 0; i < nomes.length; i++) {
+    var n = nomes[i];
+    h += '<button class="grupo-chip' + (ativo === n ? ' on' : '') + '" onclick="Controle.setGrupoFiltro(\'' + tipo + '\',\'' + String(n).replace(/'/g, "\\'") + '\')">' + n + ' (' + (g[n] || []).length + ')</button>';
+  }
+  h += '<button class="grupo-chip grupo-add" onclick="Controle.novoGrupo(\'' + tipo + '\')" title="Novo grupo">＋</button>';
+  el.innerHTML = h;
+};
+
+Controle.setGrupoFiltro = function (tipo, nome) {
+  Controle._grupoFiltro[tipo] = nome || '';
+  Controle.renderGruposBar(tipo);
+  Controle._aplicarFiltros(tipo);
+};
+
+Controle.novoGrupo = function (tipo) {
+  var nome = prompt('Nome do grupo:');
+  if (!nome || !nome.trim()) return;
+  fetch(API + API_AND + 'acao=salvar_grupo', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tipo: tipo, nome: nome.trim() })
+  }).then(function (r) { return r.json(); })
+    .then(function (d) { if (d && d.erro) alert(d.erro); Controle.carregarGrupos(tipo); })
+    .catch(function () {});
+};
+
+Controle.removerGrupo = function (tipo, nome) {
+  if (!confirm('Remover o grupo "' + nome + '"? (os itens não são apagados)')) return;
+  fetch(API + API_AND + 'acao=remover_grupo', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tipo: tipo, nome: nome })
+  }).then(function (r) { return r.json(); })
+    .then(function () { Controle.carregarGrupos(tipo); })
+    .catch(function () {});
+};
+
+Controle.agruparItem = function (tipo, item) {
+  var g = Controle._gruposCache[tipo] || {};
+  var nomes = Object.keys(g).sort();
+  var msg = 'Grupo para "' + item + '":\n';
+  if (nomes.length) msg += 'Existentes: ' + nomes.join(', ') + '\n';
+  msg += '\nDigite o nome (novo ou existente).';
+  var nome = prompt(msg);
+  if (!nome || !nome.trim()) return;
+  fetch(API + API_AND + 'acao=agrupar_item', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tipo: tipo, grupo: nome.trim(), item: item })
+  }).then(function (r) { return r.json(); })
+    .then(function () { Controle.carregarGrupos(tipo); })
+    .catch(function () {});
+};
+
+Controle.desagruparItem = function (tipo, item) {
+  fetch(API + API_AND + 'acao=desagrupar_item', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tipo: tipo, item: item })
+  }).then(function (r) { return r.json(); })
+    .then(function () { Controle.carregarGrupos(tipo); })
+    .catch(function () {});
 };
 
 /* ---------- resumo (Tela 9) ---------- */
