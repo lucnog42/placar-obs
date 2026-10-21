@@ -49,7 +49,8 @@ Placar._mostrarTexto=function(m){
     var tipo=m.notif||'gol';
     var c=tipo==='gol'?(m.texto||'GOL!'):
           tipo==='amarelo'?('\u{1F7E8} '+(m.texto||'')):
-          tipo==='vermelho'?('\u{1F7E5} '+(m.texto||'')):(m.texto||'');
+          tipo==='vermelho'?('\u{1F7E5} '+(m.texto||'')):
+          tipo==='substituicao'?('\u{1F501} '+(m.texto||'')):(m.texto||'');
     ['notifText','notifText2','notifText3','notifText4'].forEach(function(i){
         var e=document.getElementById(i);if(e)e.innerText=c;
     });

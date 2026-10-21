@@ -410,20 +410,29 @@ h2.titulo{text-align:left}
       <p>Notificações</p>
       <span class="hint">viram itens do histórico de notificações abaixo, com duração e transição próprias</span>
       <div class="toggle-notificacao">
-        <label><input type="radio" name="tipoNotif" value="gol" checked> ⚽ Gol <input type="text" id="textoGol" placeholder="GOOOLLL!!!"></label>
-        <label><input type="radio" name="tipoNotif" value="amarelo"> 🟨 Amarelo <input type="text" id="textoAmarelo" placeholder="CARTÃO AMARELO"></label>
-        <label><input type="radio" name="tipoNotif" value="vermelho"> 🟥 Vermelho <input type="text" id="textoVermelho" placeholder="CARTÃO VERMELHO"></label>
+        <label><input type="radio" name="tipoNotif" value="gol" checked onchange="Controle.toggleTipoNotif()"> ⚽ Gol <input type="text" id="textoGol" placeholder="GOOOLLL!!!"></label>
+        <label><input type="radio" name="tipoNotif" value="amarelo" onchange="Controle.toggleTipoNotif()"> 🟨 Amarelo <input type="text" id="textoAmarelo" placeholder="CARTÃO AMARELO"></label>
+        <label><input type="radio" name="tipoNotif" value="vermelho" onchange="Controle.toggleTipoNotif()"> 🟥 Vermelho <input type="text" id="textoVermelho" placeholder="CARTÃO VERMELHO"></label>
+        <label><input type="radio" name="tipoNotif" value="substituicao" onchange="Controle.toggleTipoNotif()"> 🔁 Substituição</label>
       </div>
       <div class="modo-notif">
         <label><input type="radio" name="modoNotif" value="jogador" checked onchange="Controle.toggleModoNotif()"> 👤 Jogador</label>
         <label><input type="radio" name="modoNotif" value="time" onchange="Controle.toggleModoNotif()"> 🏆 Time</label>
       </div>
-      <select id="selJogador" style="width:100%;box-sizing:border-box" onchange="Controle.escolherJogador(this)">
-        <option value="">— escolher jogador do CSV —</option>
-      </select>
-      <input type="text" id="nomeJogador" placeholder="ou digite o nome do jogador" style="width:100%;box-sizing:border-box;margin-top:4px">
-      <div id="seletorTimeNotif" style="display:none;margin-top:4px;">
-        <select id="timeNotif"><option value="A">Time A</option><option value="B">Time B</option></select>
+      <div id="campoJogador">
+        <select id="selJogador" style="width:100%;box-sizing:border-box" onchange="Controle.escolherJogador(this)">
+          <option value="">— escolher jogador do CSV —</option>
+        </select>
+        <input type="text" id="nomeJogador" placeholder="ou digite o nome do jogador" style="width:100%;box-sizing:border-box;margin-top:4px">
+        <div id="seletorTimeNotif" style="display:none;margin-top:4px;">
+          <select id="timeNotif"><option value="A">Time A</option><option value="B">Time B</option></select>
+        </div>
+      </div>
+      <div id="substituicaoCampos" style="display:none">
+        <div class="row" style="gap:6px;margin-top:4px">
+          <div style="flex:1"><span class="hint">Entra</span><select id="selJogadorEntra" style="width:100%"><option value="">— entra —</option></select></div>
+          <div style="flex:1"><span class="hint">Sai</span><select id="selJogadorSai" style="width:100%"><option value="">— sai —</option></select></div>
+        </div>
       </div>
       <div class="row" style="margin-top:5px">
         <button onclick="Controle.enviarNotificacao(true)" style="background:#4CAF50;color:#fff">▶ Enviar agora</button>
@@ -1083,7 +1092,7 @@ Controle.renderMenuRapido = function(){
     { feat:'feat_gol', h:'<button onclick="Controle.notifRapida(\'gol\')" style="background:#dc2626;color:#fff;font-size:13px;padding:10px 14px">⚽ Gol</button>' },
     { feat:'feat_faltas', h:'<button onclick="Controle.notifRapida(\'amarelo\')" style="background:#facc15;color:#000;font-size:13px;padding:10px 14px">🟨 Faltas</button><button onclick="Controle.notifRapida(\'vermelho\')" style="background:#7f1d1d;color:#fff;font-size:13px;padding:10px 14px">🟥 Expulsão</button>' },
     { feat:'feat_midias', h:'<button onclick="Controle.irPara(8)" style="background:#2a3a55;font-size:13px;padding:10px 14px">🖼 Mídias</button>' },
-    { feat:'feat_substituicoes', h:'<button onclick="Controle.status(\'erro\',\'⚠ Substituições: em breve\')" style="background:#2a3a55;font-size:13px;padding:10px 14px">🔁 Substituições</button>' },
+    { feat:'feat_substituicoes', h:'<button onclick="Controle.novaSubstituicao()" style="background:#2a3a55;font-size:13px;padding:10px 14px">🔁 Substituições</button>' },
     { feat:'feat_fila', h:'<button onclick="Controle.status(\'erro\',\'⚠ Fila de reprodução: em breve\')" style="background:#2a3a55;font-size:13px;padding:10px 14px">▶ Fila</button>' }
   ];
   var h = '';
@@ -1110,6 +1119,11 @@ Controle.intervalo = function(k){
 Controle.voltarLoop = function(){
   Controle.setEstado({ cenaCancelar: String(Date.now()) });
   Controle.status('ok', '⏹ De volta ao loop');
+};
+Controle.novaSubstituicao = function(){
+  var r = document.querySelector('input[name="tipoNotif"][value="substituicao"]');
+  if(r){ r.checked = true; Controle.toggleTipoNotif(); }
+  Controle.irPara(8);
 };
 
 Controle.uploadSponsor = function(n) {

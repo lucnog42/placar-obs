@@ -49,14 +49,12 @@ Controle.adicionarMidia=function(){
 };
 
 /* ---------- notificacoes (midia de texto) ---------- */
-Controle.NOTIF_ROTULO={gol:'Gol',amarelo:'Cartão amarelo',vermelho:'Cartão vermelho',info:'Aviso'};
-Controle.NOTIF_PADRAO={gol:'GOOOOL!!!',amarelo:'CARTÃO AMARELO',vermelho:'CARTÃO VERMELHO',info:''};
+Controle.NOTIF_ROTULO={gol:'Gol',amarelo:'Cartão amarelo',vermelho:'Cartão vermelho',substituicao:'Substituição',info:'Aviso'};
+Controle.NOTIF_PADRAO={gol:'GOOOOL!!!',amarelo:'CARTÃO AMARELO',vermelho:'CARTÃO VERMELHO',substituicao:'',info:''};
 
-/* popula o seletor de jogadores a partir das escalações (CSV) */
-Controle.renderJogadores=function(){
-    var sel=document.getElementById('selJogador');
-    if(!sel)return;
-    var cur=sel.value, html='<option value="">— escolher jogador do CSV —</option>';
+/* monta as opções de jogador a partir das escalações (CSV) */
+Controle._opcoesJogadores=function(){
+    var html='<option value="">— escolher jogador do CSV —</option>';
     try{
         var map=JSON.parse(Controle.estado.tabelaEscalacoes||'{}');
         Object.keys(map).forEach(function(k){
@@ -73,8 +71,17 @@ Controle.renderJogadores=function(){
             html+='</optgroup>';
         });
     }catch(e){}
-    sel.innerHTML=html;
-    if(cur)sel.value=cur;
+    return html;
+};
+Controle.renderJogadores=function(){
+    var html=Controle._opcoesJogadores();
+    ['selJogador','selJogadorEntra','selJogadorSai'].forEach(function(id){
+        var sel=document.getElementById(id);
+        if(!sel)return;
+        var cur=sel.value;
+        sel.innerHTML=html;
+        if(cur)sel.value=cur;
+    });
 };
 Controle.escolherJogador=function(sel){
     var v=sel.value;
@@ -86,6 +93,15 @@ Controle._itemNotif=function(){
     var rt=document.querySelector('input[name="tipoNotif"]:checked');
     var rm=document.querySelector('input[name="modoNotif"]:checked');
     var tipo=rt?rt.value:'gol', modo=rm?rm.value:'jogador';
+    if(tipo==='substituicao'){
+        var ent=(document.getElementById('selJogadorEntra')||{}).value||'';
+        var sai=(document.getElementById('selJogadorSai')||{}).value||'';
+        if(!ent||!sai)return null;
+        var txt='ENTRA '+ent+'  ·  SAI '+sai;
+        return {id:'notif_sub_'+Controle._norm(ent)+'_'+Controle._norm(sai),
+                tipo:'texto',notif:'substituicao',nome:'Substituição · '+ent+' ⇄ '+sai,
+                texto:txt,duracao:5,intervalo:0,transicao:'fade'};
+    }
     var nome='';
     if(modo==='jogador'){
         var el=document.getElementById('nomeJogador');

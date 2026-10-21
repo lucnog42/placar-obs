@@ -1,5 +1,12 @@
 # Histórico
 
+## 2026-10-20 (revisões — substituições)
+
+- **Substituições**: tipo de notificação `substituicao` (🔁) no formulário (Tela 8) com
+  seletores "entra"/"sai" populados pelas escalações; renderizada no motor (`SUBSTITUIÇÃO`,
+  cor ciano) e no fallback DOM. Botão "🔁 Substituições" do menu rápido abre o formulário
+  já na opção de substituição.
+
 ## 2026-10-20 (revisões — cenas de abertura/intervalo/encerramento)
 
 - **Cenas manuais (menu Intervalos)**: novas cenas de tela cheia `intervalo` e

@@ -277,6 +277,17 @@ Controle.toggleModoNotif=function(){
     if(sj) sj.style.display=m==='jogador'?'':'none';
     document.getElementById('seletorTimeNotif').style.display=m==='time'?'block':'none';
 };
+Controle.toggleTipoNotif=function(){
+    var tipo=(document.querySelector('input[name="tipoNotif"]:checked')||{}).value;
+    var isSub=tipo==='substituicao';
+    var cj=document.getElementById('campoJogador');
+    var sc=document.getElementById('substituicaoCampos');
+    var mn=document.querySelector('.modo-notif');
+    if(cj)cj.style.display=isSub?'none':'';
+    if(sc)sc.style.display=isSub?'':'none';
+    if(mn)mn.style.display=isSub?'none':'';
+    if(!isSub)Controle.toggleModoNotif();
+};
 
 /* enviarNotificacao agora vive em js/controle/midia.js: a notificacao e um
    item de TEXTO do repertorio, com duracao/transicao proprias e disparo avulso. */

@@ -873,10 +873,12 @@ function drawNotif(g){
   var a = Math.min(enter, exit);
   var col = NOTIF.tipo === 'gol' ? RED :
             NOTIF.tipo === 'amarelo' ? '#facc15' :
-            NOTIF.tipo === 'vermelho' ? RED : ACC;
+            NOTIF.tipo === 'vermelho' ? RED :
+            NOTIF.tipo === 'substituicao' ? '#22d3ee' : ACC;
   var titulo = NOTIF.tipo === 'gol' ? 'GOOOOL!' :
                NOTIF.tipo === 'amarelo' ? 'CARTÃO AMARELO' :
-               NOTIF.tipo === 'vermelho' ? 'CARTÃO VERMELHO' : 'AVISO';
+               NOTIF.tipo === 'vermelho' ? 'CARTÃO VERMELHO' :
+               NOTIF.tipo === 'substituicao' ? 'SUBSTITUIÇÃO' : 'AVISO';
   var y = H * 0.44 - (1 - easeOut(enter)) * 80 + (1 - easeOut(exit)) * 60;
   var bw = W * 0.84, bh = 150, bx = (W - bw) / 2, by = y - bh / 2;
   g.save();
