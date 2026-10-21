@@ -188,7 +188,9 @@ function default_estado() {
         'estilo' => array(
             'tema' => 'laliga', 'fonte' => 'arial',
             'nomesExpandidos' => 'false', 'notifAnimacao' => 'esquerda',
-            'mostrarStatus' => 'false'
+            'mostrarStatus' => 'false',
+            'feat_gol' => 'true', 'feat_faltas' => 'true', 'feat_midias' => 'true',
+            'feat_substituicoes' => 'true', 'feat_fila' => 'true', 'feat_intervalos' => 'true'
         ),
         'penaltes' => array(
             'penaltesAtivos' => 'false',
@@ -236,7 +238,7 @@ function ms_section($key) {
             'timeA'=>'times','timeB'=>'times','siglaA'=>'times','siglaB'=>'times','escudoA'=>'times','escudoB'=>'times','timeACor'=>'times','timeBCor'=>'times',
             'competicao'=>'times','categoria'=>'times','grupo'=>'times','fase'=>'times','data'=>'times','hora'=>'times','local'=>'times','logoTorneio'=>'times',
             'clima'=>'times','climaIcone'=>'times',
-            'tema'=>'estilo','fonte'=>'estilo','nomesExpandidos'=>'estilo','notifAnimacao'=>'estilo','mostrarStatus'=>'estilo',
+            'tema'=>'estilo','fonte'=>'estilo','nomesExpandidos'=>'estilo','notifAnimacao'=>'estilo','mostrarStatus'=>'estilo','feat_gol'=>'estilo','feat_faltas'=>'estilo','feat_midias'=>'estilo','feat_substituicoes'=>'estilo','feat_fila'=>'estilo','feat_intervalos'=>'estilo',
             'penaltesAtivos'=>'penaltes','PA1'=>'penaltes','PA2'=>'penaltes','PA3'=>'penaltes','PA4'=>'penaltes','PA5'=>'penaltes','PB1'=>'penaltes','PB2'=>'penaltes','PB3'=>'penaltes','PB4'=>'penaltes','PB5'=>'penaltes',
             'notifTipo'=>'notif','notifTexto'=>'notif','notifId'=>'notif',
             'placarScale'=>'posicao','placarX'=>'posicao','placarY'=>'posicao',

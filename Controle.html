@@ -64,7 +64,7 @@ h2.titulo{text-align:left}
 #btnAvancar{background:#2196F3;color:#fff}
 #stepperLabel{flex:1;text-align:center;font-size:11px;color:#93a4c0}
 /* preview */
-#previewWrapper{max-width:860px;margin:0 auto 10px;padding:0 12px}
+#previewWrapper{max-width:860px;margin:0 auto 10px;padding:0 12px;position:sticky;top:48px;z-index:40}
 #previewWrapper.preview-off #previewContainer{display:none}
 /* modal */
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:120;display:none;align-items:center;justify-content:center;padding:16px}
@@ -504,16 +504,12 @@ h2.titulo{text-align:left}
       </div>
     </section>
     <section class="full">
-      <p>⚡ Menu rápido</p>
-      <div style="display:flex;gap:6px;flex-wrap:wrap">
-        <button onclick="Controle.notifRapida('gol')" style="background:#dc2626;color:#fff;font-size:13px;padding:10px 14px">⚽ Gol</button>
-        <button onclick="Controle.notifRapida('amarelo')" style="background:#facc15;color:#000;font-size:13px;padding:10px 14px">🟨 Faltas</button>
-        <button onclick="Controle.notifRapida('vermelho')" style="background:#7f1d1d;color:#fff;font-size:13px;padding:10px 14px">🟥 Expulsão</button>
-        <button onclick="Controle.irPara(8)" style="background:#2a3a55;font-size:13px;padding:10px 14px">🖼 Mídias</button>
-        <button onclick="Controle.status('erro','⚠ Substituições: em breve')" style="background:#2a3a55;font-size:13px;padding:10px 14px">🔁 Substituições</button>
-        <button onclick="Controle.status('erro','⚠ Fila de reprodução: em breve')" style="background:#2a3a55;font-size:13px;padding:10px 14px">▶ Fila</button>
-        <button onclick="Controle.status('erro','⚠ Intervalos (abertura/intervalo/encerramento): em breve')" style="background:#2a3a55;font-size:13px;padding:10px 14px">⏸ Intervalos</button>
-      </div>
+      <p>⚡ Menu rápido <span class="hint">ações ligadas nas customizações</span></p>
+      <div style="display:flex;gap:6px;flex-wrap:wrap" id="menuRapido"></div>
+    </section>
+    <section class="full">
+      <p>🎛 Customizações <span class="hint">ligue/desligue cada recurso da tela ao vivo</span></p>
+      <div id="listaCustomizacoes"></div>
     </section>
     <section>
       <p>Pontos</p>
@@ -1029,6 +1025,54 @@ Controle.syncSponsors = function() {
   Controle.renderSponsors();
 };
 
+Controle.CUSTOMIZACOES = [
+  { id:'feat_gol', rotulo:'⚽ Gol' },
+  { id:'feat_faltas', rotulo:'🟨 Faltas (cartões)' },
+  { id:'feat_midias', rotulo:'🖼 Mídias' },
+  { id:'feat_substituicoes', rotulo:'🔁 Substituições' },
+  { id:'feat_fila', rotulo:'▶ Fila de reprodução' },
+  { id:'feat_intervalos', rotulo:'⏸ Intervalos' }
+];
+Controle.featAtiva = function(id){ return (Controle.estado || {})[id] !== 'false'; };
+Controle.renderCustomizacoes = function(){
+  var el = document.getElementById('listaCustomizacoes');
+  if(!el) return;
+  var h = '';
+  for(var i = 0; i < Controle.CUSTOMIZACOES.length; i++){
+    var f = Controle.CUSTOMIZACOES[i];
+    var on = Controle.featAtiva(f.id);
+    h += '<div class="cor-item" style="justify-content:space-between">';
+    h += '<span class="cor-nome">' + f.rotulo + '</span>';
+    h += '<label class="toggle-sw" title="liga/desliga"><input type="checkbox" data-feat="' + f.id + '" ' + (on ? 'checked' : '') + ' onchange="Controle.toggleCustomizacao(this)"><span class="slider"></span></label>';
+    h += '</div>';
+  }
+  el.innerHTML = h;
+};
+Controle.toggleCustomizacao = function(input){
+  var id = input.getAttribute('data-feat');
+  var d = {}; d[id] = input.checked ? 'true' : 'false';
+  Controle.setEstado(d);
+  Controle.renderMenuRapido();
+};
+Controle.renderMenuRapido = function(){
+  var el = document.getElementById('menuRapido');
+  if(!el) return;
+  var itens = [
+    { feat:'feat_gol', h:'<button onclick="Controle.notifRapida(\'gol\')" style="background:#dc2626;color:#fff;font-size:13px;padding:10px 14px">⚽ Gol</button>' },
+    { feat:'feat_faltas', h:'<button onclick="Controle.notifRapida(\'amarelo\')" style="background:#facc15;color:#000;font-size:13px;padding:10px 14px">🟨 Faltas</button><button onclick="Controle.notifRapida(\'vermelho\')" style="background:#7f1d1d;color:#fff;font-size:13px;padding:10px 14px">🟥 Expulsão</button>' },
+    { feat:'feat_midias', h:'<button onclick="Controle.irPara(8)" style="background:#2a3a55;font-size:13px;padding:10px 14px">🖼 Mídias</button>' },
+    { feat:'feat_substituicoes', h:'<button onclick="Controle.status(\'erro\',\'⚠ Substituições: em breve\')" style="background:#2a3a55;font-size:13px;padding:10px 14px">🔁 Substituições</button>' },
+    { feat:'feat_fila', h:'<button onclick="Controle.status(\'erro\',\'⚠ Fila de reprodução: em breve\')" style="background:#2a3a55;font-size:13px;padding:10px 14px">▶ Fila</button>' },
+    { feat:'feat_intervalos', h:'<button onclick="Controle.status(\'erro\',\'⚠ Intervalos: em breve\')" style="background:#2a3a55;font-size:13px;padding:10px 14px">⏸ Intervalos</button>' }
+  ];
+  var h = '';
+  for(var i = 0; i < itens.length; i++){
+    if(Controle.featAtiva(itens[i].feat)) h += itens[i].h;
+  }
+  if(!h) h = '<span style="color:#5b6f88;font-size:11px">Nenhuma ação habilitada.</span>';
+  el.innerHTML = h;
+};
+
 Controle.uploadSponsor = function(n) {
   var input = document.createElement('input');
   input.type = 'file';
@@ -1075,6 +1119,7 @@ setTimeout(function(){ Controle.atualizarNomePreset(); }, 900);
 setTimeout(function(){ Controle.recarregarLogos(); }, 1000);
 setTimeout(function(){ Controle.listarLogos(); }, 1000);
 setTimeout(function(){ Controle.syncSponsors(); }, 1000);
+setTimeout(function(){ Controle.renderCustomizacoes(); Controle.renderMenuRapido(); }, 1000);
 
 /* Monkey-patch setEstado AFTER init (garantido que existe) */
 var _origSetEstado = Controle.setEstado;

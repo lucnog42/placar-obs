@@ -1,5 +1,14 @@
 # Histórico
 
+## 2026-10-20 (revisões — preview fixo no mobile + toggles de customização)
+
+- **Preview fixo no mobile**: `#previewWrapper` agora é `position:sticky;top:48px`,
+  ficando visível enquanto rola pelas telas do wizard.
+- **Toggles de customização (Tela 10)**: cada recurso da tela "Operar ao vivo"
+  (Gol, Faltas/cartões, Mídias, Substituições, Fila, Intervalos) tem um toggle
+  liga/desliga na seção "🎛 Customizações". Desligar remove a ação do menu rápido.
+  Flags `feat_*` persistidas na seção `estilo` (MS + ms_section + defaults).
+
 ## 2026-10-20 (patrocinadores: rotação automática com prioridade)
 
 - **Patrocinadores agora renderizam de verdade** (pendência antiga): os logos
