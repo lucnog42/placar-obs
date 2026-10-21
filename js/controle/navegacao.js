@@ -73,11 +73,17 @@ Controle.fecharMenu = function () {
 Controle.abrirModal = function (id) { document.getElementById(id).classList.add('open'); };
 Controle.fecharModal = function (id) { document.getElementById(id).classList.remove('open'); };
 
-/* ---------- notificação rápida (Tela 10) ---------- */
+/* abre repertório (mídias) e editor de cenas como pop-ups */
+Controle.abrirRepertorio = function () { Controle.renderMidias(); Controle.abrirModal('modalRepertorio'); };
+Controle.abrirCenas = function () { Controle.renderCenas(); Controle.abrirModal('modalCenas'); };
+
+/* ---------- notificação rápida (abre o pop-up time→jogador) ---------- */
 Controle.notifRapida = function (tipo) {
   var radios = document.getElementsByName('tipoNotif');
   for (var i = 0; i < radios.length; i++) { if (radios[i].value === tipo) radios[i].checked = true; }
-  Controle.enviarNotificacao(true);
+  Controle.toggleTipoNotif();
+  if (Controle.renderTimesNotif) Controle.renderTimesNotif();
+  Controle.abrirModal('modalNotificacao');
 };
 
 /* ---------- popup de categorias do overlay (Tela 10) ---------- */

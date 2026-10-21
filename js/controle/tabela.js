@@ -96,7 +96,11 @@ Controle.renderSelectTimes = function () {
 
 /* ---------- linha do tempo ---------- */
 Controle.renderCenas = function () {
-    var box = document.getElementById('tabelaCenasLista');
+    Controle._renderCenasInto('');
+    Controle._renderCenasInto('pop');
+};
+Controle._renderCenasInto = function (pfx) {
+    var box = document.getElementById(pfx + 'tabelaCenasLista');
     if (!box) return;
     var lista = Controle.cenas(), total = 0, html = '';
     lista.forEach(function (c, i) {
@@ -108,16 +112,16 @@ Controle.renderCenas = function () {
             + ' title="Dura&ccedil;&atilde;o desta cena"'
             + ' oninput="Controle.cenaDuracao(' + i + ',this.value,true)"'
             + ' onchange="Controle.cenaDuracao(' + i + ',this.value,false)">'
-            + '<span class="cena-durval" id="cenaDur' + i + '">' + c.d + 's</span>'
+            + '<span class="cena-durval" id="' + pfx + 'cenaDur' + i + '">' + c.d + 's</span>'
             + '<button class="cena-pos' + (Controle._layoutCena === c.k ? ' on' : '') + '" title="Arrastar/soltar a posi&ccedil;&atilde;o no preview" onclick="Controle.modoPosicionar(\'' + c.k + '\')">&#10021;</button>'
             + '<button class="cena-mv" title="Subir" onclick="Controle.moverCena(' + i + ',-1)">↑</button>'
             + '<button class="cena-mv" title="Descer" onclick="Controle.moverCena(' + i + ',1)">↓</button>'
             + '</div>';
     });
     box.innerHTML = html;
-    var tt = document.getElementById('tabelaTotal');
+    var tt = document.getElementById(pfx + 'tabelaTotal');
     if (tt) tt.textContent = 'total ' + total.toFixed(0) + ' s';
-    var tc = document.getElementById('tabelaCenaCount');
+    var tc = document.getElementById(pfx + 'tabelaCenaCount');
     if (tc) tc.textContent = lista.filter(function (c) { return c.on; }).length + '/' + lista.length + ' cenas';
 };
 
@@ -131,9 +135,11 @@ Controle.cenaDuracao = function (i, v, aoVivo) {
     var d = parseFloat(v); if (isNaN(d) || d < 1) d = 1; if (d > 180) d = 180;
     l[i].d = Math.round(d); l[i].k = l[i].k; l[i].on = l[i].on;
     Controle.estado.tabelaCenas = JSON.stringify(l);
-    var tx = document.getElementById('cenaDur' + i); if (tx) tx.textContent = l[i].d + 's';
-    var tt = document.getElementById('tabelaTotal');
-    if (tt) { var t = 0; l.forEach(function (c) { if (c.on) t += c.d; }); tt.textContent = 'total ' + t.toFixed(0) + ' s'; }
+    ['', 'pop'].forEach(function (pfx) {
+        var tx = document.getElementById(pfx + 'cenaDur' + i); if (tx) tx.textContent = l[i].d + 's';
+        var tt = document.getElementById(pfx + 'tabelaTotal');
+        if (tt) { var t = 0; l.forEach(function (c) { if (c.on) t += c.d; }); tt.textContent = 'total ' + t.toFixed(0) + ' s'; }
+    });
     if (aoVivo) return;                 /* sem POST e sem re-render durante o arraste */
     Controle.salvarCenas(l);            /* ao soltar: grava no servidor e sincroniza a UI */
 };

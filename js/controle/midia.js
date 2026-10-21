@@ -7,12 +7,13 @@ Controle.getAtivasCtrl=function(){try{return JSON.parse(Controle.estado.midiasAt
    Repertorio unico: arquivos (imagem/gif/video) + notificacoes (texto)
    ------------------------------------------------------------------ */
 
-/* adiciona arquivo: imagem, gif ou video */
-Controle.adicionarMidia=function(){
-    var nome=document.getElementById('midiaNome').value.trim();
+/* adiciona arquivo: imagem, gif ou video (pfx='' tela 8, pfx='pop' no popup) */
+Controle.adicionarMidia=function(pfx){
+    pfx=pfx||'';
+    var nome=document.getElementById(pfx+'midiaNome').value.trim();
     if(!nome){alert('Digite um nome');return;}
-    var duracao=parseInt(document.getElementById('midiaDuracao').value)||0;
-    var intervalo=parseInt(document.getElementById('midiaIntervalo').value)||0;
+    var duracao=parseInt(document.getElementById(pfx+'midiaDuracao').value)||0;
+    var intervalo=parseInt(document.getElementById(pfx+'midiaIntervalo').value)||0;
     var inp=document.createElement('input');
     inp.type='file';inp.accept='image/*,video/*,.gif,.webp,.png,.jpg,.jpeg,.mp4,.webm';inp.style.display='none';
     inp.onchange=function(e){
@@ -24,7 +25,7 @@ Controle.adicionarMidia=function(){
             if(f.type.indexOf('video/')===0)tipo='video';
             else if(f.type==='image/gif'||/\.gif$/i.test(f.name))tipo='gif';   // gif animado
             var id=String(Date.now());var src=r.result;
-            var trans=document.getElementById('midiaTransicaoSelect').value;
+            var trans=document.getElementById(pfx+'midiaTransicaoSelect').value;
             Controle.thumbCache[id]=src;
             try{
                 var resp=await fetch(API+API_AND+'acao=upload_midia',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id,tipo:tipo,src:src,nome:nome,transicao:trans,duracao:duracao,intervalo:intervalo})});
@@ -35,9 +36,9 @@ Controle.adicionarMidia=function(){
                 Controle.estado.midias=JSON.stringify(midias);
                 Controle.estado.estadoVersao=rj.versao;
                 Controle.renderMidias();
-                document.getElementById('midiaNome').value='';
-                document.getElementById('midiaDuracao').value='';
-                document.getElementById('midiaIntervalo').value='';
+                document.getElementById(pfx+'midiaNome').value='';
+                document.getElementById(pfx+'midiaDuracao').value='';
+                document.getElementById(pfx+'midiaIntervalo').value='';
                 Controle.status('ok','Midia '+nome+' salva');
             }catch(err){Controle.status('erro','Upload: '+err.message);delete Controle.thumbCache[id];}
             inp.remove();
@@ -224,14 +225,15 @@ Controle.removerMidia=async function(id){
 };
 
 // Salvar edicao inline (duracao, intervalo, transicao, texto)
-Controle.editarMidia=async function(id){
+Controle.editarMidia=async function(id,pfx){
+    pfx=pfx||'';
     var midias=Controle.getMidiasCtrl();
     var m=null;for(var i=0;i<midias.length;i++)if(midias[i].id===id)m=midias[i];
     if(!m)return;
-    var durEl=document.getElementById('editDur_'+id);
-    var intEl=document.getElementById('editInt_'+id);
-    var trEl=document.getElementById('editTrans_'+id);
-    var txEl=document.getElementById('editTxt_'+id);
+    var durEl=document.getElementById(pfx+'editDur_'+id);
+    var intEl=document.getElementById(pfx+'editInt_'+id);
+    var trEl=document.getElementById(pfx+'editTrans_'+id);
+    var txEl=document.getElementById(pfx+'editTxt_'+id);
     var duracao=durEl?(parseInt(durEl.value)||0):(parseInt(m.duracao)||0);
     var intervalo=intEl?(parseInt(intEl.value)||0):(parseInt(m.intervalo)||0);
     var transicao=trEl?trEl.value:(m.transicao||'fade');
@@ -251,7 +253,8 @@ Controle.editarMidia=async function(id){
     }catch(err){Controle.status('erro','Erro: '+err.message);}
 };
 
-Controle._renderItens=function(lista,ativas){
+Controle._renderItens=function(lista,ativas,pfx){
+    pfx=pfx||'';
     var trs=['fade','slide-left','slide-right','zoom','none'];
     var html='';
     for(var i=0;i<lista.length;i++){
@@ -271,20 +274,20 @@ Controle._renderItens=function(lista,ativas){
         }
         var dur=parseInt(m.duracao)||0, intv=parseInt(m.intervalo)||0;
         var editH='<span class="midia-info">'+
-            '⏱<input class="midia-edit" id="editDur_'+m.id+'" type="number" value="'+dur+'" min="0" onchange="Controle.editarMidia(\''+m.id+'\')">'+
-            '🔁<input class="midia-edit" id="editInt_'+m.id+'" type="number" value="'+intv+'" min="0" onchange="Controle.editarMidia(\''+m.id+'\')">'+
+            '⏱<input class="midia-edit" id="'+pfx+'editDur_'+m.id+'" type="number" value="'+dur+'" min="0" onchange="Controle.editarMidia(\''+m.id+'\',\''+pfx+'\')">'+
+            '🔁<input class="midia-edit" id="'+pfx+'editInt_'+m.id+'" type="number" value="'+intv+'" min="0" onchange="Controle.editarMidia(\''+m.id+'\',\''+pfx+'\')">'+
             's</span>';
         var optH='';
         for(var j=0;j<trs.length;j++){var t=trs[j];var sel=m.transicao===t?' selected':'';optH+='<option value="'+t+'"'+sel+'>'+t+'</option>';}
         var nomeH=texto
             ? '<span class="midia-nome" title="'+m.nome+'">'+m.nome+'</span>'+
-              '<input class="midia-texto" id="editTxt_'+m.id+'" value="'+String(m.texto||'').replace(/"/g,'&quot;')+'" onchange="Controle.editarMidia(\''+m.id+'\')">'
+              '<input class="midia-texto" id="'+pfx+'editTxt_'+m.id+'" value="'+String(m.texto||'').replace(/"/g,'&quot;')+'" onchange="Controle.editarMidia(\''+m.id+'\',\''+pfx+'\')">'
             : '<span class="midia-nome">'+m.nome+'</span>';
         var botoes=(texto||m.tipo==='cena')
             ? '<button class="btn-enviar" onclick="Controle.dispararMidia(\''+m.id+'\')">▶ Enviar</button>'
             : '<button class="'+(isAtiva?'ativo':'')+'" onclick="Controle.toggleMidia(\''+m.id+'\')">'+(isAtiva?'Ativo':'Ativar')+'</button>';
         html+='<div class="midia-item'+(texto?' texto':'')+'">'+thumbH+nomeH+editH+
-            '<select id="editTrans_'+m.id+'" onchange="Controle.editarMidia(\''+m.id+'\')" style="font-size:10px;height:20px;padding:1px 3px;width:72px">'+optH+'</select>'+
+            '<select id="'+pfx+'editTrans_'+m.id+'" onchange="Controle.editarMidia(\''+m.id+'\',\''+pfx+'\')" style="font-size:10px;height:20px;padding:1px 3px;width:72px">'+optH+'</select>'+
             botoes+
             '<button class="btn-remover" onclick="Controle.removerMidia(\''+m.id+'\')">X</button></div>';
     }
@@ -293,13 +296,15 @@ Controle._renderItens=function(lista,ativas){
 
 Controle.renderMidias=function(){
     var c=document.getElementById('listaMidias');
+    var cp=document.getElementById('listaMidiasPop');
     var n=document.getElementById('listaNotificacoes');
     var midias=Controle.getMidiasCtrl();
     var ativas=Controle.getAtivasCtrl();
     var arquivos=[],textos=[];
     for(var i=0;i<midias.length;i++){ (midias[i].tipo==='texto'?textos:arquivos).push(midias[i]); }
-    if(c) c.innerHTML = arquivos.length ? Controle._renderItens(arquivos,ativas) : '<span style="color:#888;font-size:11px;">Nenhuma mídia adicionada</span>';
-    if(n) n.innerHTML = textos.length ? Controle._renderItens(textos,ativas) : '<span style="color:#888;font-size:11px;">Nenhuma notificação no histórico</span>';
+    if(c) c.innerHTML = arquivos.length ? Controle._renderItens(arquivos,ativas,'') : '<span style="color:#888;font-size:11px;">Nenhuma mídia adicionada</span>';
+    if(cp) cp.innerHTML = arquivos.length ? Controle._renderItens(arquivos,ativas,'pop') : '<span style="color:#888;font-size:11px;">Nenhuma mídia adicionada</span>';
+    if(n) n.innerHTML = textos.length ? Controle._renderItens(textos,ativas,'') : '<span style="color:#888;font-size:11px;">Nenhuma notificação no histórico</span>';
 };
 
 /* dispara um item do repertorio uma unica vez (notificacoes) */

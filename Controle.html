@@ -77,6 +77,10 @@ h2.titulo{text-align:left}
 .modal-actions .ok{background:#2196F3;color:#fff}
 .modal-actions .danger{background:#dc2626;color:#fff}
 .modal-actions .cancel{background:#2a3a55;color:#e8eefc}
+/* notificação dentro do modal: mantém os inputs inline (não herda width:100%) */
+.modal-box .toggle-notificacao label{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:3px 0}
+.modal-box .toggle-notificacao input[type=radio]{width:auto;margin-bottom:0}
+.modal-box .toggle-notificacao input[type=text]{width:auto;flex:1;min-width:140px;margin-bottom:0}
 /* resumo */
 .resumo-card{border-left:3px solid #2196F3}
 .resumo-card .linha{display:flex;justify-content:space-between;gap:8px;font-size:12px;padding:3px 0;color:#e8eefc}
@@ -467,7 +471,7 @@ h2.titulo{text-align:left}
 
 <!-- TELA 8 — REPERTÓRIO -->
 <section class="tela" id="tela-8" data-titulo="Repertório">
-  <h2 class="titulo">📢 Repertório · Notificações &amp; Mídias</h2>
+  <h2 class="titulo">📢 Repertório de Mídias</h2>
   <div class="grid-inner">
     <section class="full">
       <p>🖼 Repertório de Mídias <span class="hint">imagem · GIF animado · vídeo</span></p>
@@ -485,10 +489,6 @@ h2.titulo{text-align:left}
         <button onclick="Controle.adicionarMidia()" style="background:#4CAF50;color:#fff;">+ Adicionar</button>
       </div>
       <div id="listaMidias" style="min-height:60px;"><span style="color:#888;font-size:11px;">Nenhuma mídia adicionada</span></div>
-    </section>
-    <section class="full">
-      <p>🔔 Histórico de Notificações <span class="hint">texto enviado/guardado</span></p>
-      <div id="listaNotificacoes" style="min-height:60px;"><span style="color:#888;font-size:11px;">Nenhuma notificação no histórico</span></div>
     </section>
   </div>
 </section>
@@ -546,38 +546,8 @@ h2.titulo{text-align:left}
           <p style="font-size:11px;color:#93a4c0;margin:6px 0 3px">Cena fixa <span class="hint">(entra na cena que estava no ar)</span></p>
           <select id="tabelaCena" onchange="Controle.definirCenaTabela(this.value)" style="width:100%"></select>
         </div>
-        <div class="overlay-cat" onclick="Controle.irPara(5)" style="margin-top:8px"><span>🎬 Ajustar cenas…</span><span style="color:#93a4c0;font-size:10px">tela Cenas</span></div>
+        <div class="overlay-cat" onclick="Controle.abrirCenas()" style="margin-top:8px"><span>🎬 Ajustar cenas…</span><span style="color:#93a4c0;font-size:10px">linha do tempo</span></div>
       </div>
-    </section>
-    <section class="full">
-      <p>⚡ Menu rápido <span class="hint">ações ligadas nas customizações</span></p>
-      <div style="display:flex;gap:6px;flex-wrap:wrap" id="menuRapido"></div>
-    </section>
-    <section class="full" id="secNotificacao">
-      <p>🔔 Notificação <span class="hint">tipo → time → jogador (o time também é uma opção)</span></p>
-      <div class="toggle-notificacao">
-        <label><input type="radio" name="tipoNotif" value="gol" checked onchange="Controle.toggleTipoNotif()"> ⚽ Gol <input type="text" id="textoGol" placeholder="GOOOLLL!!!"></label>
-        <label><input type="radio" name="tipoNotif" value="amarelo" onchange="Controle.toggleTipoNotif()"> 🟨 Amarelo <input type="text" id="textoAmarelo" placeholder="CARTÃO AMARELO"></label>
-        <label><input type="radio" name="tipoNotif" value="vermelho" onchange="Controle.toggleTipoNotif()"> 🟥 Vermelho <input type="text" id="textoVermelho" placeholder="CARTÃO VERMELHO"></label>
-        <label><input type="radio" name="tipoNotif" value="substituicao" onchange="Controle.toggleTipoNotif()"> 🔁 Substituição</label>
-      </div>
-      <p style="font-size:11px;color:#93a4c0;margin:8px 0 4px">👥 Time <span class="hint">(clique para notificar o time todo, ou abrir os jogadores)</span></p>
-      <div id="listaTimesNotif" class="times-notif-list"></div>
-      <div id="listaJogadoresNotif" class="jogadores-notif-list" style="display:none"></div>
-      <div id="substituicaoCampos" style="display:none">
-        <div class="row" style="gap:6px;margin-top:6px">
-          <div style="flex:1"><span class="hint">Entra</span><select id="selJogadorEntra" style="width:100%"><option value="">— entra —</option></select></div>
-          <div style="flex:1"><span class="hint">Sai</span><select id="selJogadorSai" style="width:100%"><option value="">— sai —</option></select></div>
-        </div>
-      </div>
-      <div class="row" style="margin-top:8px">
-        <button onclick="Controle.enviarNotificacao(true)" style="background:#4CAF50;color:#fff">▶ Enviar agora</button>
-        <button onclick="Controle.salvarNotificacao()">➕ Guardar no repertório</button>
-      </div>
-    </section>
-    <section class="full">
-      <p>🎛 Customizações <span class="hint">ligue/desligue cada recurso da tela ao vivo</span></p>
-      <div id="listaCustomizacoes"></div>
     </section>
     <section class="full" id="secaoIntervalos">
       <p>⏸ Intervalos & Cenários <span class="hint">cenas manuais de abertura, intervalo e encerramento</span></p>
@@ -587,6 +557,14 @@ h2.titulo{text-align:left}
         <button onclick="Controle.intervalo('encerramento')" style="background:#0f172a;color:#fff;font-size:13px;padding:10px 14px">🏁 Encerramento</button>
         <button onclick="Controle.voltarLoop()" style="background:#2a3a55;font-size:13px;padding:10px 14px">⏹ Voltar ao loop</button>
       </div>
+    </section>
+    <section class="full">
+      <p>⚡ Menu rápido</p>
+      <div style="display:flex;gap:6px;flex-wrap:wrap" id="menuRapido"></div>
+    </section>
+    <section class="full" id="secaoHistorico">
+      <p>🔔 Histórico de Notificações <span class="hint">texto enviado/guardado</span></p>
+      <div id="listaNotificacoes" style="min-height:60px;max-height:340px;overflow-y:auto"><span style="color:#888;font-size:11px;">Nenhuma notificação no histórico</span></div>
     </section>
     <section>
       <p>Pontos</p>
@@ -749,6 +727,75 @@ h2.titulo{text-align:left}
     <div class="modal-actions">
       <button class="cancel" onclick="Controle.fecharModal('modalSemInstancia')">Fechar</button>
       <button class="ok" onclick="Controle.fecharModal('modalSemInstancia');Controle.abrirCriarInstancia()">➕ Criar instância</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modalNotificacao">
+  <div class="modal-box" style="max-width:540px">
+    <h3>🔔 Notificação</h3>
+    <p style="font-size:11px;color:#93a4c0;margin:0 0 6px">tipo → time → jogador (o time também é uma opção)</p>
+    <div class="toggle-notificacao">
+      <label><input type="radio" name="tipoNotif" value="gol" checked onchange="Controle.toggleTipoNotif()"> ⚽ Gol <input type="text" id="textoGol" placeholder="GOOOLLL!!!"></label>
+      <label><input type="radio" name="tipoNotif" value="amarelo" onchange="Controle.toggleTipoNotif()"> 🟨 Amarelo <input type="text" id="textoAmarelo" placeholder="CARTÃO AMARELO"></label>
+      <label><input type="radio" name="tipoNotif" value="vermelho" onchange="Controle.toggleTipoNotif()"> 🟥 Vermelho <input type="text" id="textoVermelho" placeholder="CARTÃO VERMELHO"></label>
+      <label><input type="radio" name="tipoNotif" value="substituicao" onchange="Controle.toggleTipoNotif()"> 🔁 Substituição</label>
+    </div>
+    <p style="font-size:11px;color:#93a4c0;margin:8px 0 4px">👥 Time</p>
+    <div id="listaTimesNotif" class="times-notif-list"></div>
+    <div id="listaJogadoresNotif" class="jogadores-notif-list" style="display:none"></div>
+    <div id="substituicaoCampos" style="display:none">
+      <div class="row" style="gap:6px;margin-top:6px">
+        <div style="flex:1"><span class="hint">Entra</span><select id="selJogadorEntra" style="width:100%"><option value="">— entra —</option></select></div>
+        <div style="flex:1"><span class="hint">Sai</span><select id="selJogadorSai" style="width:100%"><option value="">— sai —</option></select></div>
+      </div>
+    </div>
+    <div class="modal-actions" style="justify-content:space-between;flex-wrap:wrap">
+      <button class="cancel" onclick="Controle.fecharModal('modalNotificacao')">Fechar</button>
+      <div style="display:flex;gap:8px">
+        <button class="ok" onclick="Controle.salvarNotificacao()" style="background:#2a3a55">➕ Guardar</button>
+        <button class="ok" onclick="Controle.enviarNotificacao(true);Controle.fecharModal('modalNotificacao')" style="background:#4CAF50">▶ Enviar agora</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modalRepertorio">
+  <div class="modal-box" style="max-width:680px">
+    <h3>🖼 Repertório de Mídias</h3>
+    <div style="display:flex;gap:4px;margin-bottom:8px;align-items:center;flex-wrap:wrap">
+      <input type="text" id="popmidiaNome" placeholder="Nome da mídia" style="flex:1;min-width:100px;">
+      <select id="popmidiaTransicaoSelect">
+        <option value="fade">Fade</option>
+        <option value="slide-left">Slide ←</option>
+        <option value="slide-right">Slide →</option>
+        <option value="zoom">Zoom</option>
+        <option value="none">Instantâneo</option>
+      </select>
+      <input type="number" id="popmidiaDuracao" placeholder="Duração (s)" min="0" style="width:64px;" title="0 = manual">
+      <input type="number" id="popmidiaIntervalo" placeholder="Intervalo (s)" min="0" style="width:64px;" title="0 = sem repetir">
+      <button onclick="Controle.adicionarMidia('pop')" style="background:#4CAF50;color:#fff;">+ Adicionar</button>
+    </div>
+    <div id="listaMidiasPop" style="min-height:60px;max-height:50vh;overflow-y:auto"><span style="color:#888;font-size:11px;">Nenhuma mídia adicionada</span></div>
+    <div class="modal-actions">
+      <button class="cancel" onclick="Controle.fecharModal('modalRepertorio')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modalCenas">
+  <div class="modal-box" style="max-width:680px">
+    <h3>🎬 Cenas · linha do tempo</h3>
+    <div id="poptabelaCenasLista"></div>
+    <div class="row" style="margin-top:5px">
+      <button onclick="Controle.todasCenas(true)" style="font-size:10px;padding:3px 8px">Todas</button>
+      <button onclick="Controle.todasCenas(false)" style="font-size:10px;padding:3px 8px">Nenhuma</button>
+      <button onclick="Controle.resetarCenas()" style="font-size:10px;padding:3px 8px">Padrão</button>
+      <span class="hint" id="poptabelaCenaCount"></span>
+      <span class="hint" id="poptabelaTotal"></span>
+    </div>
+    <div class="modal-actions">
+      <button class="cancel" onclick="Controle.fecharModal('modalCenas')">Fechar</button>
     </div>
   </div>
 </div>
@@ -1154,9 +1201,9 @@ Controle.renderMenuRapido = function(){
   var itens = [
     { feat:'feat_gol', h:'<button onclick="Controle.notifRapida(\'gol\')" style="background:#dc2626;color:#fff;font-size:13px;padding:10px 14px">⚽ Gol</button>' },
     { feat:'feat_faltas', h:'<button onclick="Controle.notifRapida(\'amarelo\')" style="background:#facc15;color:#000;font-size:13px;padding:10px 14px">🟨 Faltas</button><button onclick="Controle.notifRapida(\'vermelho\')" style="background:#7f1d1d;color:#fff;font-size:13px;padding:10px 14px">🟥 Expulsão</button>' },
-    { feat:'feat_midias', h:'<button onclick="Controle.irPara(8)" style="background:#2a3a55;font-size:13px;padding:10px 14px">🖼 Mídias</button>' },
+    { feat:'feat_midias', h:'<button onclick="Controle.abrirRepertorio()" style="background:#2a3a55;font-size:13px;padding:10px 14px">🖼 Mídias</button>' },
     { feat:'feat_substituicoes', h:'<button onclick="Controle.novaSubstituicao()" style="background:#2a3a55;font-size:13px;padding:10px 14px">🔁 Substituições</button>' },
-    { feat:'feat_fila', h:'<button onclick="Controle.irPara(8)" style="background:#2a3a55;font-size:13px;padding:10px 14px">▶ Fila</button>' }
+    { feat:'feat_fila', h:'<button onclick="Controle.abrirRepertorio()" style="background:#2a3a55;font-size:13px;padding:10px 14px">▶ Fila</button>' }
   ];
   var h = '';
   for(var i = 0; i < itens.length; i++){
@@ -1186,8 +1233,8 @@ Controle.voltarLoop = function(){
 Controle.novaSubstituicao = function(){
   var r = document.querySelector('input[name="tipoNotif"][value="substituicao"]');
   if(r){ r.checked = true; Controle.toggleTipoNotif(); }
-  var sec = document.getElementById('secNotificacao');
-  if(sec){ sec.scrollIntoView({behavior:'smooth', block:'start'}); }
+  if(Controle.renderTimesNotif) Controle.renderTimesNotif();
+  Controle.abrirModal('modalNotificacao');
 };
 
 Controle.uploadSponsor = function(n) {
