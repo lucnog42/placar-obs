@@ -1,5 +1,11 @@
 # Histórico
 
+## 2026-10-20 (revisões — CSV de jogadores ligado às notificações)
+
+- **CSV de jogadores → notificações**: o formulário de notificação (Tela 8) ganhou o
+  seletor `#selJogador`, populado pelas escalações importadas por CSV (`tabelaEscalacoes`),
+  agrupado por time. Escolher um jogador preenche automaticamente o campo de nome.
+
 ## 2026-10-20 (revisões — repertório/histórico separados + cena de patrocinador)
 
 - **Repertório separado do histórico**: a Tela 8 agora divide "🖼 Repertório de Mídias"

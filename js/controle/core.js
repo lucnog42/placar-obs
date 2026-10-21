@@ -35,7 +35,7 @@ Controle.aplicarEstado=function(){
     var sc=parseFloat(e.placarScale)||0.65;
     document.getElementById('scaleSlider').value=sc;document.getElementById('scaleVal').textContent=sc.toFixed(2);
     document.getElementById('inputX').value=e.placarX||'50';document.getElementById('inputY').value=e.placarY||'50';
-    if(Controle.carregarPenalte)Controle.carregarPenalte();if(Controle.renderMidias)Controle.renderMidias();if(Controle.renderMenuRapido)Controle.renderMenuRapido();if(Controle.renderCustomizacoes)Controle.renderCustomizacoes();
+    if(Controle.carregarPenalte)Controle.carregarPenalte();if(Controle.renderMidias)Controle.renderMidias();if(Controle.renderMenuRapido)Controle.renderMenuRapido();if(Controle.renderCustomizacoes)Controle.renderCustomizacoes();if(Controle.renderJogadores)Controle.renderJogadores();
     var dst=document.getElementById('debugStatusToggle');
     if(dst){var v=e.mostrarStatus!=='false';dst.checked=v;
         var dsl=document.getElementById('debugStatusLabel');

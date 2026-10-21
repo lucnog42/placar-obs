@@ -418,7 +418,10 @@ h2.titulo{text-align:left}
         <label><input type="radio" name="modoNotif" value="jogador" checked onchange="Controle.toggleModoNotif()"> 👤 Jogador</label>
         <label><input type="radio" name="modoNotif" value="time" onchange="Controle.toggleModoNotif()"> 🏆 Time</label>
       </div>
-      <input type="text" id="nomeJogador" placeholder="Nome do jogador" style="width:100%;box-sizing:border-box">
+      <select id="selJogador" style="width:100%;box-sizing:border-box" onchange="Controle.escolherJogador(this)">
+        <option value="">— escolher jogador do CSV —</option>
+      </select>
+      <input type="text" id="nomeJogador" placeholder="ou digite o nome do jogador" style="width:100%;box-sizing:border-box;margin-top:4px">
       <div id="seletorTimeNotif" style="display:none;margin-top:4px;">
         <select id="timeNotif"><option value="A">Time A</option><option value="B">Time B</option></select>
       </div>

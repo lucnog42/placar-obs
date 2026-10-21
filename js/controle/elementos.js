@@ -273,6 +273,8 @@ Controle.desativarPenalte=function(){
 Controle.toggleModoNotif=function(){
     var m=document.querySelector('input[name="modoNotif"]:checked').value;
     document.getElementById('nomeJogador').style.display=m==='jogador'?'':'none';
+    var sj=document.getElementById('selJogador');
+    if(sj) sj.style.display=m==='jogador'?'':'none';
     document.getElementById('seletorTimeNotif').style.display=m==='time'?'block':'none';
 };
 

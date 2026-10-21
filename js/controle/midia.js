@@ -52,6 +52,35 @@ Controle.adicionarMidia=function(){
 Controle.NOTIF_ROTULO={gol:'Gol',amarelo:'Cartão amarelo',vermelho:'Cartão vermelho',info:'Aviso'};
 Controle.NOTIF_PADRAO={gol:'GOOOOL!!!',amarelo:'CARTÃO AMARELO',vermelho:'CARTÃO VERMELHO',info:''};
 
+/* popula o seletor de jogadores a partir das escalações (CSV) */
+Controle.renderJogadores=function(){
+    var sel=document.getElementById('selJogador');
+    if(!sel)return;
+    var cur=sel.value, html='<option value="">— escolher jogador do CSV —</option>';
+    try{
+        var map=JSON.parse(Controle.estado.tabelaEscalacoes||'{}');
+        Object.keys(map).forEach(function(k){
+            var lista=map[k]||[];
+            if(!lista.length)return;
+            var rot=k, ln=k.toLowerCase();
+            if(ln==='a')rot=Controle.estado.timeA||'Time A';
+            else if(ln==='b')rot=Controle.estado.timeB||'Time B';
+            html+='<optgroup label="'+String(rot).replace(/"/g,'&quot;')+'">';
+            lista.forEach(function(p){
+                var rotulo=p.num?((p.num+'. ')+p.player):p.player;
+                html+='<option value="'+String(p.player).replace(/"/g,'&quot;')+'">'+String(rotulo).replace(/</g,'&lt;')+'</option>';
+            });
+            html+='</optgroup>';
+        });
+    }catch(e){}
+    sel.innerHTML=html;
+    if(cur)sel.value=cur;
+};
+Controle.escolherJogador=function(sel){
+    var v=sel.value;
+    if(v){var inp=document.getElementById('nomeJogador');if(inp)inp.value=v;}
+};
+
 /* monta o item de texto a partir do formulario */
 Controle._itemNotif=function(){
     var rt=document.querySelector('input[name="tipoNotif"]:checked');
