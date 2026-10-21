@@ -19,6 +19,7 @@ Placar.Tabela = {
     _sponsorChave: '',
     _interromper: null,
     _cenaCancelarSeq: null,
+    _forcado: false,
 
     /* tema do overlay que corresponde a cada tema do placar */
     TEMA_PLACAR: { laliga: 'escuro', colorido: 'neon', simples: 'matchfacts' },
@@ -273,9 +274,13 @@ Placar.Tabela = {
     mostrarCena: function (k, d) {
         var dd = parseInt(d, 10);
         this._interromper = { k: k, d: dd > 0 ? dd : Infinity, t0: performance.now() };
+        if (!this.ativo) { this._forcado = true; this.ligar(); }   // liga o overlay se estiver desligado
     },
     /* volta ao loop (encerra a cena segura) */
-    cancelarCena: function () { this._interromper = null; },
+    cancelarCena: function () {
+        this._interromper = null;
+        if (this._forcado) { this._forcado = false; this.desligar(); }
+    },
 
     /* ---------- ciclo de vida ---------- */
     aplicar: function () {
@@ -349,6 +354,8 @@ Placar.Tabela = {
         var self = this;
         var cam = this.camada(), wrap = document.getElementById('placarWrapper');
         this.ativo = false;
+        this._interromper = null;
+        this._forcado = false;
         this.pararLoop();
         clearTimeout(this._t1);
         if (cam) cam.classList.remove('ativa');        // overlay sai primeiro

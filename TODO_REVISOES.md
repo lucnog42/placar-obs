@@ -1,27 +1,33 @@
 # Revisões pendentes (Placar OBS)
 
-Lista de revisões. Branch: `multi-instancia`.
+Branch: `multi-instancia`.
 
-## ✅ Concluídas (rodada de 2026-10-20)
+## Rodada 3 — em andamento (lote de 2026-10-20)
 
-1. **Preview fixado no mobile** — `#previewWrapper` agora é `position:sticky;top:48px`.
-2. **Toggle para desabilitar cada customização** — flags `feat_*` (seção `estilo`) com
-   toggles em "🎛 Customizações" na Tela 10; desligado remove a ação do menu rápido.
-5. **CSV de jogadores ligado às notificações** — seletor `#selJogador` (e `entra`/`sai`
-   da substituição) populado pelas escalações CSV; preenche o nome ao notificar.
-6. **Separar repertório de mídia do histórico de notificações** — Tela 8 com
-   `#listaMidias` (arquivos) e `#listaNotificacoes` (texto) separados.
-7. **Patrocinador → cena no repertório de mídias** — adicionar patrocinador cria item
-   `tipo:'cena'`; disparar força `mostrarCena('sponsors', d)` via `_interromper`.
-8. **Cenas automáticas de abertura/intervalo/encerramento** — cenas `intervalo` e
-   `encerramento` no motor (com placar de gols), reuso de `intro` p/ abertura; menu
-   "⏸ Intervalos & Cenários" na Tela 10; `mostrarCena`/`cancelarCena` (campo `cenaCancelar`).
-9. **Substituições** — tipo de notificação `substituicao` (entra/sai pelas escalações),
-   renderizada no motor e no fallback DOM; botão "🔁 Substituições" do menu rápido.
-10. **Fila de reprodução real** — mídias ativas tocam em sequência (ordem do repertório,
-    em loop), `duracao`/`intervalo` como tempo/pausa; fila em `js/placar/midia.js`.
+1. Impedir avançar tela pelo menu lateral sem definir instância.
+2. Permitir espaço no nome/id da instância.
+3. Preview NÃO ficar fixado (sticky) no desktop — só no mobile.
+4. Notificações saem da página de repertório e ficam só no "ao vivo" (Tela 10);
+   ao selecionar notificação → abrir o time → abrir lista de jogadores; o time
+   também é clicável como opção.
+5. Campo de pesquisa nas bibliotecas + agrupar itens e nomear o grupo.
+6. Botão de upload de escudos no mesmo card da biblioteca.
+7. Aumentar a escala de tudo no mobile (2x).
+8. Remover dropdown da seleção de logos do torneio; deixar só o logo selecionado.
+9. Campo de clima: setar só o número; °C hard-coded (aparece só quando número definido).
+10. Biblioteca de CSVs (tabela e jogadores).
+11. Sistema de alterar imagens do time vindo do CSV.
+12. Importar CSV baixa os escudos e referencia no servidor.
+13. Cor do time: botão de cor acompanha a cor; cor salva na biblioteca; contraste
+    automático de texto (preto em cor clara, branco em cor escura).
+
+## ✅ Concluídas (rodada anterior)
+
+1. Preview fixo no mobile. 2. Toggles de customização (Tela 10). 5. CSV jogadores → notificação.
+6. Repertório × histórico separados. 7. Patrocinador → cena. 8. Cenas abertura/intervalo/encerramento.
+9. Substituições. 10. Fila de reprodução real.
 
 ## ⏳ Pendentes (aguardam especificação visual)
 
-3. **Refazer as animações da Tabela** — revisar/refazer as animações de entrada/saída das cenas do overlay.
-4. **Refazer o CSS das notificações** — revisar o estilo das notificações (gol/falta/expulsão).
+3. Refazer as animações da Tabela.
+4. Refazer o CSS das notificações.
