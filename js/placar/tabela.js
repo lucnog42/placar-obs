@@ -18,12 +18,13 @@ Placar.Tabela = {
     _proxSponsor: 0,
     _sponsorChave: '',
     _interromper: null,
+    _cenaCancelarSeq: null,
 
     /* tema do overlay que corresponde a cada tema do placar */
     TEMA_PLACAR: { laliga: 'escuro', colorido: 'neon', simples: 'matchfacts' },
 
     /* cenas que o motor conhece (usado para validar o painel/estado) */
-    CENAS_VALIDAS: { intro: 1, table: 1, duel: 1, feature: 1, form2: 1, lineups: 1, sponsors: 1, lower: 1 },
+    CENAS_VALIDAS: { intro: 1, table: 1, duel: 1, feature: 1, form2: 1, lineups: 1, sponsors: 1, lower: 1, intervalo: 1, encerramento: 1 },
 
     /* ---------- elementos ---------- */
     camada: function () { return document.getElementById('camadaTabela'); },
@@ -164,7 +165,9 @@ Placar.Tabela = {
             vTime: e.tabelaHora || e.hora || '',
             vW: e.clima || '',
             vIcon: e.climaIcone || '',
-            spText: e.spText || d.spText || 'PATROCINADORES'
+            spText: e.spText || d.spText || 'PATROCINADORES',
+            golsA: e.golsA || '0',
+            golsB: e.golsB || '0'
         };
     },
 
@@ -266,15 +269,23 @@ Placar.Tabela = {
         return !!(cam && cam.querySelector('.ativo'));
     },
 
-    /* forca uma cena manualmente (repertório tipo "cena") */
+    /* forca uma cena manualmente (repertório tipo "cena"); d<=0 segura indefinidamente */
     mostrarCena: function (k, d) {
-        this._interromper = { k: k, d: Math.max(1, (parseInt(d, 10) || 8)), t0: performance.now() };
+        var dd = parseInt(d, 10);
+        this._interromper = { k: k, d: dd > 0 ? dd : Infinity, t0: performance.now() };
     },
+    /* volta ao loop (encerra a cena segura) */
+    cancelarCena: function () { this._interromper = null; },
 
     /* ---------- ciclo de vida ---------- */
     aplicar: function () {
         if (!window.Tabela) return;
         var e = Placar.estado || {};
+        var cc = e.cenaCancelar;
+        if (cc && cc !== this._cenaCancelarSeq) {
+            this._cenaCancelarSeq = cc;
+            this.cancelarCena();
+        }
 
         // classificacao pode ter sido trocada por importacao de CSV (ou limpa)
         var times = this.times();

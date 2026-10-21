@@ -729,6 +729,33 @@ function drawSponsors(g,l,t,c){
   }
 }
 
+/* ---------- cenas manuais: intervalo / encerramento (tela cheia + placar) ---------- */
+function drawPlacarFull(g,l,t,c,titulo,rodape){
+  const A=TEAMS[c.a], B=TEAMS[c.b];
+  const p=easeOut(seg(l,0,.6));
+  g.save(); g.globalAlpha=p; g.translate(0,(1-p)*-40);
+  txt(g,titulo,W/2,290,{f:'900 96px '+FF,c:ACC,al:'center',ls:5,max:1180,shrink:46});
+  g.restore();
+  const sp=easeOut(seg(l,.3,.7));
+  g.save(); g.globalAlpha=sp;
+  field(g,W/2-430,400,860,160,{bg:rw(.05),r:20});
+  badge(g,c.a,W/2-300,480,80); badge(g,c.b,W/2+300,480,80);
+  txt(g,String(c.golsA||'0'),W/2-120,480,{f:'900 88px '+FF,c:A_COL,al:'center',bl:'middle'});
+  txt(g,'-',W/2,480,{f:'900 56px '+FF,c:rw(.4),al:'center',bl:'middle'});
+  txt(g,String(c.golsB||'0'),W/2+120,480,{f:'900 88px '+FF,c:B_COL,al:'center',bl:'middle'});
+  txt(g,A.short,W/2-300,576,{f:'700 18px '+FF,c:rw(.9),al:'center',max:240,shrink:11});
+  txt(g,B.short,W/2+300,576,{f:'700 18px '+FF,c:rw(.9),al:'center',max:240,shrink:11});
+  g.restore();
+  if(rodape){
+    const f=easeOut(seg(l,.8,.7));
+    g.save(); g.globalAlpha=f;
+    txt(g,rodape,W/2,668,{f:'700 16px '+FF,c:rw(.5),al:'center',ls:4});
+    g.restore();
+  }
+}
+function drawIntervalo(g,l,t,c){ drawPlacarFull(g,l,t,c,'INTERVALO',''); }
+function drawEncerramento(g,l,t,c){ drawPlacarFull(g,l,t,c,'FIM DE JOGO','OBRIGADO POR ASSISTIR'); }
+
 /* ---------- cena 4: faixa inferior (3 estilos) ---------- */
 function lowerCompact(g,l,t,c){
   const A=TEAMS[c.a], B=TEAMS[c.b];
@@ -815,7 +842,7 @@ function lowerFull(g,l,t,c){
 function drawScene(g,t,c,kForca){
   const {segs}=timeline(c);
   const s=kForca?{k:kForca,local:t,p:0,t0:0,d:8}:sceneAt(segs,t);
-  if(s.k!=='intro') drawHeader(g,t,c);
+  if(s.k!=='intro' && s.k!=='intervalo' && s.k!=='encerramento') drawHeader(g,t,c);
   if(s.k==='intro') drawIntro(g,s.local,t,c);
   else if(s.k==='table') drawTable(g,s.local,t,c);
   else if(s.k==='duel') drawDuel(g,s.local,t,c);
@@ -824,6 +851,8 @@ function drawScene(g,t,c,kForca){
   else if(s.k==='lineups') drawLineups(g,s.local,t,c);
   else if(s.k==='sponsors') drawSponsors(g,s.local,t,c);
   else if(s.k==='lower') drawLower(g,s.local,t,c);
+  else if(s.k==='intervalo') drawIntervalo(g,s.local,t,c);
+  else if(s.k==='encerramento') drawEncerramento(g,s.local,t,c);
   return s;
 }
 

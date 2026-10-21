@@ -518,6 +518,15 @@ h2.titulo{text-align:left}
       <p>🎛 Customizações <span class="hint">ligue/desligue cada recurso da tela ao vivo</span></p>
       <div id="listaCustomizacoes"></div>
     </section>
+    <section class="full" id="secaoIntervalos">
+      <p>⏸ Intervalos & Cenários <span class="hint">cenas manuais de abertura, intervalo e encerramento</span></p>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button onclick="Controle.intervalo('intro')" style="background:#7c3aed;color:#fff;font-size:13px;padding:10px 14px">🔴 Abertura</button>
+        <button onclick="Controle.intervalo('intervalo')" style="background:#b45309;color:#fff;font-size:13px;padding:10px 14px">⏸ Intervalo</button>
+        <button onclick="Controle.intervalo('encerramento')" style="background:#0f172a;color:#fff;font-size:13px;padding:10px 14px">🏁 Encerramento</button>
+        <button onclick="Controle.voltarLoop()" style="background:#2a3a55;font-size:13px;padding:10px 14px">⏹ Voltar ao loop</button>
+      </div>
+    </section>
     <section>
       <p>Pontos</p>
       <div class="futebol-ctrl">
@@ -1058,6 +1067,8 @@ Controle.renderCustomizacoes = function(){
     h += '</div>';
   }
   el.innerHTML = h;
+  var sec = document.getElementById('secaoIntervalos');
+  if(sec) sec.style.display = Controle.featAtiva('feat_intervalos') ? '' : 'none';
 };
 Controle.toggleCustomizacao = function(input){
   var id = input.getAttribute('data-feat');
@@ -1073,8 +1084,7 @@ Controle.renderMenuRapido = function(){
     { feat:'feat_faltas', h:'<button onclick="Controle.notifRapida(\'amarelo\')" style="background:#facc15;color:#000;font-size:13px;padding:10px 14px">🟨 Faltas</button><button onclick="Controle.notifRapida(\'vermelho\')" style="background:#7f1d1d;color:#fff;font-size:13px;padding:10px 14px">🟥 Expulsão</button>' },
     { feat:'feat_midias', h:'<button onclick="Controle.irPara(8)" style="background:#2a3a55;font-size:13px;padding:10px 14px">🖼 Mídias</button>' },
     { feat:'feat_substituicoes', h:'<button onclick="Controle.status(\'erro\',\'⚠ Substituições: em breve\')" style="background:#2a3a55;font-size:13px;padding:10px 14px">🔁 Substituições</button>' },
-    { feat:'feat_fila', h:'<button onclick="Controle.status(\'erro\',\'⚠ Fila de reprodução: em breve\')" style="background:#2a3a55;font-size:13px;padding:10px 14px">▶ Fila</button>' },
-    { feat:'feat_intervalos', h:'<button onclick="Controle.status(\'erro\',\'⚠ Intervalos: em breve\')" style="background:#2a3a55;font-size:13px;padding:10px 14px">⏸ Intervalos</button>' }
+    { feat:'feat_fila', h:'<button onclick="Controle.status(\'erro\',\'⚠ Fila de reprodução: em breve\')" style="background:#2a3a55;font-size:13px;padding:10px 14px">▶ Fila</button>' }
   ];
   var h = '';
   for(var i = 0; i < itens.length; i++){
@@ -1082,6 +1092,24 @@ Controle.renderMenuRapido = function(){
   }
   if(!h) h = '<span style="color:#5b6f88;font-size:11px">Nenhuma ação habilitada.</span>';
   el.innerHTML = h;
+};
+
+Controle.intervalo = function(k){
+  var nomes = { intro:'Abertura', intervalo:'Intervalo', encerramento:'Encerramento' };
+  var dur = k === 'intro' ? 12 : 0;
+  var midias = Controle.getMidiasCtrl();
+  var id = 'cena_' + k;
+  var m = null;
+  for(var i = 0; i < midias.length; i++){ if(midias[i].id === id){ m = midias[i]; break; } }
+  if(!m){ m = { id:id, tipo:'cena', cena:k, nome:nomes[k]||k, duracao:dur, intervalo:0, transicao:'fade' }; midias.push(m); }
+  else { m.duracao = dur; }
+  Controle.setEstado({ midias: JSON.stringify(midias), midiaDisparoId: id, midiaDisparoSeq: String(Date.now()) });
+  Controle.renderMidias();
+  Controle.status('ok', '▶ ' + (nomes[k]||k));
+};
+Controle.voltarLoop = function(){
+  Controle.setEstado({ cenaCancelar: String(Date.now()) });
+  Controle.status('ok', '⏹ De volta ao loop');
 };
 
 Controle.uploadSponsor = function(n) {

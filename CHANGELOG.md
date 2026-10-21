@@ -1,5 +1,13 @@
 # Histórico
 
+## 2026-10-20 (revisões — cenas de abertura/intervalo/encerramento)
+
+- **Cenas manuais (menu Intervalos)**: novas cenas de tela cheia `intervalo` e
+  `encerramento` no motor (com placar de gols), reuso da cena `intro` para "abertura".
+  Tela 10 ganhou a seção "⏸ Intervalos & Cenários" (Abertura / Intervalo / Encerramento
+  / Voltar ao loop). `mostrarCena` com `d<=0` segura indefinidamente; `cancelarCena()`
+  via campo `cenaCancelar` (seção `estilo`) volta ao loop. `golsA`/`golsB` no cfg do overlay.
+
 ## 2026-10-20 (revisões — CSV de jogadores ligado às notificações)
 
 - **CSV de jogadores → notificações**: o formulário de notificação (Tela 8) ganhou o
