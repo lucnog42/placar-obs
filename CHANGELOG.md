@@ -1,5 +1,25 @@
 # Histórico
 
+## 2026-10-21 (revisões — Rodada 5: agrupar, CSV por time, toggle de cenas, fundos)
+
+- **Menu mobile 2×**: fonte e botões do drawer aumentados no `@media(max-width:759px)`.
+- **Agrupar por checkbox** em todas as bibliotecas (escudos, logos, cores, CSVs):
+  um "Selecionar Todos" + um botão "🏷 Agrupar" por biblioteca (agrupa só os marcados),
+  e "⇄ Desagrupar" aparece ao filtrar um grupo. Removeu o 🏷 individual por item.
+- **CSV de escalação separado por time**: uploads Time A / Time B (`tabelaEscFileA/B`),
+  modelo sem coluna `time` → `jogador;numero;posicao`; parse usa `player`/`num`/`pos`.
+- **Cenas viram toggle**: botão "Voltar ao loop" removido; Abertura/Intervalo/Encerramento
+  ligam e, clicando de novo, desligam (`_cenaForcada`).
+- **Notificação só com os 2 times** jogando (não o CSV inteiro da tabela).
+- **Textos configuráveis** (gol/amarelo/vermelho) em pop-up separado "⚙️ Textos"
+  (`modalTextosNotif`, estado `notifTextos`).
+- **Proteção de sobreposição**: enviar mídia/notificação com cena forçada ativa pausa e
+  pede confirmação (`modalConfirmarOverlay`) para desligar o overlay antes de iniciar.
+- **Fundo de imagem opcional** por cena (abertura/intervalo/encerramento) + tabela:
+  upload `upload_fundo` (`fundos/`), estado `cenaFundos`, motor desenha `paintFundo`.
+- **Tela Cenas removida**; renumeração Tema→5, Patrocinadores→6, Repertório→7, Resumo→8,
+  Operar ao vivo→9 (linha do tempo ficou só no `modalCenas`).
+
 ## 2026-10-21 (revisões — "ao vivo" como hub de pop-ups)
 
 - **Notificação / mídias / cenas viraram pop-ups** na tela "Operar ao vivo": o menu

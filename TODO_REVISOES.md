@@ -2,6 +2,19 @@
 
 Branch: `multi-instancia`.
 
+## ✅ Rodada 5 — concluída (lote 2026-10-21)
+
+1. Menu mobile: fonte e botões do drawer em 2×.
+2. Agrupar por checkbox nas bibliotecas (Selecionar Todos + 1 botão "🏷 Agrupar" por biblioteca + "Desagrupar" ao filtrar grupo; remove 🏷 individual por item).
+3. CSV de escalação separado por time (Time A / Time B; modelo sem coluna "time": `jogador;numero;posicao`).
+4. Removido "Voltar ao loop"; Abertura/Intervalo/Encerramento viram toggle (clicar de novo desliga).
+5. Notificação mostra só os 2 times jogando (não todo o CSV da tabela).
+6. Textos da notificação (gol/amarelo/vermelho) configuráveis em pop-up separado "⚙️ Textos".
+7. Abertura/Intervalo/Encerramento dentro da aba Overlay (não tela separada).
+8. Proteção de sobreposição: mídia/notificação não entra por cima de cena ativa; pede confirmação para desligar o overlay.
+9. Upload de imagem de fundo por cena (abertura/intervalo/encerramento) + uma para a tabela, todas opcionais.
+10. Removida tela "Cenas"; renumeração (Tema→5, Patrocinadores→6, Repertório→7, Resumo→8, Operar ao vivo→9).
+
 ## ✅ Rodada 4 — concluída (lote 2026-10-21)
 
 1. Botão de importar preset na primeira tela (Instâncias).
