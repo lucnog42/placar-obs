@@ -1093,7 +1093,7 @@ Controle.renderMenuRapido = function(){
     { feat:'feat_faltas', h:'<button onclick="Controle.notifRapida(\'amarelo\')" style="background:#facc15;color:#000;font-size:13px;padding:10px 14px">🟨 Faltas</button><button onclick="Controle.notifRapida(\'vermelho\')" style="background:#7f1d1d;color:#fff;font-size:13px;padding:10px 14px">🟥 Expulsão</button>' },
     { feat:'feat_midias', h:'<button onclick="Controle.irPara(8)" style="background:#2a3a55;font-size:13px;padding:10px 14px">🖼 Mídias</button>' },
     { feat:'feat_substituicoes', h:'<button onclick="Controle.novaSubstituicao()" style="background:#2a3a55;font-size:13px;padding:10px 14px">🔁 Substituições</button>' },
-    { feat:'feat_fila', h:'<button onclick="Controle.status(\'erro\',\'⚠ Fila de reprodução: em breve\')" style="background:#2a3a55;font-size:13px;padding:10px 14px">▶ Fila</button>' }
+    { feat:'feat_fila', h:'<button onclick="Controle.irPara(8)" style="background:#2a3a55;font-size:13px;padding:10px 14px">▶ Fila</button>' }
   ];
   var h = '';
   for(var i = 0; i < itens.length; i++){

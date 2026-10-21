@@ -89,8 +89,8 @@ Placar._desligar=function(id,cb){
     },dur);
 };
 
-// Ativar uma midia (sem delay — usado pelo ciclo)
-Placar._ativar=function(id){
+// Ativar uma midia (sem delay — usado pelo ciclo); fila=true toca sem ciclo individual
+Placar._ativar=function(id, fila){
     var midias=Placar.getMidias();var m=midias.find(function(x){return x.id===id;});
     if(!m)return;
     if(m.tipo==='cena'){ if(Placar.Tabela && Placar.Tabela.mostrarCena) Placar.Tabela.mostrarCena(m.cena, m.duracao); return; }
@@ -108,10 +108,10 @@ Placar._ativar=function(id){
     var el=camada.querySelector('[data-midia-id="'+id+'"]');
     if(!el)return;
     var trans=m.transicao||'fade';camada.setAttribute('data-transicao',trans);
-    if(m.tipo==='video'){el.autoplay=true;el.loop=true;el.currentTime=0;el.play().catch(function(){});}
+    if(m.tipo==='video'){el.autoplay=true;el.loop=!fila;el.currentTime=0;el.play().catch(function(){});}
     if(trans==='none'){el.classList.add('ativo');}
     else{el.classList.add('ativo','entrando');setTimeout(function(){el.classList.remove('entrando');},400);}
-    if(dur>0){
+    if(dur>0 && !fila){
         if(!Placar._timers[id])Placar._timers[id]={};
         Placar._timers[id].timer=setTimeout(function(){Placar._desligarCiclo(id);},dur*1000);
     }
@@ -149,32 +149,56 @@ Placar._checarDisparo=function(){
     Placar._ativar(m.id);                       // mostra uma vez, pela duracao da midia
 };
 
-// Sincronizar estado: diff entre ativas atual e anteriores
+// Fila de reprodução real: as mídias ativas tocam em sequência (uma por vez), na ordem
+// do repertório, repetindo no fim. Texto/cena não entram na fila (são one-shot).
+Placar._filaIdx = -1;
+Placar._filaTimer = null;
+Placar._filaId = null;
+
+Placar._filaLista=function(){
+    var midias=Placar.getMidias(), ativas=Placar.getAtivas(), out=[];
+    for(var i=0;i<midias.length;i++){
+        var m=midias[i];
+        if(ativas.indexOf(m.id)>=0 && m.tipo!=='texto' && m.tipo!=='cena') out.push(m);
+    }
+    return out;
+};
+
+Placar._filaDuracao=function(m){
+    var d=parseInt(m.duracao)||0;
+    if(d>0)return d;
+    var cam=document.getElementById('camadaMidia');
+    var el=cam?cam.querySelector('[data-midia-id="'+m.id+'"]'):null;
+    if(el && el.tagName==='VIDEO' && el.duration && isFinite(el.duration)) return Math.max(1, el.duration);
+    return 8;
+};
+
+Placar._filaTocar=function(i){
+    var fila=Placar._filaLista();
+    if(!fila.length){ Placar._filaParar(); return; }
+    i=((i%fila.length)+fila.length)%fila.length;
+    Placar._filaIdx=i;
+    var m=fila[i];
+    if(Placar._filaId && Placar._filaId!==m.id) Placar._desligar(Placar._filaId);
+    Placar._filaId=m.id;
+    Placar._ativar(m.id, true);                       // mostra sem ciclo individual
+    var dur=Placar._filaDuracao(m), gap=parseInt(m.intervalo)||0;
+    clearTimeout(Placar._filaTimer);
+    Placar._filaTimer=setTimeout(function(){ Placar._filaTocar(i+1); }, (dur+gap)*1000);
+};
+
+Placar._filaParar=function(){
+    clearTimeout(Placar._filaTimer); Placar._filaTimer=null;
+    if(Placar._filaId){ Placar._desligar(Placar._filaId); Placar._filaId=null; }
+    Placar._filaIdx=-1;
+};
+
+// Sincronizar estado da fila: recomeça do zero se a lista/ordem mudou
 Placar.carregarMidias=function(){
-    var ativas=Placar.getAtivas();
-    var ant=Placar._ativasAnterior;
-
-    // Desligar as que sairam
-    ant.forEach(function(id){
-        if(!ativas.includes(id)){
-            Placar._desligar(id);
-        }
-    });
-
-    // Ligar as que entraram
-    ativas.forEach(function(id){
-        if(!ant.includes(id)){
-            // Pequeno delay para nao conflitar com desligamentos
-            setTimeout(function(){
-                // Re-verificar (pode ter saido durante o delay)
-                var at=Placar.getAtivas();
-                if(!at.includes(id))return;
-                Placar._ativar(id);
-            },50);
-        }
-    });
-
-    Placar._ativasAnterior=ativas.slice();
+    var fila=Placar._filaLista();
+    if(!fila.length){ Placar._filaParar(); return; }
+    var ok = Placar._filaIdx>=0 && Placar._filaIdx<fila.length && fila[Placar._filaIdx].id===Placar._filaId;
+    if(!ok) Placar._filaTocar(0);
 };
 
 // --- Listeners ---

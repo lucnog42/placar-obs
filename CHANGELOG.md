@@ -1,5 +1,13 @@
 # Histórico
 
+## 2026-10-20 (revisões — fila de reprodução real)
+
+- **Fila de reprodução real**: as mídias ativas (imagem/GIF/vídeo) agora tocam em
+  sequência — uma por vez, na ordem do repertório, repetindo no fim — em vez de
+  ciclos simultâneos e independentes. `duracao` = tempo na tela (vídeo usa a duração
+  natural se `0`); `intervalo` = pausa antes da próxima. Texto/cena seguem one-shot.
+  Botão "▶ Fila" abre o repertório (Tela 8).
+
 ## 2026-10-20 (revisões — substituições)
 
 - **Substituições**: tipo de notificação `substituicao` (🔁) no formulário (Tela 8) com
