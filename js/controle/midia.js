@@ -75,7 +75,7 @@ Controle._opcoesJogadores=function(){
 };
 Controle.renderJogadores=function(){
     var html=Controle._opcoesJogadores();
-    ['selJogador','selJogadorEntra','selJogadorSai'].forEach(function(id){
+    ['selJogadorEntra','selJogadorSai'].forEach(function(id){
         var sel=document.getElementById(id);
         if(!sel)return;
         var cur=sel.value;
@@ -83,16 +83,70 @@ Controle.renderJogadores=function(){
         if(cur)sel.value=cur;
     });
 };
-Controle.escolherJogador=function(sel){
-    var v=sel.value;
-    if(v){var inp=document.getElementById('nomeJogador');if(inp)inp.value=v;}
+
+/* ---------- seletor de notificação: time -> jogador ---------- */
+Controle._notifTime=null;
+Controle._notifJogador=null;
+
+Controle.renderTimesNotif=function(){
+    var el=document.getElementById('listaTimesNotif');if(!el)return;
+    var nomes=[];
+    var a=Controle.estado.timeA,b=Controle.estado.timeB;
+    if(a)nomes.push(a);
+    if(b&&b!==a)nomes.push(b);
+    try{Controle.timesTabela().forEach(function(t){if(t.name&&nomes.indexOf(t.name)<0)nomes.push(t.name);});}catch(e){}
+    if(!nomes.length){el.innerHTML='<span class="hint">sem times: preencha Time A/B ou importe a classificação</span>';return;}
+    var h='';
+    nomes.forEach(function(n){
+        var on=Controle._notifTime===n?' on':'';
+        h+='<button class="time-notif-btn'+on+'" data-time="'+String(n).replace(/"/g,'&quot;')+'" onclick="Controle.escolherTimeNotif(this)">🏆 '+String(n).replace(/</g,'&lt;')+'</button>';
+    });
+    el.innerHTML=h;
+};
+
+Controle.escolherTimeNotif=function(btn){
+    var n=btn.getAttribute('data-time');
+    Controle._notifTime=n;Controle._notifJogador=null;
+    var el=document.getElementById('listaTimesNotif');
+    if(el){var bs=el.querySelectorAll('.time-notif-btn');for(var i=0;i<bs.length;i++)bs[i].classList.remove('on');}
+    btn.classList.add('on');
+    var tipo=(document.querySelector('input[name="tipoNotif"]:checked')||{}).value;
+    if(tipo!=='substituicao')Controle.renderJogadoresNotif();
+    Controle.status('ok','🏆 Time: '+n);
+};
+
+Controle.renderJogadoresNotif=function(){
+    var el=document.getElementById('listaJogadoresNotif');
+    if(!el)return;
+    if(!Controle._notifTime){el.style.display='none';el.innerHTML='';return;}
+    var jog=[];
+    try{
+        var map=JSON.parse(Controle.estado.tabelaEscalacoes||'{}');
+        var alvo=Controle._norm(Controle._notifTime);
+        Object.keys(map).forEach(function(k){if(Controle._norm(k)===alvo)jog=map[k]||[];});
+    }catch(e){}
+    if(!jog.length){el.style.display='';el.innerHTML='<span class="hint">sem jogadores para este time (importe o CSV de escalações)</span>';return;}
+    var h='';
+    jog.forEach(function(p){
+        var nome=p.player;
+        var on=Controle._notifJogador===nome?' on':'';
+        h+='<button class="jogador-notif-btn'+on+'" data-jogador="'+String(nome).replace(/"/g,'&quot;')+'" onclick="Controle.escolherJogadorNotif(this)">👤 '+String(p.num?(p.num+'. '):'')+String(nome).replace(/</g,'&lt;')+'</button>';
+    });
+    el.style.display='';el.innerHTML=h;
+};
+
+Controle.escolherJogadorNotif=function(btn){
+    Controle._notifJogador=btn.getAttribute('data-jogador');
+    var el=document.getElementById('listaJogadoresNotif');
+    if(el){var bs=el.querySelectorAll('.jogador-notif-btn');for(var i=0;i<bs.length;i++)bs[i].classList.remove('on');}
+    btn.classList.add('on');
+    Controle.status('ok','👤 Jogador: '+Controle._notifJogador);
 };
 
 /* monta o item de texto a partir do formulario */
 Controle._itemNotif=function(){
     var rt=document.querySelector('input[name="tipoNotif"]:checked');
-    var rm=document.querySelector('input[name="modoNotif"]:checked');
-    var tipo=rt?rt.value:'gol', modo=rm?rm.value:'jogador';
+    var tipo=rt?rt.value:'gol';
     if(tipo==='substituicao'){
         var ent=(document.getElementById('selJogadorEntra')||{}).value||'';
         var sai=(document.getElementById('selJogadorSai')||{}).value||'';
@@ -102,16 +156,8 @@ Controle._itemNotif=function(){
                 tipo:'texto',notif:'substituicao',nome:'Substituição · '+ent+' ⇄ '+sai,
                 texto:txt,duracao:5,intervalo:0,transicao:'fade'};
     }
-    var nome='';
-    if(modo==='jogador'){
-        var el=document.getElementById('nomeJogador');
-        nome=el?el.value.trim():'';
-        if(!nome)return null;
-    }else{
-        var te=document.getElementById('timeNotif');
-        var v=te?te.value:'A';
-        nome=Controle.estado['time'+v]||('TIME '+v);
-    }
+    var nome=Controle._notifJogador||Controle._notifTime||'';
+    if(!nome){alert('Escolha um time (ou um jogador)');return null;}
     var inp=document.getElementById('texto'+tipo.charAt(0).toUpperCase()+tipo.slice(1));
     var prefixo=(inp&&inp.value.trim())||Controle.NOTIF_PADRAO[tipo]||'';
     var texto=nome+(prefixo?(' - '+prefixo):'');

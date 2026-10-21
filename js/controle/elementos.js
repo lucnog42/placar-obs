@@ -278,23 +278,13 @@ Controle.desativarPenalte=function(){
     Controle.setEstado({penaltesAtivos:Controle.estado.penaltesAtivos==='false'?'true':'false'});
 };
 
-Controle.toggleModoNotif=function(){
-    var m=document.querySelector('input[name="modoNotif"]:checked').value;
-    document.getElementById('nomeJogador').style.display=m==='jogador'?'':'none';
-    var sj=document.getElementById('selJogador');
-    if(sj) sj.style.display=m==='jogador'?'':'none';
-    document.getElementById('seletorTimeNotif').style.display=m==='time'?'block':'none';
-};
 Controle.toggleTipoNotif=function(){
     var tipo=(document.querySelector('input[name="tipoNotif"]:checked')||{}).value;
     var isSub=tipo==='substituicao';
-    var cj=document.getElementById('campoJogador');
     var sc=document.getElementById('substituicaoCampos');
-    var mn=document.querySelector('.modo-notif');
-    if(cj)cj.style.display=isSub?'none':'';
+    var lj=document.getElementById('listaJogadoresNotif');
     if(sc)sc.style.display=isSub?'':'none';
-    if(mn)mn.style.display=isSub?'none':'';
-    if(!isSub)Controle.toggleModoNotif();
+    if(lj){ if(isSub){ lj.style.display='none'; } else { Controle.renderJogadoresNotif(); } }
 };
 
 /* enviarNotificacao agora vive em js/controle/midia.js: a notificacao e um

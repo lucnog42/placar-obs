@@ -111,6 +111,12 @@ h2.titulo{text-align:left}
 .time-crest-nome{flex:1;font-size:12px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .csv-item{display:flex;gap:6px;align-items:center;padding:5px 6px;border:1px solid #22304a;border-radius:8px;background:#0e1624;flex-wrap:wrap}
 .csv-nome{flex:1;font-size:12px;min-width:120px}
+/* seletor de notificação (time -> jogador) */
+.times-notif-list,.jogadores-notif-list{display:flex;flex-wrap:wrap;gap:6px}
+.time-notif-btn{font-size:12px;padding:6px 10px;border-radius:8px;border:1px solid #2a3a55;background:#141d2e;color:#e8eefc;cursor:pointer}
+.time-notif-btn.on{background:#2196F3;border-color:#2196F3}
+.jogador-notif-btn{font-size:11px;padding:4px 8px;border-radius:8px;border:1px solid #2a3a55;background:#0e1624;color:#e8eefc;cursor:pointer}
+.jogador-notif-btn.on{background:#22c55e;border-color:#22c55e;color:#04240f}
 </style>
 </head>
 <body>
@@ -450,39 +456,6 @@ h2.titulo{text-align:left}
   <h2 class="titulo">📢 Repertório · Notificações &amp; Mídias</h2>
   <div class="grid-inner">
     <section class="full">
-      <p>Notificações</p>
-      <span class="hint">viram itens do histórico de notificações abaixo, com duração e transição próprias</span>
-      <div class="toggle-notificacao">
-        <label><input type="radio" name="tipoNotif" value="gol" checked onchange="Controle.toggleTipoNotif()"> ⚽ Gol <input type="text" id="textoGol" placeholder="GOOOLLL!!!"></label>
-        <label><input type="radio" name="tipoNotif" value="amarelo" onchange="Controle.toggleTipoNotif()"> 🟨 Amarelo <input type="text" id="textoAmarelo" placeholder="CARTÃO AMARELO"></label>
-        <label><input type="radio" name="tipoNotif" value="vermelho" onchange="Controle.toggleTipoNotif()"> 🟥 Vermelho <input type="text" id="textoVermelho" placeholder="CARTÃO VERMELHO"></label>
-        <label><input type="radio" name="tipoNotif" value="substituicao" onchange="Controle.toggleTipoNotif()"> 🔁 Substituição</label>
-      </div>
-      <div class="modo-notif">
-        <label><input type="radio" name="modoNotif" value="jogador" checked onchange="Controle.toggleModoNotif()"> 👤 Jogador</label>
-        <label><input type="radio" name="modoNotif" value="time" onchange="Controle.toggleModoNotif()"> 🏆 Time</label>
-      </div>
-      <div id="campoJogador">
-        <select id="selJogador" style="width:100%;box-sizing:border-box" onchange="Controle.escolherJogador(this)">
-          <option value="">— escolher jogador do CSV —</option>
-        </select>
-        <input type="text" id="nomeJogador" placeholder="ou digite o nome do jogador" style="width:100%;box-sizing:border-box;margin-top:4px">
-        <div id="seletorTimeNotif" style="display:none;margin-top:4px;">
-          <select id="timeNotif"><option value="A">Time A</option><option value="B">Time B</option></select>
-        </div>
-      </div>
-      <div id="substituicaoCampos" style="display:none">
-        <div class="row" style="gap:6px;margin-top:4px">
-          <div style="flex:1"><span class="hint">Entra</span><select id="selJogadorEntra" style="width:100%"><option value="">— entra —</option></select></div>
-          <div style="flex:1"><span class="hint">Sai</span><select id="selJogadorSai" style="width:100%"><option value="">— sai —</option></select></div>
-        </div>
-      </div>
-      <div class="row" style="margin-top:5px">
-        <button onclick="Controle.enviarNotificacao(true)" style="background:#4CAF50;color:#fff">▶ Enviar agora</button>
-        <button onclick="Controle.salvarNotificacao()">➕ Guardar no repertório</button>
-      </div>
-    </section>
-    <section class="full">
       <p>🖼 Repertório de Mídias <span class="hint">imagem · GIF animado · vídeo</span></p>
       <div style="display:flex;gap:4px;margin-bottom:6px;align-items:center;flex-wrap:wrap">
         <input type="text" id="midiaNome" placeholder="Nome da mídia" style="flex:1;min-width:100px;">
@@ -565,6 +538,28 @@ h2.titulo{text-align:left}
     <section class="full">
       <p>⚡ Menu rápido <span class="hint">ações ligadas nas customizações</span></p>
       <div style="display:flex;gap:6px;flex-wrap:wrap" id="menuRapido"></div>
+    </section>
+    <section class="full" id="secNotificacao">
+      <p>🔔 Notificação <span class="hint">tipo → time → jogador (o time também é uma opção)</span></p>
+      <div class="toggle-notificacao">
+        <label><input type="radio" name="tipoNotif" value="gol" checked onchange="Controle.toggleTipoNotif()"> ⚽ Gol <input type="text" id="textoGol" placeholder="GOOOLLL!!!"></label>
+        <label><input type="radio" name="tipoNotif" value="amarelo" onchange="Controle.toggleTipoNotif()"> 🟨 Amarelo <input type="text" id="textoAmarelo" placeholder="CARTÃO AMARELO"></label>
+        <label><input type="radio" name="tipoNotif" value="vermelho" onchange="Controle.toggleTipoNotif()"> 🟥 Vermelho <input type="text" id="textoVermelho" placeholder="CARTÃO VERMELHO"></label>
+        <label><input type="radio" name="tipoNotif" value="substituicao" onchange="Controle.toggleTipoNotif()"> 🔁 Substituição</label>
+      </div>
+      <p style="font-size:11px;color:#93a4c0;margin:8px 0 4px">👥 Time <span class="hint">(clique para notificar o time todo, ou abrir os jogadores)</span></p>
+      <div id="listaTimesNotif" class="times-notif-list"></div>
+      <div id="listaJogadoresNotif" class="jogadores-notif-list" style="display:none"></div>
+      <div id="substituicaoCampos" style="display:none">
+        <div class="row" style="gap:6px;margin-top:6px">
+          <div style="flex:1"><span class="hint">Entra</span><select id="selJogadorEntra" style="width:100%"><option value="">— entra —</option></select></div>
+          <div style="flex:1"><span class="hint">Sai</span><select id="selJogadorSai" style="width:100%"><option value="">— sai —</option></select></div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button onclick="Controle.enviarNotificacao(true)" style="background:#4CAF50;color:#fff">▶ Enviar agora</button>
+        <button onclick="Controle.salvarNotificacao()">➕ Guardar no repertório</button>
+      </div>
     </section>
     <section class="full">
       <p>🎛 Customizações <span class="hint">ligue/desligue cada recurso da tela ao vivo</span></p>
@@ -1166,7 +1161,8 @@ Controle.voltarLoop = function(){
 Controle.novaSubstituicao = function(){
   var r = document.querySelector('input[name="tipoNotif"][value="substituicao"]');
   if(r){ r.checked = true; Controle.toggleTipoNotif(); }
-  Controle.irPara(8);
+  var sec = document.getElementById('secNotificacao');
+  if(sec){ sec.scrollIntoView({behavior:'smooth', block:'start'}); }
 };
 
 Controle.uploadSponsor = function(n) {
@@ -1216,7 +1212,7 @@ setTimeout(function(){ Controle.atualizarNomePreset(); }, 900);
 setTimeout(function(){ Controle.recarregarLogos(); }, 1000);
 setTimeout(function(){ Controle.listarLogos(); }, 1000);
 setTimeout(function(){ Controle.syncSponsors(); }, 1000);
-setTimeout(function(){ Controle.renderCustomizacoes(); Controle.renderMenuRapido(); }, 1000);
+setTimeout(function(){ Controle.renderCustomizacoes(); Controle.renderMenuRapido(); Controle.renderTimesNotif(); }, 1000);
 setTimeout(function(){ Controle.carregarGrupos('escudos'); Controle.carregarGrupos('logos'); Controle.carregarGrupos('cores'); Controle.carregarGrupos('csvs'); }, 1100);
 
 /* Monkey-patch setEstado AFTER init (garantido que existe) */
