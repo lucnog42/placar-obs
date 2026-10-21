@@ -164,7 +164,7 @@ Placar.Tabela = {
             vName: e.tabelaLocal || e.local || '',
             vCity: '',
             vTime: e.tabelaHora || e.hora || '',
-            vW: e.clima || '',
+            vW: e.clima ? (e.clima + '°C') : '',
             vIcon: e.climaIcone || '',
             spText: e.spText || d.spText || 'PATROCINADORES',
             golsA: e.golsA || '0',

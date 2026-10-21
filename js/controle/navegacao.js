@@ -19,6 +19,13 @@ Controle._instanciaNome = null;
 
 /* ---------- navegação ---------- */
 Controle.mostrarTela = function (n) {
+  if (n > 1) {
+    var id = (typeof INSTANCIA !== 'undefined') ? INSTANCIA : '';
+    if (!id) {
+      Controle.status('erro', '⚠ Selecione (ou crie) uma instância para continuar.');
+      return;
+    }
+  }
   Controle.telaAtual = n;
   var telas = document.querySelectorAll('.tela');
   for (var i = 0; i < telas.length; i++) {
@@ -231,7 +238,7 @@ Controle.gerarResumo = function () {
   h += Controle._linha('Categoria / Grupo / Fase',
     (Controle._v('categoria') || '—') + ' / ' + (Controle._v('grupo') || '—') + ' / ' + (Controle._v('fase') || '—'));
   h += Controle._linha('Data / Hora', (Controle._v('data') || '—') + ' · ' + (Controle._v('hora') || '—'));
-  h += Controle._linha('Clima', Controle._v('clima'));
+  h += Controle._linha('Clima', Controle._v('clima') ? (Controle._v('clima') + ' °C') : '');
   h += Controle._linha('Local', Controle._v('local'));
   var cenas = document.getElementById('tabelaCenaCount');
   h += Controle._linha('Cenas', cenas ? cenas.textContent : '—');

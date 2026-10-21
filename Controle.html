@@ -64,7 +64,7 @@ h2.titulo{text-align:left}
 #btnAvancar{background:#2196F3;color:#fff}
 #stepperLabel{flex:1;text-align:center;font-size:11px;color:#93a4c0}
 /* preview */
-#previewWrapper{max-width:860px;margin:0 auto 10px;padding:0 12px;position:sticky;top:48px;z-index:40}
+#previewWrapper{max-width:860px;margin:0 auto 10px;padding:0 12px}
 #previewWrapper.preview-off #previewContainer{display:none}
 /* modal */
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:120;display:none;align-items:center;justify-content:center;padding:16px}
@@ -90,6 +90,9 @@ h2.titulo{text-align:left}
   #telas{max-width:920px}
   .tela .grid-inner{grid-template-columns:1fr 1fr}
   .tela section.full{grid-column:1/-1}
+}
+@media(max-width:759px){
+  #previewWrapper{position:sticky;top:48px;z-index:40}
 }
 </style>
 </head>
@@ -193,8 +196,8 @@ h2.titulo{text-align:left}
     <section class="full">
       <p>🎨 Cores dos Times</p>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
-        <button class="A" onclick="Controle.definirCor('timeA')">Cor <span class="nomeTimeA">Time A</span></button>
-        <button class="B" onclick="Controle.definirCor('timeB')">Cor <span class="nomeTimeB">Time B</span></button>
+        <button class="A" id="btnCorTimeA" onclick="Controle.definirCor('timeA')">Cor <span class="nomeTimeA">Time A</span></button>
+        <button class="B" id="btnCorTimeB" onclick="Controle.definirCor('timeB')">Cor <span class="nomeTimeB">Time B</span></button>
         <button onclick="Controle.resetarCor()">Resetar</button>
       </div>
       <p style="font-size:11px;color:#93a4c0">📚 Biblioteca de cores salvas</p>
@@ -234,7 +237,7 @@ h2.titulo{text-align:left}
         <div><label style="font-size:10px;color:#aaa">Fase</label><input id="fase" placeholder="Ex: Final" onchange="Controle.definirTorneio()" style="width:100%;box-sizing:border-box"></div>
         <div><label style="font-size:10px;color:#aaa">Data</label><input id="data" placeholder="Ex: 20/06/2026" onchange="Controle.definirTorneio()" style="width:100%;box-sizing:border-box"></div>
         <div><label style="font-size:10px;color:#aaa">Hora</label><input id="hora" placeholder="Ex: 15:30" onchange="Controle.definirTorneio()" style="width:100%;box-sizing:border-box"></div>
-        <div><label style="font-size:10px;color:#aaa">Clima</label><input id="clima" placeholder="Ex: 18 °C" onchange="Controle.definirTorneio()" style="width:100%;box-sizing:border-box"></div>
+        <div><label style="font-size:10px;color:#aaa">Clima (°C)</label><input id="clima" type="number" placeholder="Ex: 18" onchange="Controle.definirTorneio()" style="width:100%;box-sizing:border-box"></div>
         <div><label style="font-size:10px;color:#aaa">Ícone do clima</label>
           <select id="climaIcone" onchange="Controle.definirTorneio()" style="width:100%">
             <option value="☀️">☀️ Sol</option>

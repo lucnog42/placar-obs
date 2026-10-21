@@ -1,6 +1,6 @@
 // comum.js — compartilhado entre Placar e Controle
 var INSTANCIA='';
-try{var _mi=location.search.match(/[?&]i=([A-Za-z0-9_-]+)/);if(_mi)INSTANCIA=_mi[1];}catch(e){}
+try{var _mi=location.search.match(/[?&]i=([^&]+)/);if(_mi)INSTANCIA=decodeURIComponent(_mi[1].replace(/\+/g,' '));}catch(e){}
 var API='api.php'+(INSTANCIA?('?i='+encodeURIComponent(INSTANCIA)):'');
 var API_AND=(API.indexOf('?')>=0)?'&':'?';
 var CORES_DEFAULT={timeA:'#ff0000',timeB:'#0000ff'};

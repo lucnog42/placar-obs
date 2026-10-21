@@ -45,9 +45,9 @@ ensure_dirs();
 
 $INSTANCIA = '';
 if (isset($_GET['i'])) {
-    $INSTANCIA = preg_replace('/[^A-Za-z0-9_\-]/', '', $_GET['i']);
+    $INSTANCIA = preg_replace('/[^A-Za-z0-9_\- ]/', '', $_GET['i']);
 } elseif (isset($_GET['instancia'])) {
-    $INSTANCIA = preg_replace('/[^A-Za-z0-9_\-]/', '', $_GET['instancia']);
+    $INSTANCIA = preg_replace('/[^A-Za-z0-9_\- ]/', '', $_GET['instancia']);
 }
 if ($INSTANCIA === '.' || $INSTANCIA === '..') { $INSTANCIA = ''; }
 
@@ -608,12 +608,12 @@ if ($method === 'POST') {
 
     if ($acao === 'criar_instancia') {
         $input = get_post_data();
-        $id = isset($input['id']) ? $input['id'] : '';
-        if (!preg_match('/^[A-Za-z0-9_\-]+$/', $id)) { respond_error('Parametro "id" invalido (so letras, numeros, _ e -).'); }
+        $id = isset($input['id']) ? trim($input['id']) : '';
+        if (!preg_match('/^[A-Za-z0-9_\- ]+$/', $id)) { respond_error('Parametro "id" invalido (letras, numeros, espaco, _ e -).'); }
         $nome = isset($input['nome']) ? $input['nome'] : '';
         $perfil = isset($input['perfil']) ? $input['perfil'] : '';
         if ($id === '' || $id === '.' || $id === '..') {
-            respond_error('Parametro "id" obrigatorio (so letras, numeros, _ e -).');
+            respond_error('Parametro "id" obrigatorio (letras, numeros, espaco, _ e -).');
         }
         $instancias = load_instancias();
         foreach ($instancias as $it) {
@@ -668,7 +668,7 @@ if ($method === 'POST') {
     if ($acao === 'remover_instancia') {
         $input = get_post_data();
         $id = isset($input['id']) ? $input['id'] : '';
-        if (!preg_match('/^[A-Za-z0-9_\-]+$/', $id)) { respond_error('Parametro "id" invalido (so letras, numeros, _ e -).'); }
+        if (!preg_match('/^[A-Za-z0-9_\- ]+$/', $id)) { respond_error('Parametro "id" invalido (letras, numeros, espaco, _ e -).'); }
         if ($id === '' || $id === '.' || $id === '..') {
             respond_error('Parametro "id" obrigatorio.');
         }
@@ -689,7 +689,7 @@ if ($method === 'POST') {
     if ($acao === 'renomear_instancia') {
         $input = get_post_data();
         $id = isset($input['id']) ? $input['id'] : '';
-        if (!preg_match('/^[A-Za-z0-9_\-]+$/', $id)) { respond_error('Parametro "id" invalido (so letras, numeros, _ e -).'); }
+        if (!preg_match('/^[A-Za-z0-9_\- ]+$/', $id)) { respond_error('Parametro "id" invalido (letras, numeros, espaco, _ e -).'); }
         $nome = isset($input['nome']) ? $input['nome'] : '';
         if ($id === '' || $id === '.' || $id === '..') {
             respond_error('Parametro "id" obrigatorio.');

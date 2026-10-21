@@ -225,9 +225,26 @@ Controle.removerEscudosMarcados=function(){
     })();
 };
 
+Controle._textoContraste=function(hex){
+    var h=String(hex||'').replace('#','');
+    if(h.length!==6)return '#fff';
+    var r=parseInt(h.substr(0,2),16),g=parseInt(h.substr(2,2),16),b=parseInt(h.substr(4,2),16);
+    return ((0.299*r+0.587*g+0.114*b)/255)>0.55?'#000':'#fff';
+};
+Controle._aplicarCorButtons=function(){
+    var ca=Controle.estado.timeACor||'#1d5c40', cb=Controle.estado.timeBCor||'#4338ca';
+    var bA=document.getElementById('btnCorTimeA'), bB=document.getElementById('btnCorTimeB');
+    if(bA){ bA.style.background=ca; bA.style.color=Controle._textoContraste(ca); }
+    if(bB){ bB.style.background=cb; bB.style.color=Controle._textoContraste(cb); }
+};
 Controle.definirCor=function(time){
     var inp=document.createElement('input');inp.type='color';inp.style.display='none';
-    inp.onchange=function(e){var d={};d[time+'Cor']=e.target.value;Controle.setEstado(d);inp.remove();};
+    inp.onchange=function(e){
+        var hex=e.target.value; var d={}; d[time+'Cor']=hex; Controle.setEstado(d);
+        var slot=time==='timeA'?'Casa':'Visitante';
+        try{fetch(API+API_AND+'acao=salvar_cor',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:slot,hex:hex})}).then(function(r){return r.json();}).then(function(){Controle.listarCores();}).catch(function(){});}catch(err){}
+        inp.remove();
+    };
     document.body.appendChild(inp);inp.click();
 };
 Controle.resetarCor=function(){Controle.setEstado({timeACor:'#ff0000',timeBCor:'#0000ff'});};
