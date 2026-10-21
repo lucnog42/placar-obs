@@ -208,15 +208,9 @@ h2.titulo{text-align:left}
       <div id="listaCores"><span style="color:#888;font-size:11px">Carregando...</span></div>
     </section>
     <section class="full">
-      <p>📤 Upload de Escudos</p>
-      <div style="display:flex;gap:4px;align-items:center">
-        <button onclick="Controle.uploadEscudosBatch()" style="background:#2196F3;color:#fff">📁 Selecionar PNGs</button>
-        <span style="font-size:10px;color:#aaa">1 ou mais arquivos</span>
-      </div>
-    </section>
-    <section class="full">
       <p>📚 Biblioteca de Escudos</p>
-      <div style="display:flex;gap:4px;margin-bottom:4px;align-items:center">
+      <div style="display:flex;gap:4px;margin-bottom:4px;align-items:center;flex-wrap:wrap">
+        <button onclick="Controle.uploadEscudosBatch()" style="background:#2196F3;color:#fff">📁 Selecionar PNGs</button>
         <label style="font-size:11px;cursor:pointer;display:flex;align-items:center;gap:3px"><input type="checkbox" id="selTodosEscudos" onchange="Controle.toggleTodosEscudos()"> Selecionar Todos</label>
         <button onclick="Controle.removerEscudosMarcados()" class="btn-remover" style="margin-left:auto">✕ Remover Marcados</button>
       </div>
@@ -253,10 +247,11 @@ h2.titulo{text-align:left}
       </div>
       <div style="margin-top:3px"><label style="font-size:10px;color:#aaa">Local</label><input id="local" placeholder="Ex: Estádio Municipal" onchange="Controle.definirTorneio()" style="width:100%;box-sizing:border-box"></div>
       <p style="margin-top:8px;font-size:10px;color:#aaa">🏆 Logo do Torneio</p>
-      <div style="display:flex;gap:4px;align-items:center">
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
         <img id="logoTorneioPreview" src="" style="width:60px;height:60px;object-fit:contain;border-radius:8px;background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.1);display:none" onerror="this.style.display='none'">
-        <select id="logoTorneio" onchange="Controle.selecionarLogoTorneio()" style="flex:1;font-size:11px"><option value="">Nenhum</option></select>
+        <span id="logoTorneioNome" style="font-size:11px;color:#bbb"></span>
         <button onclick="Controle.uploadLogo()" style="font-size:10px;padding:2px 6px;background:#2196F3;color:#fff">📤 Subir logo</button>
+        <button onclick="Controle.limparLogoTorneio()" style="font-size:10px;padding:2px 6px" title="Remover logo">✕</button>
         <button onclick="Controle.listarLogos()" style="font-size:10px;padding:2px 6px">🔄</button>
       </div>
       <p style="margin-top:8px;font-size:10px;color:#aaa">📚 Biblioteca de Logos</p>

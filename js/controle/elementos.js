@@ -26,33 +26,24 @@ Controle.definirTorneio=function(){
 };
 
 Controle.selecionarLogoTorneio=function(){
-    var sel=document.getElementById('logoTorneio');
-    var val=sel?sel.value:'';
+    var nome=Controle.estado.logoTorneio||'';
     var prev=document.getElementById('logoTorneioPreview');
-    if(val){
-        Controle.setEstado({logoTorneio:val});
-        if(prev){prev.src='torneios/'+val;prev.style.display='';}
+    var nm=document.getElementById('logoTorneioNome');
+    if(nome){
+        if(prev){prev.src='torneios/'+nome;prev.style.display='';}
+        if(nm)nm.textContent=nome;
     }else{
-        Controle.setEstado({logoTorneio:''});
         if(prev)prev.style.display='none';
+        if(nm)nm.textContent='';
     }
 };
+Controle.limparLogoTorneio=function(){ Controle.setEstado({logoTorneio:''}); };
 
-Controle.recarregarLogos=async function(){
-    try{
-        var r=await fetch(API+API_AND+'acao=listar_logos');
-        var data=await r.json();
-        var sel=document.getElementById('logoTorneio');
-        if(!sel)return;
-        var val=sel.value;
-        sel.innerHTML='<option value="">Nenhum</option>';
-        (data.logos||[]).forEach(function(l){
-            var opt=document.createElement('option');opt.value=l;opt.textContent=l;sel.appendChild(opt);
-        });
-        sel.value=val;
-        if(Controle.sincronizarLogoTabela)Controle.sincronizarLogoTabela();
-        Controle.status('ok','✅ Logos carregados');
-    }catch(e){}
+Controle.recarregarLogos=function(){
+    Controle.listarLogos();
+    Controle.selecionarLogoTorneio();
+    if(Controle.sincronizarLogoTabela)Controle.sincronizarLogoTabela();
+    Controle.status('ok','✅ Logos carregados');
 };
 
 /* sobe um logo para torneios/ (mesmo esquema do banco de escudos) */
@@ -70,10 +61,8 @@ Controle.uploadLogo=function(){
                     body:JSON.stringify({nome:nome,src:r.result})});
                 var rj=await resp.json();
                 if(!resp.ok||!rj.arquivo)throw new Error(rj.erro||('Erro '+resp.status));
-                await Controle.recarregarLogos();
-                var sel=document.getElementById('logoTorneio');
-                if(sel){sel.value=rj.arquivo;}
-                Controle.selecionarLogoTorneio();
+                Controle.recarregarLogos();
+                Controle.setEstado({logoTorneio:rj.arquivo});
                 Controle.status('ok','✅ Logo '+rj.arquivo+' no banco de imagens');
             }catch(err){Controle.status('erro','❌ '+err.message);}
             inp.remove();

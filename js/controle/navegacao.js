@@ -109,16 +109,7 @@ Controle.listarLogos = function () {
       el.innerHTML = h;
     }).catch(function () {});
 };
-Controle.usarLogo = function (nome) {
-  var sel = document.getElementById('logoTorneio');
-  if (sel) {
-    var tem = false;
-    for (var i = 0; i < sel.options.length; i++) if (sel.options[i].value === nome) tem = true;
-    if (!tem) { var o = document.createElement('option'); o.value = nome; o.textContent = nome; sel.appendChild(o); }
-    sel.value = nome;
-  }
-  Controle.selecionarLogoTorneio();
-};
+Controle.usarLogo = function (nome) { Controle.setEstado({ logoTorneio: nome }); };
 Controle.removerLogo = function (nome) {
   fetch(API + API_AND + 'acao=remover_logo', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
