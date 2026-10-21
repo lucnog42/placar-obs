@@ -96,7 +96,6 @@ Controle.renderSelectTimes = function () {
 
 /* ---------- linha do tempo ---------- */
 Controle.renderCenas = function () {
-    Controle._renderCenasInto('');
     Controle._renderCenasInto('pop');
 };
 Controle._renderCenasInto = function (pfx) {
@@ -135,7 +134,7 @@ Controle.cenaDuracao = function (i, v, aoVivo) {
     var d = parseFloat(v); if (isNaN(d) || d < 1) d = 1; if (d > 180) d = 180;
     l[i].d = Math.round(d); l[i].k = l[i].k; l[i].on = l[i].on;
     Controle.estado.tabelaCenas = JSON.stringify(l);
-    ['', 'pop'].forEach(function (pfx) {
+    ['pop'].forEach(function (pfx) {
         var tx = document.getElementById(pfx + 'cenaDur' + i); if (tx) tx.textContent = l[i].d + 's';
         var tt = document.getElementById(pfx + 'tabelaTotal');
         if (tt) { var t = 0; l.forEach(function (c) { if (c.on) t += c.d; }); tt.textContent = 'total ' + t.toFixed(0) + ' s'; }
@@ -533,18 +532,46 @@ Controle.parseEscalacoes = function (texto) {
     return out;
 };
 
-Controle.importarEscalacoes = function (input) {
+Controle.parseJogadoresUnico = function (texto) {
+    texto = (texto || '').replace(/^\ufeff/, '');
+    var linhas = texto.split(/\r?\n/).filter(function (l) { return l.trim(); });
+    if (!linhas.length) return [];
+    var pri = linhas[0];
+    var d = (pri.split(';').length >= pri.split(',').length) ? ';' : ',';
+    var rows = linhas.map(function (l) { return Controle._linhaCSV(l, d); });
+    var H = rows[0].map(Controle._norm);
+    var temCab = H.some(function (h) {
+        return ['jogador', 'atleta', 'nome', 'player', 'numero', 'camisa', 'dorsal', 'num', 'posicao', 'pos'].indexOf(h) >= 0;
+    });
+    var acha = function (ks) { for (var i = 0; i < H.length; i++) if (ks.indexOf(H[i]) >= 0) return i; return -1; };
+    var iP = acha(['jogador', 'atleta', 'nome', 'player']),
+        iN = acha(['numero', 'camisa', 'dorsal', 'num']),
+        iPo = acha(['posicao', 'pos', 'funcao']);
+    var corpo = temCab ? rows.slice(1) : rows, out = [];
+    corpo.forEach(function (r) {
+        var jog = ((iP >= 0 ? r[iP] : (r[0] || '')) || '').replace(/^"|"$/g, '').trim();
+        if (!jog) return;
+        out.push({ num: (iN >= 0 ? r[iN] : '') || '', player: jog, pos: (iPo >= 0 ? r[iPo] : '') || '' });
+    });
+    return out;
+};
+
+Controle.importarEscalacoes = function (input, lado) {
     var f = input && input.files && input.files[0];
     if (!f) return;
     var r = new FileReader();
     r.onload = function () {
         try {
-            var map = Controle.parseEscalacoes(String(r.result));
-            var n = Object.keys(map).length;
-            if (!n) throw new Error('nenhum time reconhecido no CSV');
+            var jogadores = Controle.parseJogadoresUnico(String(r.result));
+            if (!jogadores.length) throw new Error('nenhum jogador reconhecido no CSV');
+            var nome = (lado === 'b') ? (Controle.estado.timeB || 'Time B') : (Controle.estado.timeA || 'Time A');
+            var map = {}; try { map = JSON.parse(Controle.estado.tabelaEscalacoes || '{}'); } catch (e) { map = {}; }
+            map[Controle._norm(nome)] = jogadores;
             Controle._ultimoCsv = { texto: String(r.result), tipo: 'jogadores' };
             Controle.setEstado({ tabelaEscalacoes: JSON.stringify(map) });
-            Controle.status('ok', '✅ Escalações: ' + n + ' times');
+            Controle.status('ok', '✅ Escalações (' + nome + '): ' + jogadores.length + ' jogadores');
+            if (Controle.renderTimesNotif) Controle.renderTimesNotif();
+            if (Controle.renderJogadores) Controle.renderJogadores();
         } catch (err) {
             Controle.status('erro', '❌ ' + err.message);
         }
@@ -554,6 +581,20 @@ Controle.importarEscalacoes = function (input) {
 };
 
 Controle.limparEscalacoes = function () { Controle.setEstado({ tabelaEscalacoes: '{}' }); };
+
+Controle.serializarEscalacoes = function () {
+    var map; try { map = JSON.parse(Controle.estado.tabelaEscalacoes || '{}'); } catch (e) { map = {}; }
+    var linhas = ['time;jogador;numero;posicao'];
+    var na = Controle.estado.timeA || 'Time A', nb = Controle.estado.timeB || 'Time B';
+    var nna = Controle._norm(na), nnb = Controle._norm(nb);
+    Object.keys(map).forEach(function (k) {
+        var nome = (nna && Controle._norm(k) === nna) ? na : (nnb && Controle._norm(k) === nnb) ? nb : k;
+        (map[k] || []).forEach(function (p) {
+            linhas.push([nome, p.player || '', p.num || '', p.pos || ''].join(';'));
+        });
+    });
+    return '\ufeff' + linhas.join('\n') + '\n';
+};
 
 /* ---------- biblioteca de CSVs (separada por tipo: tabela / jogadores) ---------- */
 Controle.listarCsvs = function (tipo) {
@@ -571,9 +612,9 @@ Controle.listarCsvs = function (tipo) {
         var n = lista[i];
         var nm = String(n).replace(/'/g, "\\'");
         h += '<div class="csv-item" data-item="' + n + '">';
+        h += '<input type="checkbox" class="cb-lib" data-tipo="' + lib + '" data-item="' + n + '" style="flex-shrink:0">';
         h += '<span class="csv-nome">📄 ' + n + '</span>';
         h += '<button onclick="Controle.carregarCsv(\'' + nm + '\',\'' + tipo + '\')" title="Aplicar">📥 Aplicar</button>';
-        h += '<button class="btn-tag" onclick="Controle.agruparItem(\'' + lib + '\',\'' + nm + '\')" title="Agrupar">🏷</button>';
         h += '<button class="btn-remover" onclick="Controle.removerCsv(\'' + nm + '\',\'' + tipo + '\')">✕</button>';
         h += '</div>';
       }
@@ -584,15 +625,25 @@ Controle.listarCsvs = function (tipo) {
 
 Controle.salvarCsvAtual = function (tipo) {
   tipo = (tipo === 'jogadores') ? 'jogadores' : 'tabela';
-  if (!Controle._ultimoCsv || !Controle._ultimoCsv.texto) {
-    alert('Importe um CSV antes de salvar na biblioteca.');
-    return;
+  var conteudo;
+  if (tipo === 'jogadores') {
+    conteudo = Controle.serializarEscalacoes();
+    if (!conteudo || conteudo.split('\n').length < 2) {
+      alert('Importe as escalações (Time A e/ou Time B) antes de salvar.');
+      return;
+    }
+  } else {
+    if (!Controle._ultimoCsv || !Controle._ultimoCsv.texto) {
+      alert('Importe um CSV antes de salvar na biblioteca.');
+      return;
+    }
+    conteudo = Controle._ultimoCsv.texto;
   }
   var nome = prompt('Nome para este CSV na biblioteca:');
   if (!nome || !nome.trim()) return;
   fetch(API + API_AND + 'acao=salvar_csv', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ nome: nome.trim(), conteudo: Controle._ultimoCsv.texto, tipo: tipo })
+    body: JSON.stringify({ nome: nome.trim(), conteudo: conteudo, tipo: tipo })
   }).then(function (r) { return r.json(); })
     .then(function (d) { if (d && d.erro) alert(d.erro); Controle.listarCsvs(tipo); })
     .catch(function () {});

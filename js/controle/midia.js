@@ -52,18 +52,24 @@ Controle.adicionarMidia=function(pfx){
 /* ---------- notificacoes (midia de texto) ---------- */
 Controle.NOTIF_ROTULO={gol:'Gol',amarelo:'Cartão amarelo',vermelho:'Cartão vermelho',substituicao:'Substituição',info:'Aviso'};
 Controle.NOTIF_PADRAO={gol:'GOOOOL!!!',amarelo:'CARTÃO AMARELO',vermelho:'CARTÃO VERMELHO',substituicao:'',info:''};
+Controle._notifTipo='gol';
+Controle.getNotifTextos=function(){try{return JSON.parse(Controle.estado.notifTextos||'{}');}catch(e){return{};}};
+Controle.getNotifTexto=function(tipo){var t=Controle.getNotifTextos();if(t&&t[tipo])return t[tipo];return Controle.NOTIF_PADRAO[tipo]||'';};
+Controle.abrirTextosNotif=function(){var t=Controle.getNotifTextos();var g=document.getElementById('cfgTextoGol');if(g)g.value=t.gol||Controle.NOTIF_PADRAO.gol;var a=document.getElementById('cfgTextoAmarelo');if(a)a.value=t.amarelo||Controle.NOTIF_PADRAO.amarelo;var v=document.getElementById('cfgTextoVermelho');if(v)v.value=t.vermelho||Controle.NOTIF_PADRAO.vermelho;Controle.abrirModal('modalTextosNotif');};
+Controle.salvarNotifTextos=function(){var t={gol:(document.getElementById('cfgTextoGol')||{}).value||'',amarelo:(document.getElementById('cfgTextoAmarelo')||{}).value||'',vermelho:(document.getElementById('cfgTextoVermelho')||{}).value||''};Controle.setEstado({notifTextos:JSON.stringify(t)});Controle.fecharModal('modalTextosNotif');Controle.status('ok','Textos salvos');};
 
 /* monta as opções de jogador a partir das escalações (CSV) */
 Controle._opcoesJogadores=function(){
     var html='<option value="">— escolher jogador do CSV —</option>';
     try{
         var map=JSON.parse(Controle.estado.tabelaEscalacoes||'{}');
+        var na=Controle._norm(Controle.estado.timeA), nb=Controle._norm(Controle.estado.timeB);
         Object.keys(map).forEach(function(k){
             var lista=map[k]||[];
             if(!lista.length)return;
-            var rot=k, ln=k.toLowerCase();
-            if(ln==='a')rot=Controle.estado.timeA||'Time A';
-            else if(ln==='b')rot=Controle.estado.timeB||'Time B';
+            var rot=k;
+            if(na&&Controle._norm(k)===na)rot=Controle.estado.timeA||'Time A';
+            else if(nb&&Controle._norm(k)===nb)rot=Controle.estado.timeB||'Time B';
             html+='<optgroup label="'+String(rot).replace(/"/g,'&quot;')+'">';
             lista.forEach(function(p){
                 var rotulo=p.num?((p.num+'. ')+p.player):p.player;
@@ -95,8 +101,7 @@ Controle.renderTimesNotif=function(){
     var a=Controle.estado.timeA,b=Controle.estado.timeB;
     if(a)nomes.push(a);
     if(b&&b!==a)nomes.push(b);
-    try{Controle.timesTabela().forEach(function(t){if(t.name&&nomes.indexOf(t.name)<0)nomes.push(t.name);});}catch(e){}
-    if(!nomes.length){el.innerHTML='<span class="hint">sem times: preencha Time A/B ou importe a classificação</span>';return;}
+    if(!nomes.length){el.innerHTML='<span class="hint">sem times: preencha Time A/B na aba Equipes</span>';return;}
     var h='';
     nomes.forEach(function(n){
         var on=Controle._notifTime===n?' on':'';
@@ -111,7 +116,7 @@ Controle.escolherTimeNotif=function(btn){
     var el=document.getElementById('listaTimesNotif');
     if(el){var bs=el.querySelectorAll('.time-notif-btn');for(var i=0;i<bs.length;i++)bs[i].classList.remove('on');}
     btn.classList.add('on');
-    var tipo=(document.querySelector('input[name="tipoNotif"]:checked')||{}).value;
+    var tipo=Controle._notifTipo||'gol';
     if(tipo!=='substituicao')Controle.renderJogadoresNotif();
     Controle.status('ok','🏆 Time: '+n);
 };
@@ -146,8 +151,7 @@ Controle.escolherJogadorNotif=function(btn){
 
 /* monta o item de texto a partir do formulario */
 Controle._itemNotif=function(){
-    var rt=document.querySelector('input[name="tipoNotif"]:checked');
-    var tipo=rt?rt.value:'gol';
+    var tipo=Controle._notifTipo||'gol';
     if(tipo==='substituicao'){
         var ent=(document.getElementById('selJogadorEntra')||{}).value||'';
         var sai=(document.getElementById('selJogadorSai')||{}).value||'';
@@ -159,8 +163,7 @@ Controle._itemNotif=function(){
     }
     var nome=Controle._notifJogador||Controle._notifTime||'';
     if(!nome){alert('Escolha um time (ou um jogador)');return null;}
-    var inp=document.getElementById('texto'+tipo.charAt(0).toUpperCase()+tipo.slice(1));
-    var prefixo=(inp&&inp.value.trim())||Controle.NOTIF_PADRAO[tipo]||'';
+    var prefixo=Controle.getNotifTexto(tipo);
     var texto=nome+(prefixo?(' - '+prefixo):'');
     return {id:'notif_'+tipo+'_'+Controle._norm(nome).replace(/ /g,'-'),
             tipo:'texto',notif:tipo,nome:Controle.NOTIF_ROTULO[tipo]+' · '+nome,
@@ -168,38 +171,62 @@ Controle._itemNotif=function(){
 };
 
 Controle.salvarNotificacao=function(){Controle.enviarNotificacao(false);};
+Controle._cenaForcada=null;
+Controle._gateOverlay=function(prosseguir){
+    if(Controle._cenaForcada){Controle._overlayPendente=prosseguir;Controle.abrirModal('modalConfirmarOverlay');}
+    else{prosseguir();}
+};
+Controle._confirmarDesligarOverlay=function(){
+    var fn=Controle._overlayPendente;Controle._overlayPendente=null;
+    Controle.fecharModal('modalConfirmarOverlay');
+    if(Controle.voltarLoop)Controle.voltarLoop();
+    Controle._cenaForcada=null;
+    if(fn)fn();
+};
 Controle.enviarNotificacao=function(agora){
     if(agora===undefined)agora=true;
     var it=Controle._itemNotif();
     if(!it){alert('Informe o jogador ou escolha o time');return;}
-    var midias=Controle.getMidiasCtrl(),achou=false;
-    for(var i=0;i<midias.length;i++){
-        if(midias[i].id===it.id){                       // atualiza o texto
-            midias[i].texto=it.texto;midias[i].nome=it.nome;
-            if(midias[i].duracao===undefined)midias[i].duracao=it.duracao;
-            achou=true;break;
+    var doIt=function(){
+        var midias=Controle.getMidiasCtrl(),achou=false;
+        for(var i=0;i<midias.length;i++){
+            if(midias[i].id===it.id){                    // atualiza o texto
+                midias[i].texto=it.texto;midias[i].nome=it.nome;
+                if(midias[i].duracao===undefined)midias[i].duracao=it.duracao;
+                achou=true;break;
+            }
         }
-    }
-    if(!achou)midias.push(it);
-    var est={midias:JSON.stringify(midias)};
-    if(agora){                                          // dispara uma vez no placar
-        est.midiaDisparoId=it.id;
-        est.midiaDisparoSeq=String(Date.now());
-    }
-    Controle.setEstado(est);
-    Controle.renderMidias();
-    Controle.status('ok',agora?('▶ Notificação enviada: '+it.nome):('➕ No repertório: '+it.nome));
+        if(!achou)midias.push(it);
+        var est={midias:JSON.stringify(midias)};
+        if(agora){                                       // dispara uma vez no placar
+            est.midiaDisparoId=it.id;
+            est.midiaDisparoSeq=String(Date.now());
+        }
+        Controle.setEstado(est);
+        Controle.renderMidias();
+        Controle.status('ok',agora?('▶ Notificação enviada: '+it.nome):('➕ No repertório: '+it.nome));
+    };
+    if(agora)Controle._gateOverlay(doIt); else doIt();
 };
 
 // Toggle: adiciona/remove do array midiasAtivas
 Controle.toggleMidia=function(id){
     var ativas=Controle.getAtivasCtrl();
     var idx=ativas.indexOf(id);
-    if(idx>=0){ativas.splice(idx,1);}
-    else{ativas.push(id);}
-    Controle.estado.midiasAtivas=JSON.stringify(ativas);
-    Controle.setEstado({midiasAtivas:JSON.stringify(ativas)});
-    Controle.renderMidias();
+    if(idx>=0){
+        ativas.splice(idx,1);
+        Controle.estado.midiasAtivas=JSON.stringify(ativas);
+        Controle.setEstado({midiasAtivas:JSON.stringify(ativas)});
+        Controle.renderMidias();
+    }else{
+        Controle._gateOverlay(function(){
+            var at=Controle.getAtivasCtrl();
+            if(at.indexOf(id)<0)at.push(id);
+            Controle.estado.midiasAtivas=JSON.stringify(at);
+            Controle.setEstado({midiasAtivas:JSON.stringify(at)});
+            Controle.renderMidias();
+        });
+    }
 };
 
 Controle.removerMidia=async function(id){
@@ -309,8 +336,10 @@ Controle.renderMidias=function(){
 
 /* dispara um item do repertorio uma unica vez (notificacoes) */
 Controle.dispararMidia=function(id){
-    Controle.setEstado({midiaDisparoId:id,midiaDisparoSeq:String(Date.now())});
-    var m=null,lista=Controle.getMidiasCtrl();
-    for(var i=0;i<lista.length;i++)if(lista[i].id===id)m=lista[i];
-    Controle.status('ok','▶ '+(m?m.nome:id));
+    Controle._gateOverlay(function(){
+        Controle.setEstado({midiaDisparoId:id,midiaDisparoSeq:String(Date.now())});
+        var m=null,lista=Controle.getMidiasCtrl();
+        for(var i=0;i<lista.length;i++)if(lista[i].id===id)m=lista[i];
+        Controle.status('ok','▶ '+(m?m.nome:id));
+    });
 };

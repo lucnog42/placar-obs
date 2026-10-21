@@ -179,6 +179,13 @@ Placar.Tabela = {
         catch (err) { return {}; }
     },
 
+    /* imagens de fundo por cena (intro/intervalo/encerramento/table) */
+    fundos: function (txt) {
+        if (!txt) return {};
+        try { var o = (typeof txt === 'string') ? JSON.parse(txt) : txt; return (o && typeof o === 'object') ? o : {}; }
+        catch (err) { return {}; }
+    },
+
     /* ---------- layout por cena (tamanho + posicao, editado no painel) ---------- */
     layout: function (k) {
         var e = Placar.estado || {}, o = null;
@@ -313,6 +320,7 @@ Placar.Tabela = {
             window.Tabela.setTheme(this.tema());
             window.Tabela.setEscudos(e.tabelaEscudos !== 'false');
             window.Tabela.setLineups(this.escalacoes(e.tabelaEscalacoes));
+            window.Tabela.setFundo(this.fundos(e.cenaFundos));
             window.Tabela.setColors(e.timeACor || '#22d3ee', e.timeBCor || '#f472b6');
             window.Tabela.setEscudoTime(cfg.a, e.escudoA || '');
             window.Tabela.setEscudoTime(cfg.b, e.escudoB || '');

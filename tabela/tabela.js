@@ -152,6 +152,29 @@ function paintBg(g,c,force){
   for(let x=0;x<W;x+=64){ g.beginPath(); g.moveTo(x,0); g.lineTo(x,H); g.stroke(); }
   for(let y=0;y<H;y+=64){ g.beginPath(); g.moveTo(0,y); g.lineTo(W,y); g.stroke(); }
 }
+/* ---------- fundo (imagem opcional por cena: intro/intervalo/encerramento/table) ---------- */
+var FUNDOS = {};
+function setFundo(o){
+  FUNDOS = {};
+  if(!o) return;
+  Object.keys(o).forEach(function(k){
+    var src = o[k];
+    if(!src) return;
+    FUNDOS[k] = { src: src, img: null };
+    var im = new Image();
+    im.onload = function(){ if(FUNDOS[k]) FUNDOS[k].img = im; };
+    im.src = src;
+  });
+}
+function paintFundo(g, k){
+  var f = FUNDOS[k];
+  if(f && f.img){
+    var iw = f.img.width || W, ih = f.img.height || H;
+    var sc = Math.max(W / iw, H / ih);
+    var dw = iw * sc, dh = ih * sc;
+    g.drawImage(f.img, (W - dw) / 2, (H - dh) / 2, dw, dh);
+  }
+}
 /* ---------- cabeçalho persistente ---------- */
 function drawHeader(g,t,c){
   field(g,40,28,1200,72,{bg:rd(.78),r:16});
@@ -908,6 +931,8 @@ function renderFrame(t, opts){
   g.setTransform(w/W, 0, 0, h/H, 0, 0);
   g.clearRect(0, 0, W, H);
   paintBg(g, c);
+  var sk = opts.cena || sceneAt(timeline(c).segs, t).k;
+  paintFundo(g, sk);
   drawScene(g, t, c, opts.cena);
   drawNotif(g);
 }
@@ -995,7 +1020,7 @@ return {
   getColors:function(){return {a:A_COL,b:B_COL,c:C_COL};},
   setEscudoTime:setEscudoTime,
   setLineups:setLineups, setPatrocinadores:setPatrocinadores, loadCrests:loadCrests, loadLogo:loadLogo,
-  setNotif:setNotif, clearNotif:clearNotif, temNotif:temNotif, renderNotif:renderNotif,
+  setFundo:setFundo, setNotif:setNotif, clearNotif:clearNotif, temNotif:temNotif, renderNotif:renderNotif,
   timeline:timeline, sceneAt:sceneAt, teams:function(){ return TEAMS; },
   nomes:function(){ return TEAMS.map(function(t){ return t.name; }); },
   escudo:function(i){ return imgs[i] || null; }

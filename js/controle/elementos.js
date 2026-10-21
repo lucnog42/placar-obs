@@ -123,11 +123,10 @@ Controle.renderEscudos=function(){
     Controle._escudos.forEach(function(n){
         h+='<div class="escudo-item" data-item="'+n+'">';
         h+='<img src="escudos/'+n+'.png?v='+ts+'" alt="" onerror="this.style.display=\'none\'">';
-        h+='<input type="checkbox" class="cb-escudo" value="'+n+'" style="flex-shrink:0">';
+        h+='<input type="checkbox" class="cb-lib" data-tipo="escudos" data-item="'+n+'" style="flex-shrink:0">';
         h+='<span class="escudo-nome" title="'+n+'">'+n+'</span>';
         h+='<button class="btn-A" onclick="Controle.atribuirEscudo(\''+n+'\',\'A\')">Time A</button>';
         h+='<button class="btn-B" onclick="Controle.atribuirEscudo(\''+n+'\',\'B\')">Time B</button>';
-        h+='<button class="btn-tag" onclick="Controle.agruparItem(\'escudos\',\''+n+'\')" title="Agrupar">🏷</button>';
         h+='<button onclick="Controle.removerEscudo(\''+n+'\')" class="btn-remover">✕</button>';
         h+='</div>';
     });
@@ -197,12 +196,12 @@ Controle.removerEscudo=async function(nome){
 
 Controle.toggleTodosEscudos=function(){
     var on=document.getElementById('selTodosEscudos').checked;
-    document.querySelectorAll('.cb-escudo').forEach(function(cb){cb.checked=on;});
+    document.querySelectorAll('.cb-lib[data-tipo="escudos"]').forEach(function(cb){cb.checked=on;});
 };
 
 Controle.removerEscudosMarcados=function(){
     var nomes=[];
-    document.querySelectorAll('.cb-escudo:checked').forEach(function(cb){nomes.push(cb.value);});
+    document.querySelectorAll('.cb-lib[data-tipo="escudos"]:checked').forEach(function(cb){nomes.push(cb.getAttribute('data-item'));});
     if(nomes.length===0)return;
     if(!confirm('Remover '+nomes.length+' escudo(s) da biblioteca?'))return;
     (async function(){
@@ -279,7 +278,7 @@ Controle.desativarPenalte=function(){
 };
 
 Controle.toggleTipoNotif=function(){
-    var tipo=(document.querySelector('input[name="tipoNotif"]:checked')||{}).value;
+    var tipo=Controle._notifTipo||'gol';
     var isSub=tipo==='substituicao';
     var sc=document.getElementById('substituicaoCampos');
     var lj=document.getElementById('listaJogadoresNotif');

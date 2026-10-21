@@ -6,12 +6,11 @@ Controle.TELAS = [
   { n: 2, titulo: 'Equipes' },
   { n: 3, titulo: 'Competição' },
   { n: 4, titulo: 'Tabela' },
-  { n: 5, titulo: 'Cenas' },
-  { n: 6, titulo: 'Tema' },
-  { n: 7, titulo: 'Patrocinadores' },
-  { n: 8, titulo: 'Repertório' },
-  { n: 9, titulo: 'Resumo & Salvar' },
-  { n: 10, titulo: 'Operar ao vivo' }
+  { n: 5, titulo: 'Tema' },
+  { n: 6, titulo: 'Patrocinadores' },
+  { n: 7, titulo: 'Repertório' },
+  { n: 8, titulo: 'Resumo & Salvar' },
+  { n: 9, titulo: 'Operar ao vivo' }
 ];
 Controle.NUM_TELAS = Controle.TELAS.length;
 Controle.telaAtual = 1;
@@ -42,7 +41,7 @@ Controle.mostrarTela = function (n) {
   for (var j = 0; j < items.length; j++) items[j].classList.remove('ativo');
   if (items[n - 1]) items[n - 1].classList.add('ativo');
   Controle.fecharMenu();
-  if (n === 9) Controle.gerarResumo();
+  if (n === 8) Controle.gerarResumo();
   window.scrollTo(0, 0);
 };
 
@@ -79,10 +78,13 @@ Controle.abrirCenas = function () { Controle.renderCenas(); Controle.abrirModal(
 
 /* ---------- notificação rápida (abre o pop-up time→jogador) ---------- */
 Controle.notifRapida = function (tipo) {
-  var radios = document.getElementsByName('tipoNotif');
-  for (var i = 0; i < radios.length; i++) { if (radios[i].value === tipo) radios[i].checked = true; }
+  Controle._notifTipo = tipo;
+  Controle._notifTime = null; Controle._notifJogador = null;
+  var ti = document.getElementById('notifTitulo');
+  if (ti) ti.textContent = '🔔 ' + (Controle.NOTIF_ROTULO && Controle.NOTIF_ROTULO[tipo] ? Controle.NOTIF_ROTULO[tipo] : 'Notificação');
   Controle.toggleTipoNotif();
   if (Controle.renderTimesNotif) Controle.renderTimesNotif();
+  if (tipo === 'substituicao' && Controle.renderJogadores) Controle.renderJogadores();
   Controle.abrirModal('modalNotificacao');
 };
 
@@ -108,10 +110,10 @@ Controle.listarLogos = function () {
         var url = 'torneios/' + nome + '?v=' + ts;
         var nm = String(nome).replace(/'/g, "\\'");
         h += '<div class="escudo-item" data-item="' + nome + '">';
+        h += '<input type="checkbox" class="cb-lib" data-tipo="logos" data-item="' + nome + '" style="flex-shrink:0">';
         h += '<img src="' + url + '" onerror="this.style.opacity=0.2" alt="">';
         h += '<span class="escudo-nome">' + nome + '</span>';
         h += '<button style="background:#2196F3;color:#fff" onclick="Controle.usarLogo(\'' + nome + '\')">Usar</button>';
-        h += '<button class="btn-tag" onclick="Controle.agruparItem(\'logos\',\'' + nm + '\')" title="Agrupar">🏷</button>';
         h += '<button class="btn-remover" onclick="Controle.removerLogo(\'' + nm + '\')">✕</button>';
         h += '</div>';
       }
@@ -144,8 +146,8 @@ Controle.baixarModeloCsv = function () {
 };
 
 Controle.baixarModeloCsvJogadores = function () {
-  var header = 'time;jogador;numero;posicao';
-  var exemplo = 'Time A;João Silva;10;Atacante\nTime A;Pedro Santos;1;Goleiro\nTime A;Lucas Alves;7;Meia\nTime B;Carlos Lima;9;Atacante\nTime B;Marcos Rocha;5;Zagueiro';
+  var header = 'jogador;numero;posicao';
+  var exemplo = 'João Silva;10;Atacante\nPedro Santos;1;Goleiro\nLucas Alves;7;Meia\nCarlos Lima;9;Atacante\nMarcos Rocha;5;Zagueiro';
   var csv = '\ufeff' + header + '\n' + exemplo + '\n';
   var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   var a = document.createElement('a');
@@ -195,11 +197,11 @@ Controle.listarCores = function () {
         var nome = c.nome || hex;
         var nm = String(nome).replace(/'/g, "\\'");
         h += '<div class="cor-item" data-item="' + nome + '">';
+        h += '<input type="checkbox" class="cb-lib" data-tipo="cores" data-item="' + nome + '" style="flex-shrink:0">';
         h += '<span class="swatch" style="background:' + hex + '"></span>';
         h += '<span class="cor-nome">' + nome + '</span>';
         h += '<button class="A" onclick="Controle.aplicarCor(\'timeA\',\'' + hex + '\')">Casa</button>';
         h += '<button class="B" onclick="Controle.aplicarCor(\'timeB\',\'' + hex + '\')">Visit.</button>';
-        h += '<button class="btn-tag" onclick="Controle.agruparItem(\'cores\',\'' + nm + '\')" title="Agrupar">🏷</button>';
         h += '<button class="btn-remover" onclick="Controle.removerCor(\'' + nm + '\')">✕</button>';
         h += '</div>';
       }
@@ -287,6 +289,9 @@ Controle.renderGruposBar = function (tipo) {
     h += '<button class="grupo-chip' + (ativo === n ? ' on' : '') + '" onclick="Controle.setGrupoFiltro(\'' + tipo + '\',\'' + String(n).replace(/'/g, "\\'") + '\')">' + n + ' (' + (g[n] || []).length + ')</button>';
   }
   h += '<button class="grupo-chip grupo-add" onclick="Controle.novoGrupo(\'' + tipo + '\')" title="Novo grupo">＋</button>';
+  if (ativo !== '') {
+    h += '<button class="grupo-chip grupo-dsg" onclick="Controle.desagruparSelecionados(\'' + tipo + '\')" title="Remove os itens marcados do grupo filtrado">⇄ Desagrupar</button>';
+  }
   el.innerHTML = h;
 };
 
@@ -342,6 +347,47 @@ Controle.desagruparItem = function (tipo, item) {
     .catch(function () {});
 };
 
+/* ---------- agrupamento por checkbox (um botão por biblioteca) ---------- */
+Controle.toggleTodosLib = function (tipo) {
+  var on = document.getElementById('selTodos-' + tipo); if (!on) return;
+  document.querySelectorAll('.cb-lib[data-tipo="' + tipo + '"]').forEach(function (cb) { cb.checked = on.checked; });
+};
+Controle.itensMarcadosLib = function (tipo) {
+  var out = [];
+  document.querySelectorAll('.cb-lib[data-tipo="' + tipo + '"]:checked').forEach(function (cb) { out.push(cb.getAttribute('data-item')); });
+  return out;
+};
+Controle.agruparSelecionados = function (tipo) {
+  var itens = Controle.itensMarcadosLib(tipo);
+  if (!itens.length) { alert('Marque os itens para agrupar.'); return; }
+  var g = Controle._gruposCache[tipo] || {};
+  var nomes = Object.keys(g).sort();
+  var msg = 'Agrupar ' + itens.length + ' item(ns):\n';
+  if (nomes.length) msg += 'Existentes: ' + nomes.join(', ') + '\n';
+  msg += '\nDigite o nome do grupo (novo ou existente).';
+  var nome = prompt(msg);
+  if (!nome || !nome.trim()) return;
+  var pend = itens.length;
+  itens.forEach(function (item) {
+    fetch(API + API_AND + 'acao=agrupar_item', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tipo: tipo, grupo: nome.trim(), item: item })
+    }).then(function (r) { return r.json(); }).then(function () { if (--pend === 0) Controle.carregarGrupos(tipo); }).catch(function () { if (--pend === 0) Controle.carregarGrupos(tipo); });
+  });
+};
+Controle.desagruparSelecionados = function (tipo) {
+  var itens = Controle.itensMarcadosLib(tipo);
+  if (!itens.length) { alert('Marque os itens para desagrupar.'); return; }
+  if (!confirm('Desagrupar ' + itens.length + ' item(ns)?')) return;
+  var pend = itens.length;
+  itens.forEach(function (item) {
+    fetch(API + API_AND + 'acao=desagrupar_item', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tipo: tipo, item: item })
+    }).then(function (r) { return r.json(); }).then(function () { if (--pend === 0) Controle.carregarGrupos(tipo); }).catch(function () { if (--pend === 0) Controle.carregarGrupos(tipo); });
+  });
+};
+
 /* ---------- resumo (Tela 9) ---------- */
 Controle._v = function (id) { var e = document.getElementById(id); return e ? (e.value || '').toString().trim() : ''; };
 Controle._linha = function (k, v) {
@@ -363,7 +409,7 @@ Controle.gerarResumo = function () {
   h += Controle._linha('Data / Hora', (Controle._v('data') || '—') + ' · ' + (Controle._v('hora') || '—'));
   h += Controle._linha('Clima', Controle._v('clima') ? (Controle._v('clima') + ' °C') : '');
   h += Controle._linha('Local', Controle._v('local'));
-  var cenas = document.getElementById('tabelaCenaCount');
+  var cenas = document.getElementById('poptabelaCenaCount');
   h += Controle._linha('Cenas', cenas ? cenas.textContent : '—');
   h += Controle._linha('Tema do overlay', Controle._v('tabelaTema'));
   h += Controle._linha('Patrocinadores', Controle._v('spText') || 'PATROCINADORES');

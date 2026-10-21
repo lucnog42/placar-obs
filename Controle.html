@@ -98,6 +98,11 @@ h2.titulo{text-align:left}
 @media(max-width:759px){
   body{zoom:2}
   #previewWrapper{position:sticky;top:48px;z-index:40}
+  /* menu mobile: fonte e botões em 2x */
+  .drawer-head{font-size:24px;padding:18px 22px 8px}
+  .drawer-instancia{font-size:20px;padding:0 22px 16px}
+  .drawer-item{font-size:26px;padding:20px 22px}
+  .drawer-btn{font-size:24px;padding:16px;margin:8px 22px;width:calc(100% - 44px)}
 }
 /* biblioteca: pesquisa + grupos */
 .biblioteca-toolbar{display:flex;flex-direction:column;gap:4px;margin:4px 0 8px}
@@ -145,12 +150,11 @@ h2.titulo{text-align:left}
   <a class="drawer-item" onclick="Controle.irPara(2)">👥 Equipes</a>
   <a class="drawer-item" onclick="Controle.irPara(3)">🏆 Competição</a>
   <a class="drawer-item" onclick="Controle.irPara(4)">📊 Tabela</a>
-  <a class="drawer-item" onclick="Controle.irPara(5)">🎬 Cenas</a>
-  <a class="drawer-item" onclick="Controle.irPara(6)">🎨 Tema</a>
-  <a class="drawer-item" onclick="Controle.irPara(7)">🤝 Patrocinadores</a>
-  <a class="drawer-item" onclick="Controle.irPara(8)">📢 Repertório</a>
-  <a class="drawer-item" onclick="Controle.irPara(9)">📋 Resumo &amp; Salvar</a>
-  <a class="drawer-item" onclick="Controle.irPara(10)">🎯 Operar ao vivo</a>
+  <a class="drawer-item" onclick="Controle.irPara(5)">🎨 Tema</a>
+  <a class="drawer-item" onclick="Controle.irPara(6)">🤝 Patrocinadores</a>
+  <a class="drawer-item" onclick="Controle.irPara(7)">📢 Repertório</a>
+  <a class="drawer-item" onclick="Controle.irPara(8)">📋 Resumo &amp; Salvar</a>
+  <a class="drawer-item" onclick="Controle.irPara(9)">🎯 Operar ao vivo</a>
   <hr style="border-color:#22304a;margin:8px 14px">
   <button class="drawer-btn" onclick="Controle.salvarPreset()">💾 Salvar como perfil</button>
   <button class="drawer-btn" onclick="Controle.togglePreview()">👁 Preview</button>
@@ -229,8 +233,10 @@ h2.titulo{text-align:left}
         <button onclick="Controle.resetarCor()">Resetar</button>
       </div>
       <p style="font-size:11px;color:#93a4c0">📚 Biblioteca de cores salvas</p>
-      <div style="display:flex;gap:6px;margin-bottom:6px;align-items:center">
+      <div style="display:flex;gap:6px;margin-bottom:6px;align-items:center;flex-wrap:wrap">
         <button onclick="Controle.adicionarCor()" style="background:#2196F3;color:#fff">➕ Adicionar Cor</button>
+        <label style="font-size:11px;cursor:pointer;display:flex;align-items:center;gap:3px"><input type="checkbox" id="selTodos-cores" onchange="Controle.toggleTodosLib('cores')"> Selecionar Todos</label>
+        <button onclick="Controle.agruparSelecionados('cores')" style="font-size:11px;padding:2px 8px" title="Agrupa as cores marcadas">🏷 Agrupar</button>
         <span style="font-size:10px;color:#aaa">salve cores para reusar em qualquer jogo</span>
       </div>
       <div class="biblioteca-toolbar">
@@ -244,6 +250,7 @@ h2.titulo{text-align:left}
       <div style="display:flex;gap:4px;margin-bottom:4px;align-items:center;flex-wrap:wrap">
         <button onclick="Controle.uploadEscudosBatch()" style="background:#2196F3;color:#fff">📁 Selecionar PNGs</button>
         <label style="font-size:11px;cursor:pointer;display:flex;align-items:center;gap:3px"><input type="checkbox" id="selTodosEscudos" onchange="Controle.toggleTodosEscudos()"> Selecionar Todos</label>
+        <button onclick="Controle.agruparSelecionados('escudos')" style="font-size:11px;padding:2px 8px" title="Agrupa os escudos marcados">🏷 Agrupar</button>
         <button onclick="Controle.removerEscudosMarcados()" class="btn-remover" style="margin-left:auto">✕ Remover Marcados</button>
       </div>
       <div class="biblioteca-toolbar">
@@ -291,6 +298,10 @@ h2.titulo{text-align:left}
         <button onclick="Controle.listarLogos()" style="font-size:10px;padding:2px 6px">🔄</button>
       </div>
       <p style="margin-top:8px;font-size:10px;color:#aaa">📚 Biblioteca de Logos</p>
+      <div style="display:flex;gap:6px;margin-bottom:4px;align-items:center;flex-wrap:wrap">
+        <label style="font-size:11px;cursor:pointer;display:flex;align-items:center;gap:3px"><input type="checkbox" id="selTodos-logos" onchange="Controle.toggleTodosLib('logos')"> Selecionar Todos</label>
+        <button onclick="Controle.agruparSelecionados('logos')" style="font-size:11px;padding:2px 8px" title="Agrupa os logos marcados">🏷 Agrupar</button>
+      </div>
       <div class="biblioteca-toolbar">
         <input id="buscaLogos" placeholder="🔍 Buscar logos" oninput="Controle._aplicarFiltros('logos')">
         <div id="gruposBar-logos" class="grupos-bar"></div>
@@ -334,11 +345,13 @@ h2.titulo{text-align:left}
         <span class="hint">importa os times e leva todos os escudos do CSV para a biblioteca (escudos/), baixando só os que ainda não estão lá</span>
         <span id="tabelaCsvInfo" class="hint"></span>
       </div>
-      <p style="margin-top:9px">Escalações (CSV: time; jogador; número; posição)</p>
+      <p style="margin-top:9px">Escalações (CSV: jogador; número; posição — um arquivo por time)</p>
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-        <label style="font-size:11px;color:#ddd">📄 Importar CSV:</label>
-        <input type="file" id="tabelaEscFile" accept=".csv,text/csv" onchange="Controle.importarEscalacoes(this)" style="font-size:11px">
-        <button onclick="Controle.baixarModeloCsvJogadores()" style="font-size:10px;padding:3px 8px" title="Baixa um CSV de exemplo (time;jogador;numero;posicao)">📄 Modelo</button>
+        <label style="font-size:11px;color:#ddd">📄 Time A:</label>
+        <input type="file" id="tabelaEscFileA" accept=".csv,text/csv" onchange="Controle.importarEscalacoes(this,'a')" style="font-size:11px">
+        <label style="font-size:11px;color:#ddd">📄 Time B:</label>
+        <input type="file" id="tabelaEscFileB" accept=".csv,text/csv" onchange="Controle.importarEscalacoes(this,'b')" style="font-size:11px">
+        <button onclick="Controle.baixarModeloCsvJogadores()" style="font-size:10px;padding:3px 8px" title="Baixa um CSV de exemplo (jogador;numero;posicao)">📄 Modelo</button>
         <button onclick="Controle.limparEscalacoes()" style="font-size:10px;padding:3px 7px">Limpar</button>
         <span id="tabelaEscInfo" style="font-size:10px;color:#8fb2c8">nenhuma escalação carregada</span>
       </div>
@@ -351,6 +364,8 @@ h2.titulo{text-align:left}
       <p>📚 Biblioteca de CSVs — Classificação <span class="hint">(tabela)</span></p>
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:4px">
         <button onclick="Controle.salvarCsvAtual('tabela')" style="background:#2196F3;color:#fff">💾 Salvar classificação atual</button>
+        <label style="font-size:11px;cursor:pointer;display:flex;align-items:center;gap:3px"><input type="checkbox" id="selTodos-csvs_tabela" onchange="Controle.toggleTodosLib('csvs_tabela')"> Selecionar Todos</label>
+        <button onclick="Controle.agruparSelecionados('csvs_tabela')" style="font-size:11px;padding:2px 8px" title="Agrupa os CSVs marcados">🏷 Agrupar</button>
         <span class="hint">importe o CSV da classificação, clique em salvar e dê um nome</span>
       </div>
       <div class="biblioteca-toolbar">
@@ -363,6 +378,8 @@ h2.titulo{text-align:left}
       <p>📚 Biblioteca de CSVs — Jogadores <span class="hint">(escalações)</span></p>
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:4px">
         <button onclick="Controle.salvarCsvAtual('jogadores')" style="background:#2196F3;color:#fff">💾 Salvar jogadores atual</button>
+        <label style="font-size:11px;cursor:pointer;display:flex;align-items:center;gap:3px"><input type="checkbox" id="selTodos-csvs_jogadores" onchange="Controle.toggleTodosLib('csvs_jogadores')"> Selecionar Todos</label>
+        <button onclick="Controle.agruparSelecionados('csvs_jogadores')" style="font-size:11px;padding:2px 8px" title="Agrupa os CSVs marcados">🏷 Agrupar</button>
         <span class="hint">importe o CSV de escalações, clique em salvar e dê um nome</span>
       </div>
       <div class="biblioteca-toolbar">
@@ -374,25 +391,8 @@ h2.titulo{text-align:left}
   </div>
 </section>
 
-<!-- TELA 5 — CENAS -->
-<section class="tela" id="tela-5" data-titulo="Cenas">
-  <h2 class="titulo">🎬 Cenas (linha do tempo)</h2>
-  <div class="grid-inner">
-    <section class="full" id="secCenas">
-      <p>Cenas · linha do tempo <span class="hint" id="tabelaCenaCount"></span> <span class="hint" id="tabelaTotal"></span></p>
-      <div id="tabelaCenasLista"></div>
-      <div class="row" style="margin-top:5px">
-        <button onclick="Controle.todasCenas(true)" style="font-size:10px;padding:3px 8px">Todas</button>
-        <button onclick="Controle.todasCenas(false)" style="font-size:10px;padding:3px 8px">Nenhuma</button>
-        <button onclick="Controle.resetarCenas()" style="font-size:10px;padding:3px 8px">Padrão</button>
-        <span class="hint">marque, mude a duração (s) e ordene com ↑↓</span>
-      </div>
-    </section>
-  </div>
-</section>
-
-<!-- TELA 6 — TEMA -->
-<section class="tela" id="tela-6" data-titulo="Tema">
+<!-- TELA 5 — TEMA -->
+<section class="tela" id="tela-5" data-titulo="Tema">
   <h2 class="titulo">🎨 Tema &amp; Aparência</h2>
   <div class="grid-inner">
     <section class="full">
@@ -437,8 +437,8 @@ h2.titulo{text-align:left}
   </div>
 </section>
 
-<!-- TELA 7 — PATROCINADORES -->
-<section class="tela" id="tela-7" data-titulo="Patrocinadores">
+<!-- TELA 6 — PATROCINADORES -->
+<section class="tela" id="tela-6" data-titulo="Patrocinadores">
   <h2 class="titulo">🤝 Patrocinadores</h2>
   <div class="grid-inner">
     <section class="full">
@@ -469,8 +469,8 @@ h2.titulo{text-align:left}
   </div>
 </section>
 
-<!-- TELA 8 — REPERTÓRIO -->
-<section class="tela" id="tela-8" data-titulo="Repertório">
+<!-- TELA 7 — REPERTÓRIO -->
+<section class="tela" id="tela-7" data-titulo="Repertório">
   <h2 class="titulo">📢 Repertório de Mídias</h2>
   <div class="grid-inner">
     <section class="full">
@@ -493,8 +493,8 @@ h2.titulo{text-align:left}
   </div>
 </section>
 
-<!-- TELA 9 — RESUMO & SALVAR -->
-<section class="tela" id="tela-9" data-titulo="Resumo & Salvar">
+<!-- TELA 8 — RESUMO & SALVAR -->
+<section class="tela" id="tela-8" data-titulo="Resumo & Salvar">
   <h2 class="titulo">📋 Resumo &amp; Salvar</h2>
   <div class="grid-inner">
     <section class="full resumo-card">
@@ -517,8 +517,8 @@ h2.titulo{text-align:left}
   </div>
 </section>
 
-<!-- TELA 10 — OPERAR AO VIVO -->
-<section class="tela" id="tela-10" data-titulo="Operar ao vivo">
+<!-- TELA 9 — OPERAR AO VIVO -->
+<section class="tela" id="tela-9" data-titulo="Operar ao vivo">
   <h2 class="titulo">🎯 Operar ao vivo</h2>
   <div class="grid-inner">
     <section class="full">
@@ -548,14 +548,19 @@ h2.titulo{text-align:left}
         </div>
         <div class="overlay-cat" onclick="Controle.abrirCenas()" style="margin-top:8px"><span>🎬 Ajustar cenas…</span><span style="color:#93a4c0;font-size:10px">linha do tempo</span></div>
       </div>
-    </section>
-    <section class="full" id="secaoIntervalos">
-      <p>⏸ Intervalos & Cenários <span class="hint">cenas manuais de abertura, intervalo e encerramento</span></p>
+      <p style="font-size:11px;color:#93a4c0;margin:12px 0 4px">Cenas manuais <span class="hint">abertura · intervalo · encerramento (clique de novo para desligar)</span></p>
       <div style="display:flex;gap:6px;flex-wrap:wrap">
         <button onclick="Controle.intervalo('intro')" style="background:#7c3aed;color:#fff;font-size:13px;padding:10px 14px">🔴 Abertura</button>
         <button onclick="Controle.intervalo('intervalo')" style="background:#b45309;color:#fff;font-size:13px;padding:10px 14px">⏸ Intervalo</button>
         <button onclick="Controle.intervalo('encerramento')" style="background:#0f172a;color:#fff;font-size:13px;padding:10px 14px">🏁 Encerramento</button>
-        <button onclick="Controle.voltarLoop()" style="background:#2a3a55;font-size:13px;padding:10px 14px">⏹ Voltar ao loop</button>
+      </div>
+      <p style="font-size:11px;color:#93a4c0;margin:12px 0 4px">🖼 Fundos das cenas <span class="hint">imagem de fundo opcional (cobre a cena)</span></p>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+        <button onclick="Controle.uploadFundoCena('intro')" style="font-size:11px;padding:4px 8px">🖼 Abertura</button>
+        <button onclick="Controle.uploadFundoCena('intervalo')" style="font-size:11px;padding:4px 8px">🖼 Intervalo</button>
+        <button onclick="Controle.uploadFundoCena('encerramento')" style="font-size:11px;padding:4px 8px">🖼 Encerramento</button>
+        <button onclick="Controle.uploadFundoCena('table')" style="font-size:11px;padding:4px 8px">🖼 Tabela</button>
+        <button onclick="Controle.limparFundoCena()" style="font-size:11px;padding:4px 8px" title="Remove todos os fundos">✕ Limpar</button>
       </div>
     </section>
     <section class="full">
@@ -733,14 +738,8 @@ h2.titulo{text-align:left}
 
 <div class="modal" id="modalNotificacao">
   <div class="modal-box" style="max-width:540px">
-    <h3>🔔 Notificação</h3>
-    <p style="font-size:11px;color:#93a4c0;margin:0 0 6px">tipo → time → jogador (o time também é uma opção)</p>
-    <div class="toggle-notificacao">
-      <label><input type="radio" name="tipoNotif" value="gol" checked onchange="Controle.toggleTipoNotif()"> ⚽ Gol <input type="text" id="textoGol" placeholder="GOOOLLL!!!"></label>
-      <label><input type="radio" name="tipoNotif" value="amarelo" onchange="Controle.toggleTipoNotif()"> 🟨 Amarelo <input type="text" id="textoAmarelo" placeholder="CARTÃO AMARELO"></label>
-      <label><input type="radio" name="tipoNotif" value="vermelho" onchange="Controle.toggleTipoNotif()"> 🟥 Vermelho <input type="text" id="textoVermelho" placeholder="CARTÃO VERMELHO"></label>
-      <label><input type="radio" name="tipoNotif" value="substituicao" onchange="Controle.toggleTipoNotif()"> 🔁 Substituição</label>
-    </div>
+    <h3 id="notifTitulo">🔔 Notificação</h3>
+    <p style="font-size:11px;color:#93a4c0;margin:0 0 6px">escolha o time e o jogador (o time também é uma opção) · <a href="#" onclick="Controle.abrirTextosNotif();return false" style="color:#8fb2c8">⚙️ textos</a></p>
     <p style="font-size:11px;color:#93a4c0;margin:8px 0 4px">👥 Time</p>
     <div id="listaTimesNotif" class="times-notif-list"></div>
     <div id="listaJogadoresNotif" class="jogadores-notif-list" style="display:none"></div>
@@ -756,6 +755,33 @@ h2.titulo{text-align:left}
         <button class="ok" onclick="Controle.salvarNotificacao()" style="background:#2a3a55">➕ Guardar</button>
         <button class="ok" onclick="Controle.enviarNotificacao(true);Controle.fecharModal('modalNotificacao')" style="background:#4CAF50">▶ Enviar agora</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modalTextosNotif">
+  <div class="modal-box" style="max-width:440px">
+    <h3>⚙️ Textos da notificação</h3>
+    <p style="font-size:11px;color:#93a4c0;margin:0 0 6px">texto padrão que acompanha o nome do jogador/time</p>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <label style="font-size:12px">⚽ Gol <input type="text" id="cfgTextoGol" placeholder="GOOOLLL!!!"></label>
+      <label style="font-size:12px">🟨 Amarelo <input type="text" id="cfgTextoAmarelo" placeholder="CARTÃO AMARELO"></label>
+      <label style="font-size:12px">🟥 Vermelho <input type="text" id="cfgTextoVermelho" placeholder="CARTÃO VERMELHO"></label>
+    </div>
+    <div class="modal-actions" style="justify-content:space-between">
+      <button class="cancel" onclick="Controle.fecharModal('modalTextosNotif')">Cancelar</button>
+      <button class="ok" onclick="Controle.salvarNotifTextos()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modalConfirmarOverlay">
+  <div class="modal-box" style="max-width:420px">
+    <h3>⚠ Overlay ativo</h3>
+    <p style="font-size:13px;color:#e8eefc;margin:0 0 6px">Há uma cena de abertura/intervalo/encerramento no ar. Desligar o overlay e continuar?</p>
+    <div class="modal-actions" style="justify-content:space-between">
+      <button class="cancel" onclick="Controle.fecharModal('modalConfirmarOverlay')">Cancelar</button>
+      <button class="ok" onclick="Controle._confirmarDesligarOverlay()" style="background:#b45309">Desligar e continuar</button>
     </div>
   </div>
 </div>
@@ -1215,13 +1241,15 @@ Controle.renderMenuRapido = function(){
 
 Controle.intervalo = function(k){
   var nomes = { intro:'Abertura', intervalo:'Intervalo', encerramento:'Encerramento' };
-  var dur = k === 'intro' ? 12 : 0;
+  if(Controle._cenaForcada === k){ Controle.voltarLoop(); Controle._cenaForcada = null; return; }
+  var dur = 0;
   var midias = Controle.getMidiasCtrl();
   var id = 'cena_' + k;
   var m = null;
   for(var i = 0; i < midias.length; i++){ if(midias[i].id === id){ m = midias[i]; break; } }
   if(!m){ m = { id:id, tipo:'cena', cena:k, nome:nomes[k]||k, duracao:dur, intervalo:0, transicao:'fade' }; midias.push(m); }
   else { m.duracao = dur; }
+  Controle._cenaForcada = k;
   Controle.setEstado({ midias: JSON.stringify(midias), midiaDisparoId: id, midiaDisparoSeq: String(Date.now()) });
   Controle.renderMidias();
   Controle.status('ok', '▶ ' + (nomes[k]||k));
@@ -1230,12 +1258,35 @@ Controle.voltarLoop = function(){
   Controle.setEstado({ cenaCancelar: String(Date.now()) });
   Controle.status('ok', '⏹ De volta ao loop');
 };
-Controle.novaSubstituicao = function(){
-  var r = document.querySelector('input[name="tipoNotif"][value="substituicao"]');
-  if(r){ r.checked = true; Controle.toggleTipoNotif(); }
-  if(Controle.renderTimesNotif) Controle.renderTimesNotif();
-  Controle.abrirModal('modalNotificacao');
+Controle.uploadFundoCena = function(chave){
+  var input = document.createElement('input');
+  input.type = 'file'; input.accept = 'image/*,.png,.jpg,.jpeg,.webp,.gif,.svg'; input.style.display = 'none';
+  input.onchange = function(){
+    var f = input.files && input.files[0]; if(!f) return;
+    var r = new FileReader();
+    r.onload = function(){
+      Controle.status('sync', 'Enviando fundo...');
+      fetch(API + API_AND + 'acao=upload_fundo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chave: chave, src: String(r.result) }) })
+      .then(function(resp){ return resp.json(); })
+      .then(function(d){
+        if(d && d.arquivo){
+          var fundos = {}; try { fundos = JSON.parse(Controle.estado.cenaFundos || '{}'); } catch(e){ fundos = {}; }
+          fundos[chave] = d.arquivo + '?v=' + Date.now();
+          Controle.setEstado({ cenaFundos: JSON.stringify(fundos) });
+          Controle.status('ok', '✅ Fundo (' + chave + ') salvo');
+        } else { Controle.status('erro', '❌ ' + (d && d.erro ? d.erro : 'erro ao subir fundo')); }
+      }).catch(function(e){ Controle.status('erro', '❌ ' + e.message); });
+      input.remove();
+    };
+    r.readAsDataURL(f);
+  };
+  document.body.appendChild(input); input.click();
 };
+Controle.limparFundoCena = function(){
+  Controle.setEstado({ cenaFundos: '{}' });
+  Controle.status('ok', 'Fundos removidos');
+};
+Controle.novaSubstituicao = function(){ Controle.notifRapida('substituicao'); };
 
 Controle.uploadSponsor = function(n) {
   var input = document.createElement('input');

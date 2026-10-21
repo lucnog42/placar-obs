@@ -30,11 +30,12 @@ define('PERFIS_DIR', BASE_DIR . '/perfis');
 define('CORES_FILE', BASE_DIR . '/cores.json');
 define('GRUPOS_FILE', BASE_DIR . '/grupos.json');
 define('CSVS_DIR', BASE_DIR . '/csvs');
+define('FUNDOS_DIR', BASE_DIR . '/fundos');
 define('LOCK_FILE', BASE_DIR . '/estado.lock');
 define('ESTADO_BAK', BASE_DIR . '/estado.json.bak');
 
 function ensure_dirs() {
-    $dirs = array(PRESETS_DIR, ESCUDOS_DIR, MIDIAS_DIR, PERFIS_DIR, CSVS_DIR);
+    $dirs = array(PRESETS_DIR, ESCUDOS_DIR, MIDIAS_DIR, PERFIS_DIR, CSVS_DIR, FUNDOS_DIR);
     foreach ($dirs as $d) {
         if (!is_dir($d)) {
             mkdir($d, 0755, true);
@@ -1283,6 +1284,31 @@ if ($method === 'POST') {
             respond_error('Falha ao salvar logo.', 500);
         }
         respond(array('ok' => true, 'arquivo' => $arquivo));
+    }
+
+    if ($acao === 'upload_fundo') {
+        $input = get_post_data();
+        $chave = isset($input['chave']) ? $input['chave'] : '';
+        $src = isset($input['src']) ? $input['src'] : '';
+        if (!$src) {
+            respond_error('Parametro "src" obrigatorio (base64 data-uri).');
+        }
+        if (!is_dir(FUNDOS_DIR)) {
+            mkdir(FUNDOS_DIR, 0755, true);
+        }
+        $ext = 'png';
+        if (strpos($src, 'data:image/jpeg') === 0 || strpos($src, 'data:image/jpg') === 0) $ext = 'jpg';
+        elseif (strpos($src, 'data:image/gif') === 0) $ext = 'gif';
+        elseif (strpos($src, 'data:image/webp') === 0) $ext = 'webp';
+        elseif (strpos($src, 'data:image/svg') === 0) $ext = 'svg';
+        $base = $chave !== '' ? $chave : ('fundo_' . time());
+        $base = preg_replace('/[^A-Za-z0-9_\-]/', '_', $base);
+        if ($base === '' || $base === '.' || $base === '..') $base = 'fundo_' . time();
+        $arquivo = $base . '.' . $ext;
+        if (save_data_uri($src, FUNDOS_DIR . '/' . $arquivo) === false) {
+            respond_error('Falha ao salvar fundo.', 500);
+        }
+        respond(array('ok' => true, 'arquivo' => 'fundos/' . $arquivo));
     }
 
     if ($acao === 'remover_logo') {
