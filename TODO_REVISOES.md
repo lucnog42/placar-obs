@@ -2,7 +2,7 @@
 
 Branch: `multi-instancia`.
 
-## Rodada 3 — em andamento (lote de 2026-10-20)
+## ✅ Rodada 3 — concluída (lote de 2026-10-20)
 
 1. Impedir avançar tela pelo menu lateral sem definir instância.
 2. Permitir espaço no nome/id da instância.
@@ -20,6 +20,9 @@ Branch: `multi-instancia`.
 12. Importar CSV baixa os escudos e referencia no servidor.
 13. Cor do time: botão de cor acompanha a cor; cor salva na biblioteca; contraste
     automático de texto (preto em cor clara, branco em cor escura).
+
+Extra: cenas de abertura/intervalo/encerramento forçam o overlay a ligar
+(e só desligam ao desativar o botão).
 
 ## ✅ Concluídas (rodada anterior)
 

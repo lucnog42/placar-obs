@@ -1,5 +1,18 @@
 # Histórico
 
+## 2026-10-20 (revisões — biblioteca de CSVs + escudo do time + notificações no ao vivo)
+
+- **Biblioteca de CSVs**: backend `listar_csvs`/`salvar_csv`/`carregar_csv`/`remover_csv`
+  (`csvs/`). No Controle, seção "📚 Biblioteca de CSVs" (Tela 4) salva o CSV importado
+  com um nome, lista/carrega/remove; carregar aplica como classificação ou escalações.
+- **Trocar escudo de um time**: seção "🎨 Escudos dos times" (Tela 4) lista os times da
+  classificação e permite substituir a imagem de cada um (sobe via `importar_escudos`
+  e regrava o `crest` no `tabelaTimes`).
+- **Notificações só no "ao vivo"**: o formulário saiu da Tela 8 (repertório). Na Tela 10,
+  fluxo tipo → time → jogador: lista de times (Time A/B + classificação) clicável — clicar
+  no time notifica o time todo ou abre a lista de jogadores do CSV; clicar no jogador
+  notifica o jogador. Substituição continua com entra/sai.
+
 ## 2026-10-20 (revisões — fila de reprodução real)
 
 - **Fila de reprodução real**: as mídias ativas (imagem/GIF/vídeo) agora tocam em
