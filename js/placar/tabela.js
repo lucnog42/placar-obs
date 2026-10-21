@@ -307,7 +307,7 @@ Placar.Tabela = {
             }
         }
 
-        var ligado = String(e.tabelaAtivo) === 'true';
+        var ligado = String(e.tabelaAtivo) === 'true' || this._forcado;
         if (ligado) {
             var cfg = this.config();
             window.Tabela.setTheme(this.tema());
