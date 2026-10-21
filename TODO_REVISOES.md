@@ -2,7 +2,7 @@
 
 Branch: `multi-instancia`.
 
-## 🔄 Rodada 4 — em andamento (lote 2026-10-21)
+## ✅ Rodada 4 — concluída (lote 2026-10-21)
 
 1. Botão de importar preset na primeira tela (Instâncias).
 2. Pop-up ao tentar mudar de tela via menu sem selecionar instância.
@@ -14,7 +14,7 @@ Branch: `multi-instancia`.
 8. Histórico de notificações vira submenu na tela "ao vivo".
 9. Repertório (mídias) abre como pop-up a partir do menu rápido (não navega).
 10. Cenas/linha do tempo vira pop-up do botão "Configuração" (ao vivo).
-11. Escala 2x em todo o layout mobile.
+11. Escala 2x em todo o layout mobile (`body{zoom:2}`).
 12. Remover submenu "Customizações".
 13. "Intervalos e Cenários" sobem para ficar juntos (junto ao Overlay).
 

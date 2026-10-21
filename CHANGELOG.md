@@ -1,5 +1,19 @@
 # Histórico
 
+## 2026-10-21 (revisões — "ao vivo" como hub de pop-ups)
+
+- **Notificação / mídias / cenas viraram pop-ups** na tela "Operar ao vivo": o menu
+  rápido (Gol, Faltas, Expulsão, Substituições, Mídias, Fila) abre modais em vez de
+  navegar. O seletor de notificação (tipo → time → jogador, com o time clicável)
+  ficou no `modalNotificacao`; o repertório de mídias no `modalRepertorio`; a linha
+  do tempo no `modalCenas` (aberto pelo botão "⚙️ Configuração").
+- **Histórico de notificações** saiu da tela Repertório e virou submenu na tela ao vivo.
+- **Customizações** removidas; **Intervalos & Cenários** subiram para perto do Overlay.
+- **Importar preset** na primeira tela; **pop-up** ao navegar sem instância.
+- **CSV de jogadores**: botão "📄 Modelo" (coluna `time`), biblioteca de CSVs separada
+  (classificação × jogadores, pastas `csvs/tabela` e `csvs/jogadores`).
+- **Fonte** (seletor de fonte) passou a ocupar a largura toda.
+
 ## 2026-10-20 (revisões — biblioteca de CSVs + escudo do time + notificações no ao vivo)
 
 - **Biblioteca de CSVs**: backend `listar_csvs`/`salvar_csv`/`carregar_csv`/`remover_csv`
