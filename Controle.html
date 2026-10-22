@@ -169,7 +169,7 @@ h2.titulo{text-align:left}
     <button onclick="Controle.togglePreview()">Esconder</button>
   </div>
   <div id="previewContainer">
-    <iframe src="Placar.html" id="previewFrame"></iframe>
+    <iframe src="placar.php" id="previewFrame"></iframe>
     <div id="previewDrag"><div id="dragBox"><span class="drag-tag"></span><span class="drag-handle"></span></div></div>
   </div>
 </div>
@@ -1011,7 +1011,7 @@ Controle.listarInstancias = function() {
     var h = '';
     for(var i=0;i<lista.length;i++){
       var it = lista[i];
-      var url = 'Placar.html?i=' + encodeURIComponent(it.id);
+      var url = 'placar.php?i=' + encodeURIComponent(it.id);
       var estaAtiva = (it.id === ativa);
       h += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px;border:1px solid ' + (estaAtiva ? '#4ade80' : '#333') + ';border-radius:6px;background:' + (estaAtiva ? '#0f1f18' : '#0b1420') + '">'
         + '<span style="font-weight:bold;color:#fff;min-width:110px">' + (it.nome || it.id) + '</span>'
@@ -1323,7 +1323,7 @@ Controle.uploadSponsor = function(n) {
 
 <script>
 Controle.init();
-Controle.placarUrl = function(){ return 'Placar.html' + ((typeof INSTANCIA !== 'undefined' && INSTANCIA) ? ('?i=' + encodeURIComponent(INSTANCIA)) : ''); };
+Controle.placarUrl = function(){ return 'placar.php' + ((typeof INSTANCIA !== 'undefined' && INSTANCIA) ? ('?i=' + encodeURIComponent(INSTANCIA)) : ''); };
 var _pf = document.getElementById('previewFrame'); if (_pf) _pf.src = Controle.placarUrl();
 setTimeout(function(){ Controle.listarInstancias(); }, 600);
 setTimeout(function(){ Controle.resizePreview(); }, 500);

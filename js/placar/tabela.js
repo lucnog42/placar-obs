@@ -348,6 +348,7 @@ Placar.Tabela = {
             window.Tabela.setCfg(cfg);
             window.Tabela.loadLogo(cfg.logo, function () { if (Placar.Tabela.ativo) Placar.Tabela.desenhar(); });
             this.cfg = cfg;
+            if (window.TabelaDados) { try { window.TabelaDados.fill(cfg); } catch (e) {} }
             var c = this.chaveDe(cfg);
             if (!this.ativo) {
                 this._chave = c;
@@ -391,7 +392,6 @@ Placar.Tabela = {
         this._interromper = null;
         this._forcado = false;
         this._savePlaylistT0(0);          // desligou: proxima vez comeca do inicio
-        if (window.TabelaHtml) window.TabelaHtml.reset();
         this.pararLoop();
         clearTimeout(this._t1);
         if (cam) cam.classList.remove('ativa');        // overlay sai primeiro
@@ -403,7 +403,6 @@ Placar.Tabela = {
     reiniciar: function () {
         this.t0 = performance.now();
         this._savePlaylistT0(Date.now());     // reinicio explicito: nova posicao inicial
-        if (window.TabelaHtml) window.TabelaHtml.reset();
         if (this.ativo) {
             this.desenhar(this.t0);
             this.iniciarLoop();
@@ -446,16 +445,16 @@ Placar.Tabela = {
         }
         this.aplicarLayout(cena);                      // tamanho + posicao da cena
         this.publicarCena(cena);
-        // cenas migradas para HTML/CSS (tabela/abertura/intervalo/encerramento)
+        // cenas HTML/CSS: o PHP montou o HTML; aqui so trocamos data-cena (CSS mostra/anima).
         // ?tabelaCanvas=1 forca o motor canvas (util para comparar/reverter)
         var forcarCanvas = /[?&]tabelaCanvas=1/.test(location.search);
-        var emHtml = !forcarCanvas && !!(window.TabelaHtml && window.TabelaHtml.CENAS[cena]);
-        if (emHtml) {
-            window.TabelaHtml.render(cena, t, cfg, this.tema());
-            window.TabelaHtml.show();
+        var cenaEl = forcarCanvas ? null : document.querySelector('.cena[data-scene="' + cena + '"]');
+        var cam = this.camada();
+        if (cenaEl) {
+            if (cam && cam.getAttribute('data-cena') !== cena) cam.setAttribute('data-cena', cena);
             this._canvasVisivel(false);
         } else {
-            if (window.TabelaHtml) window.TabelaHtml.hide();
+            if (cam && cam.getAttribute('data-cena') !== '') cam.setAttribute('data-cena', '');
             this._canvasVisivel(true);
             window.Tabela.render(t, { g: g, c: cfg, w: cv.width, h: cv.height, cena: forca });
         }

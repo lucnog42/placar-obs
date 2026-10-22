@@ -1,50 +1,54 @@
-# Branch `tabela-html` — cenas em HTML/CSS
+# Branch `tabela-html` — cenas em HTML/CSS com PHP
 
-Branch de trabalho para reescrever em **HTML/CSS** as cenas do overlay que antes
-eram desenhadas no canvas (`tabela/tabela.js`). A branch `multi-instancia`
-(produção) **não** foi alterada.
+Reescreve em **HTML/CSS** as cenas `tabela`, `abertura`, `intervalo` e
+`encerramento`, que antes eram desenhadas no canvas (`tabela/tabela.js`).
+As demais cenas (duel, feature, form2, lineups, sponsors, lower) **continuam no
+canvas**. A branch `multi-instancia` (produção) não é afetada.
 
-## O que mudou
+## Divisão de responsabilidades
 
-- **Cenas migradas**: `table` (classificação), `intro` (abertura),
-  `intervalo` e `encerramento` → agora são DOM + CSS.
-- **Cenas que continuam no canvas**: `duel`, `feature`, `form2`, `lineups`,
-  `sponsors`, `lower` (e a notificação desenhada no canvas).
-- Arquivos:
-  - `css/tabela-html.css` — estilos das 4 cenas + temas por CSS variables.
-  - `js/placar/tabela-html.js` — monta/atualiza o DOM das 4 cenas.
-  - `Placar.html` — `#tabelaHtml` dentro de `#camadaTabela` + css/js.
-  - `js/placar/tabela.js` — `desenhar()` despacha para HTML nas 4 cenas e
-    alterna a visibilidade canvas/HTML; resto continua no canvas.
-- **Playlist** (vem do commit `d60bdea`, também na `multi-instancia`):
-  a posição da sequência é persistida por instância no `localStorage` e
-  **retomada no reload**; desligar o overlay zera (recomeça do início).
+| Camada | Arquivo | Faz |
+|---|---|---|
+| **PHP** | `placar.php` + `partials/*.php` | monta o HTML (includes por organização); imprime as linhas da classificação |
+| **CSS** | `css/tabela.css` | esconde/mostra por `#camadaTabela[data-cena]` e anima (keyframes/transitions, stagger via `--i`) |
+| **JS** | `js/placar/tabela.js` | timer/playlist/cena → só troca `data-cena`; **não** monta HTML |
+| **JS** | `js/placar/tabela-dados.js` | preenche textos/imagens (nome, PTS, J/V/E/D/F/C, chips V/E/D, escudos, placar) quando o CSV/estado muda |
+
+## Arquivos
+
+```
+placar.php                 shell (head, includes, scripts)
+partials/placar.php        scoreboard
+partials/tabela.php        classificação (pool de 24 linhas; $MAX_LINHAS)
+partials/cena-abertura.php
+partials/cena-intervalo.php
+partials/cena-encerramento.php
+css/tabela.css
+js/placar/tabela-dados.js
+```
 
 ## Como testar
 
-1. Abra o overlay no OBS (browser source) ou no navegador:
-   `Placar.html?i=<sua-instancia>`
-2. Ligue o overlay pelo Controle. As cenas tabela/abertura/intervalo/encerramento
-   aparecem em HTML/CSS; as demais seguem no canvas.
-3. Para **comparar** com o motor antigo, use `Placar.html?i=<id>&tabelaCanvas=1`
-   (força tudo no canvas).
+- OBS / browser: **`placar.php?i=<instancia>`** (a URL do overlay mudou de `Placar.html` para `placar.php`; o preview do Controle já aponta pra lá).
+- Comparar com o motor antigo: `placar.php?i=<id>&tabelaCanvas=1`.
+- `Placar.html` continua existindo como versão canvas (legado).
 
-## Como reverter
+## Notas
 
-```bash
-git checkout multi-instancia
-```
+- **Pool de linhas**: o PHP imprime `$MAX_LINHAS` (24) linhas; o JS esconde as não usadas. Se o grupo passar de 24 times, aumente a constante em `placar.php`.
+- **Dados FCF**: `j`=jogos, `g`=vitórias, `e`=empates, `p`=derrotas, `f`/`c`=gols; `form` vem `G/P/E` (catalão) e é exibido como V/D/E.
+- **Animações**: CSS puro (entrada escalonada). Não há count-up de pontos (era JS por frame); o número aparece direto.
+- **Tema**: `#camadaTabela[data-tema]` (8 temas em CSS vars), definido pelo estado.
+- **Playlist**: posição persistida por instância no `localStorage` (commit `d60bdea`), retomada no reload; desligar zera.
 
-O app volta a usar 100% o canvas. Nada da `multi-instancia` foi tocado.
+## Validação (neste ambiente, sem PHP/browser reais)
 
-## Limitações conhecidas (honestas)
+- `php -l` em `placar.php` + 5 partials: OK.
+- `node --check` em todo `js/placar/*.js`: OK.
+- Tags HTML e chaves CSS balanceadas: OK.
+- Teste com os **dados reais** (Node + DOM stub do HTML do PHP): 24 linhas, 16 visíveis, 1ª HAILUKONG (9 pts, 4/3/0/1/10/6), chips V/E/D, intro/intervalo/encerramento preenchidos: **OK**.
+- ❗ **Visual/layout e execução do PHP**: só no seu servidor (aqui não roda PHP nem browser).
 
-- **Layouts "grade"** (temas `matchfacts` e `aço`) caem para o layout `lista`
-  na versão HTML. O layout `grade` (2 colunas × 8) ainda não foi portado.
-- **Aparência não verificada em browser real** neste ambiente (sem browser
-  headless): validei a estrutura/DOM com os dados reais em Node (16 linhas,
-  2 destaques, chips, rebuild ao mudar dados), mas o visual precisa ser
-  conferido no OBS.
-- Animações são dirigidas por JS a cada frame (como no canvas), o que garante
-  que retomar a playlist no meio de uma cena mostre o estado correto (sem
-  repetir a animação de entrada).
+## Reverter
+
+`git checkout multi-instancia`
