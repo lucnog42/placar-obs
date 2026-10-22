@@ -391,6 +391,7 @@ Placar.Tabela = {
         this._interromper = null;
         this._forcado = false;
         this._savePlaylistT0(0);          // desligou: proxima vez comeca do inicio
+        if (window.TabelaHtml) window.TabelaHtml.reset();
         this.pararLoop();
         clearTimeout(this._t1);
         if (cam) cam.classList.remove('ativa');        // overlay sai primeiro
@@ -402,6 +403,7 @@ Placar.Tabela = {
     reiniciar: function () {
         this.t0 = performance.now();
         this._savePlaylistT0(Date.now());     // reinicio explicito: nova posicao inicial
+        if (window.TabelaHtml) window.TabelaHtml.reset();
         if (this.ativo) {
             this.desenhar(this.t0);
             this.iniciarLoop();

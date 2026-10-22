@@ -7,7 +7,7 @@ var TabelaHtml = (function () {
   var CENAS = { table: 1, intro: 1, intervalo: 1, encerramento: 1 };
   var LAY_TABLE = { escuro: 'lista', claro: 'lista', neon: 'lista', broadcast: 'lista', matchfacts: 'grade', aco: 'grade', noturno: 'lista' };
 
-  var root = null, cenaAtual = null, upd = null, temaAtual = null;
+  var root = null, cenaAtual = null, upd = null, temaAtual = null, sigAtual = null;
 
   function getRoot() { if (!root) root = document.getElementById('tabelaHtml'); return root; }
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
@@ -44,6 +44,16 @@ var TabelaHtml = (function () {
   }
 
   function times() { return (window.Tabela && window.Tabela.teams && window.Tabela.teams()) || []; }
+  /* assinatura do conteudo: se mudar (CSV novo, nomes, placar...), reconstroi o DOM */
+  function signature(cfg) {
+    var ts = times(), p = [cfg.a, cfg.b, cfg.ttl, cfg.sub, cfg.logo || '', cfg.golsA, cfg.golsB,
+      cfg.vName, cfg.vTime, cfg.vW, cfg.vIcon, cfg.zone ? 1 : 0, cfg.zUp, cfg.zDn, ts.length];
+    for (var i = 0; i < ts.length; i++) {
+      var t = ts[i];
+      p.push((t.pos) + '|' + (t.short || t.name) + '|' + t.pts + '|' + (t.crest || '') + '|' + (t.form || []).join(''));
+    }
+    return p.join('~');
+  }
   function cores() { try { return (window.Tabela && window.Tabela.getColors && window.Tabela.getColors()) || {}; } catch (e) { return {}; } }
 
   /* ============================ CENA: TABELA ============================ */
@@ -196,8 +206,9 @@ var TabelaHtml = (function () {
   function render(cena, t, cfg, tema) {
     var r = getRoot(); if (!r) return;
     if (tema && tema !== temaAtual) { temaAtual = tema; r.setAttribute('data-tema', tema); cenaAtual = null; }
-    if (cena !== cenaAtual) {
-      cenaAtual = cena;
+    var sg = signature(cfg);
+    if (cena !== cenaAtual || sg !== sigAtual) {
+      cenaAtual = cena; sigAtual = sg;
       if (cena === 'table') upd = buildTable(cfg);
       else if (cena === 'intro') upd = buildIntro(cfg);
       else if (cena === 'intervalo') upd = buildFull(cfg, 'INTERVALO', '');
@@ -209,7 +220,7 @@ var TabelaHtml = (function () {
 
   function show() { var r = getRoot(); if (r) r.classList.add('ativa'); }
   function hide() { var r = getRoot(); if (r) r.classList.remove('ativa'); }
-  function reset() { cenaAtual = null; upd = null; var r = getRoot(); if (r) r.innerHTML = ''; }
+  function reset() { cenaAtual = null; sigAtual = null; upd = null; var r = getRoot(); if (r) r.innerHTML = ''; }
 
   return { CENAS: CENAS, render: render, show: show, hide: hide, reset: reset };
 })();
