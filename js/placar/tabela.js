@@ -447,7 +447,9 @@ Placar.Tabela = {
         this.aplicarLayout(cena);                      // tamanho + posicao da cena
         this.publicarCena(cena);
         // cenas migradas para HTML/CSS (tabela/abertura/intervalo/encerramento)
-        var emHtml = !!(window.TabelaHtml && window.TabelaHtml.CENAS[cena]);
+        // ?tabelaCanvas=1 forca o motor canvas (util para comparar/reverter)
+        var forcarCanvas = /[?&]tabelaCanvas=1/.test(location.search);
+        var emHtml = !forcarCanvas && !!(window.TabelaHtml && window.TabelaHtml.CENAS[cena]);
         if (emHtml) {
             window.TabelaHtml.render(cena, t, cfg, this.tema());
             window.TabelaHtml.show();
