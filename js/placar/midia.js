@@ -38,27 +38,16 @@ Placar._cancelar=function(id){
 
 /* ---------- midias de texto (notificacoes) ---------- */
 Placar._mostrarTexto=function(m){
-    // Fase D: overlay ligado -> notificacao em HTML sobre a cena (sem canvas)
-    if(window.Tabela && Placar.Tabela && Placar.Tabela.ativo && Placar.notifTabela){
-        Placar._notifAtual=m.id;
-        Placar.notifTabela(m.notif||'gol', m.texto||'', parseInt(m.duracao)||4);
-        return;
-    }
-    var box=document.getElementById('notificacao');
-    if(!box)return;
-    var tipo=m.notif||'gol';
-    var c=tipo==='gol'?(m.texto||'GOL!'):
-          tipo==='amarelo'?('\u{1F7E8} '+(m.texto||'')):
-          tipo==='vermelho'?('\u{1F7E5} '+(m.texto||'')):
-          tipo==='substituicao'?('\u{1F501} '+(m.texto||'')):(m.texto||'');
-    ['notifText','notifText2','notifText3','notifText4'].forEach(function(i){
-        var e=document.getElementById(i);if(e)e.innerText=c;
-    });
-    box.classList.remove('gol','amarelo','vermelho');box.classList.add(tipo);
-    var track=document.getElementById('notifTrack');
-    if(track){track.style.animation='none';void track.offsetWidth;track.style.animation='';}
-    box.classList.add('show');box.classList.remove('hidden');
+    // notificacao sempre na camada propria (fora do placar), com ou sem overlay ligado
     Placar._notifAtual=m.id;
+    var tipo=m.notif||'gol';
+    if(Placar.notificar){ Placar.notificar(tipo, m.texto||'', parseInt(m.duracao)||4); }
+};
+
+Placar._esconderTexto=function(id){
+    if(Placar._notifAtual!==id)return;
+    Placar._notifAtual=null;
+    if(Placar.limparNotificacao)Placar.limparNotificacao();
 };
 
 Placar._esconderTexto=function(id){
@@ -92,7 +81,13 @@ Placar._desligar=function(id,cb){
 Placar._ativar=function(id, fila){
     var midias=Placar.getMidias();var m=midias.find(function(x){return x.id===id;});
     if(!m)return;
-    if(m.tipo==='cena'){ if(Placar.Tabela && Placar.Tabela.mostrarCena) Placar.Tabela.mostrarCena(m.cena, m.duracao); return; }
+    if(m.tipo==='cena'){
+        // patrocinadores nao sao cena manual: quem manda e a rotacao (lower third).
+        // sem isso, uma midia antiga salva no estado religava o overlay sozinha.
+        if(!m.cena || m.cena==='sponsors') return;
+        if(Placar.Tabela && Placar.Tabela.mostrarCena) Placar.Tabela.mostrarCena(m.cena, m.duracao);
+        return;
+    }
     var dur=parseInt(m.duracao)||0;
     if(m.tipo==='texto'){
         Placar._mostrarTexto(m);

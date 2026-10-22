@@ -1,5 +1,21 @@
 # Histórico
 
+## 2026-10-22 — Notificação fora do placar + patrocinador em lower third
+
+- **Notificação como overlay animado**: saiu de dentro da camada da tabela e virou
+  camada própria (`#camadaNotif`, `partials/notificacao-overlay.php`), posicionada
+  **fora do placar**. Entra deslizando + fade, sai sozinha, e funciona com o overlay
+  ligado ou desligado (`Placar.notificar()`; `limparNotificacao()`).
+- **Patrocinador em lower third**: a cena deixou de ser grade de 3 logos e virou uma
+  faixa inferior com **um patrocinador por vez** e transição entre eles
+  (`js/placar/patrocinio.js`). A rotação só roda enquanto a cena está no ar
+  (duração do bloco ÷ nº de logos, mínimo 2 s por logo).
+- **Corrigido: patrocinador ligava o overlay sozinho**. "Adicionar Patrocinador"
+  criava uma mídia `tipo:'cena', cena:'sponsors'`; ao ser tocada ela chamava
+  `mostrarCena()`, que força `ligar()`. Agora o painel não cria mais essa mídia,
+  o overlay ignora cena `sponsors` vinda de mídia e o estado antigo é limpo sozinho.
+- `?v=20261105a`
+
 ## 2026-10-22 — Overlay 100% HTML/CSS (motor canvas removido)
 
 - **Todas as cenas viraram HTML/CSS**: `sponsors`, `lower` (lower third),

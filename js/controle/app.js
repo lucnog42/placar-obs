@@ -252,11 +252,29 @@ Controle.adicionarPatrocinador = function() {
   if(N > 30){ Controle.status('erro','Máximo de 30 patrocinadores'); return; }
   Controle._sponsorsN = N;
   Controle.renderSponsors();
-  var midias = Controle.getMidiasCtrl();
-  midias.push({ id:'cena_patrocinadores_' + Date.now(), tipo:'cena', cena:'sponsors', nome:'Patrocinadores', duracao:8, intervalo:0, transicao:'fade' });
-  Controle.setEstado({ midias: JSON.stringify(midias) });
-  Controle.renderMidias();
-  Controle.status('ok','✅ Patrocinador '+N+' adicionado (+ cena no repertório)');
+  // a rotacao mostra um logo por vez na faixa inferior; nao cria midia de cena
+  Controle.status('ok','✅ Patrocinador '+N+' adicionado');
+};
+
+/* limpeza unica: estados antigos tinham uma midia "cena Patrocinadores" que,
+   ao ser tocada, ligava o overlay sozinha. Remove do estado salvo. */
+Controle._limpouCenaPatrocinador = false;
+Controle.limparCenaPatrocinador = function() {
+  if (Controle._limpouCenaPatrocinador) return;
+  Controle._limpouCenaPatrocinador = true;
+  var midias = Controle.getMidiasCtrl() || [], out = [], mudou = false;
+  for(var i = 0; i < midias.length; i++){
+    var m = midias[i];
+    if(m && m.tipo === 'cena' && m.cena === 'sponsors'){ mudou = true; continue; }
+    out.push(m);
+  }
+  if(!mudou) return;
+  var ativas = [];
+  try { ativas = JSON.parse(Controle.estado.midiasAtivas || '[]'); } catch(e){ ativas = []; }
+  var ids = out.map(function(m){ return m.id; });
+  ativas = ativas.filter(function(id){ return ids.indexOf(id) >= 0; });
+  Controle.setEstado({ midias: JSON.stringify(out), midiasAtivas: JSON.stringify(ativas) });
+  if(Controle.renderMidias) Controle.renderMidias();
 };
 Controle.removerPatrocinador = function(n) {
   var st = {}; st['sp'+n] = '';
@@ -274,6 +292,7 @@ Controle.definirSponsorRotacao = function(campo, val) {
 };
 Controle.syncSponsors = function() {
   var e = Controle.estado || {};
+  if(Controle.limparCenaPatrocinador) Controle.limparCenaPatrocinador();
   var chk = document.getElementById('sponsorsAtivo');
   if(chk) chk.checked = e.sponsorsAtivo === 'true';
   var lbl = document.getElementById('sponsorsAtivoLabel');

@@ -1,14 +1,15 @@
-<!-- cena: patrocinadores — HTML estatico; js/placar/patrocinio.js so preenche label e logos -->
+<?php $MAX = isset($MAX_LINHAS) ? (int)$MAX_LINHAS : 24; ?>
+<!-- cena: patrocinadores como lower third — um logo por vez, com transicao -->
 <div class="cena cena-sponsors" data-scene="sponsors">
   <div class="cena-bg"></div>
   <div class="cena-inner">
-  <div class="sp-wrap">
-    <p class="sp-label" id="spLabel">PATROCINADORES</p>
-    <div class="sp-grade" id="spGrade">
-      <div class="sp-slot" data-slot="1"><img class="sp-img" alt=""><span class="sp-falta">logo 1</span></div>
-      <div class="sp-slot" data-slot="2"><img class="sp-img" alt=""><span class="sp-falta">logo 2</span></div>
-      <div class="sp-slot" data-slot="3"><img class="sp-img" alt=""><span class="sp-falta">logo 3</span></div>
+    <div class="sp-faixa" id="spFaixa">
+      <div class="sp-logo-box"><img class="sp-img" id="spImg" alt=""></div>
+      <div class="sp-txts">
+        <span class="sp-label" id="spLabel">PATROCINADORES</span>
+        <span class="sp-nome" id="spNome"></span>
+      </div>
     </div>
     <p class="sp-vazio" id="spVazio">Nenhum patrocinador cadastrado — aba Torneio &rsaquo; Patrocinadores</p>
-  </div>  </div>
+  </div>
 </div>

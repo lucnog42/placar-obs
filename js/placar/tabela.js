@@ -260,7 +260,7 @@ Placar.Tabela = {
     _sponsorDuracaoMs: function () { var v = parseInt((Placar.estado || {}).sponsorsDuracao, 10); return (isNaN(v) || v < 1) ? 8000 : v * 1000; },
     /* notificação ou mídia manual no ar têm prioridade sobre a rotação */
     prioridadeManual: function () {
-        var nt = document.getElementById('notifTabela');
+        var nt = document.getElementById('notifOv');
         if (nt && nt.classList.contains('show')) return true;
         var cam = document.getElementById('camadaMidia');
         return !!(cam && cam.querySelector('.ativo'));
@@ -354,6 +354,7 @@ Placar.Tabela = {
 
     desligar: function () {
         var self = this;
+        if (Placar.Patrocinio && Placar.Patrocinio.cena) Placar.Patrocinio.cena(null);
         var cam = this.camada(), wrap = document.getElementById('placarWrapper');
         this.ativo = false;
         this._interromper = null;
@@ -413,6 +414,8 @@ Placar.Tabela = {
         this.publicarCena(cena);
         var cam = this.camada();
         if (cam && cena && cam.getAttribute('data-cena') !== cena) cam.setAttribute('data-cena', cena);
+        // a cena de patrocinadores roda a propria troca (lower third, um logo por vez)
+        if (Placar.Patrocinio && Placar.Patrocinio.cena) Placar.Patrocinio.cena(cena);
     },
 
     iniciarLoop: function () {
@@ -429,7 +432,7 @@ Placar.Tabela = {
         this.raf = null;
     },
 
-    /* notificacao: agora em HTML (js/placar/notificacao.js -> #notifTabela) */
+    /* notificacao: camada propria fora do placar (js/placar/notificacao.js -> #camadaNotif) */
     /* ---------- entrada ---------- */
     init: function () {
         // estado ja carregado antes deste arquivo? aplica agora

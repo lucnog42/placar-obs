@@ -16,7 +16,7 @@
         <div><label style="font-size:10px;color:#aaa">A cada (segundos)</label><input type="number" id="sponsorsIntervalo" min="10" step="5" placeholder="120" style="width:100%;box-sizing:border-box" onchange="Controle.definirSponsorRotacao('intervalo', this.value)"></div>
         <div><label style="font-size:10px;color:#aaa">Duração (segundos)</label><input type="number" id="sponsorsDuracao" min="1" step="1" placeholder="8" style="width:100%;box-sizing:border-box" onchange="Controle.definirSponsorRotacao('duracao', this.value)"></div>
       </div>
-      <span class="hint">Notificações e cenas manuais têm prioridade sobre os patrocinadores.</span>
+      <span class="hint">A faixa mostra <b>um patrocinador por vez</b>, trocando com transição. A "duração" é do bloco inteiro (dividida entre os logos). Notificações e cenas manuais têm prioridade.</span>
     </section>
     <section class="full">
       <p>Logos dos patrocinadores</p>

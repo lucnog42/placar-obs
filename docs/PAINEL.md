@@ -60,6 +60,10 @@ O coração da integração. Abre já expandida.
 **Modo cena fixa**: ao ligar, entra já na cena que estava no ar (o placar publica
 `tabelaCenaAtual`), então a transição é contínua em vez de cortar para outra cena.
 
+**Patrocinadores**: a rotacao liga a faixa inferior (lower third) com **um logo por vez**;
+`sponsorsDuracao` e a duracao do bloco inteiro, dividida entre os patrocinadores.
+Clicar em "Adicionar Patrocinador" nao mexe no overlay — ele so entra na rotacao.
+
 **Cenas em tamanho fixo**: cada cena ocupa a tela inteira do overlay (1920×1080).
 Não existe mais posição/escala por cena — o overlay é uma sobreposição de
 transmissão, sempre alinhada à tela.

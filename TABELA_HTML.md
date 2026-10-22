@@ -17,7 +17,8 @@ escudos e classes. O motor canvas (`tabela/tabela.js`, 836 linhas) foi removido.
 | `form2` | `partials/cena-form2.php` |
 | `duel` | `partials/cena-duel.php` |
 
-Notificacao do overlay: `partials/notificacao-tabela.php` (`#notifTabela`).
+Notificacao: `partials/notificacao-overlay.php` — camada propria (`#camadaNotif`),
+**fora do placar** e fora da camada da tabela, com animacao de entrada/saida.
 
 ## Regras
 

@@ -1,3 +1,27 @@
+/* ================= NOTIFICACAO (overlay fora do placar) ================= */
+#camadaNotif{position:absolute;left:50px;top:120px;z-index:40;pointer-events:none;
+  --bg:10,10,10;--fg:255,255,255;--ac:255,215,0}
+.notif-ov{position:relative;display:flex;align-items:center;gap:18px;box-sizing:border-box;
+  min-width:460px;max-width:1180px;padding:16px 34px 18px 30px;border-radius:16px;
+  background:rgba(var(--bg),.93);border:1px solid rgba(var(--fg),.18);
+  box-shadow:0 18px 44px rgba(0,0,0,.5);
+  opacity:0;transform:translateX(-46px) scale(.96);visibility:hidden;
+  transition:opacity .26s ease,transform .32s cubic-bezier(.2,.9,.25,1),visibility .26s}
+.notif-ov::before{content:"";position:absolute;left:0;top:0;bottom:0;width:9px;
+  border-radius:16px 0 0 16px;background:var(--nt,#ffd700)}
+.notif-ov.show{opacity:1;transform:none;visibility:visible}
+.no-ico{font-size:26px;line-height:1;color:var(--nt,#ffd700);flex:0 0 auto}
+.no-txts{display:flex;flex-direction:column;gap:2px;min-width:0}
+.no-ttl{font-size:22px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--nt,#ffd700)}
+.no-txt{font-size:30px;font-weight:700;color:rgba(var(--fg),.97);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.notif-ov.tipo-gol{--nt:#e11d48}
+.notif-ov.tipo-amarelo{--nt:#facc15}
+.notif-ov.tipo-vermelho{--nt:#ef4444}
+.notif-ov.tipo-substituicao{--nt:#22d3ee}
+.notif-ov.tipo-info{--nt:rgba(var(--ac),1)}
+.notif-ov.show.tipo-gol{animation:noGol .45s cubic-bezier(.2,.9,.25,1)}
+@keyframes noGol{0%{transform:scale(.9)}60%{transform:scale(1.04)}100%{transform:none}}
+
 /* tabela.css — cenas tabela/abertura/intervalo/encerramento.
    O PHP monta o HTML; aqui só mostramos/escondemos/animamos por data-cena. */
 
@@ -134,35 +158,26 @@
 #camadaTabela[data-layout="grade"] .th-thead{display:none}
 #camadaTabela[data-layout="grade"] .th-body{display:grid;grid-template-columns:1fr 1fr;grid-column:1 / -1;gap:10px}
 
-/* ================= PATROCINADORES (cena HTML) ================= */
+/* ================= PATROCINADORES (lower third) ================= */
 .cena-sponsors{display:none}
-.sp-wrap{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:44px}
-.sp-label{margin:0;font-size:24px;font-weight:800;letter-spacing:7px;text-transform:uppercase;color:rgba(var(--ac),.95)}
-.sp-grade{display:grid;grid-template-columns:repeat(3,380px);gap:30px}
-.sp-slot{position:relative;height:250px;border-radius:20px;display:flex;align-items:center;justify-content:center;
-  background:rgba(var(--fg),.05);border:1px solid rgba(var(--fg),.13);overflow:hidden}
-.sp-img{max-width:300px;max-height:190px;object-fit:contain;display:none}
-.sp-slot.com-logo .sp-img{display:block}
-.sp-slot.com-logo .sp-falta{display:none}
-.sp-falta{font-size:18px;font-weight:700;color:rgba(var(--fg),.4)}
-.sp-vazio{margin:0;font-size:16px;color:rgba(var(--fg),.45)}
-
-/* ================= NOTIFICACAO do overlay (HTML) ================= */
-.notif-tabela{position:absolute;left:8%;right:8%;top:44%;z-index:5;
-  display:flex;align-items:center;gap:22px;padding:22px 28px;border-radius:20px;
-  background:rgba(var(--bg),.92);border:1px solid rgba(var(--fg),.18);border-left:12px solid var(--nt,#ffd700);
-  opacity:0;visibility:hidden;transform:translateY(-50%) scale(.92);
-  transition:opacity .25s ease,transform .25s ease,visibility .25s}
-.notif-tabela.show{opacity:1;visibility:visible;transform:translateY(-50%) scale(1)}
-.notif-tabela .nt-ico{font-size:30px;line-height:1;color:var(--nt,#ffd700)}
-.notif-tabela .nt-txts{display:flex;flex-direction:column;min-width:0}
-.notif-tabela .nt-ttl{font-size:24px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--nt,#ffd700)}
-.notif-tabela .nt-txt{font-size:32px;font-weight:700;color:rgba(var(--fg),.97);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.notif-tabela.tipo-gol{--nt:#e11d48}
-.notif-tabela.tipo-amarelo{--nt:#facc15}
-.notif-tabela.tipo-vermelho{--nt:#ef4444}
-.notif-tabela.tipo-substituicao{--nt:#22d3ee}
-.notif-tabela.tipo-info{--nt:rgba(var(--ac),1)}
+.sp-faixa{position:absolute;left:52px;bottom:52px;height:140px;min-width:620px;max-width:900px;
+  display:flex;align-items:center;gap:26px;padding:0 40px 0 26px;box-sizing:border-box;
+  border-radius:18px;background:rgba(var(--bg),.92);border:1px solid rgba(var(--fg),.14);
+  overflow:hidden;box-shadow:0 16px 40px rgba(0,0,0,.45)}
+.sp-faixa::before{content:"";position:absolute;left:0;top:0;bottom:0;width:8px;background:rgba(var(--ac),1)}
+.sp-logo-box{width:170px;height:104px;flex:0 0 170px;display:flex;align-items:center;justify-content:center;
+  border-radius:12px;background:rgba(var(--fg),.07);overflow:hidden}
+.sp-img{max-width:154px;max-height:88px;object-fit:contain;display:block}
+.sp-txts{display:flex;flex-direction:column;gap:4px;min-width:0}
+.sp-label{font-size:13px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:rgba(var(--fg),.55)}
+.sp-nome{font-size:26px;font-weight:800;color:rgba(var(--fg),.97);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:520px}
+.sp-faixa .sp-logo-box,.sp-faixa .sp-txts{transition:opacity .26s ease,transform .26s ease}
+.sp-faixa.trocando .sp-logo-box,.sp-faixa.trocando .sp-txts{opacity:0;transform:translateY(12px)}
+.sp-faixa.vazio{display:none}
+.sp-vazio{display:none;position:absolute;left:52px;bottom:84px;margin:0;font-size:18px;color:rgba(var(--fg),.5)}
+.cena-sponsors.sem-sponsor .sp-vazio{display:block}
+#camadaTabela[data-cena="sponsors"] .sp-faixa{animation:spIn .5s cubic-bezier(.2,.9,.25,1) both}
+@keyframes spIn{from{opacity:0;transform:translateX(-60px)}to{opacity:1;transform:none}}
 
 /* ================= LOWER THIRD ================= */
 .cena-lower{display:none}

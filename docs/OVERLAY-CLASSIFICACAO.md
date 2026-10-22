@@ -4,7 +4,10 @@ Cenas ja migradas para HTML/CSS (PHP monta, CSS mostra, JS so preenche):
 `table`, `intro` (abertura), `intervalo`, `encerramento`, `sponsors` (patrocinadores),
 `lower` (lower third), `lineups` (escalacao), `feature` (time destaque), `form2` (ultimos jogos)
 e `duel` (duelo). Todas as cenas das faixas ja sao HTML/CSS — o canvas nao desenha mais nenhuma.
-A notificacao do overlay tambem e HTML (`#notifTabela`). As demais cenas seguem
+A notificacao e uma camada propria (`#camadaNotif`, `partials/notificacao-overlay.php`):
+ela aparece **fora do placar** e fora da camada da tabela, animada, e funciona com o
+overlay ligado ou desligado. Os patrocinadores aparecem como **lower third** (faixa
+inferior) mostrando **um logo por vez**, com transicao entre eles.
 no canvas do motor.
 
 O overlay é HTML/CSS 1920×1080 montado pelo PHP (`partials/cena-*.php`) + a camada que o liga
