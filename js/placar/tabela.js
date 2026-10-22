@@ -29,6 +29,11 @@ Placar.Tabela = {
 
     /* ---------- elementos ---------- */
     camada: function () { return document.getElementById('camadaTabela'); },
+    _canvasVisivel: function (v) {
+        var cv = this.canvas(); if (!cv) return;
+        var d = v ? '' : 'none';
+        if (cv.style.display !== d) cv.style.display = d;
+    },
     canvas: function () { return document.getElementById('tabelaCanvas'); },
     ctx2d: function () {
         var cv = this.canvas();
@@ -439,7 +444,17 @@ Placar.Tabela = {
         }
         this.aplicarLayout(cena);                      // tamanho + posicao da cena
         this.publicarCena(cena);
-        window.Tabela.render(t, { g: g, c: cfg, w: cv.width, h: cv.height, cena: forca });
+        // cenas migradas para HTML/CSS (tabela/abertura/intervalo/encerramento)
+        var emHtml = !!(window.TabelaHtml && window.TabelaHtml.CENAS[cena]);
+        if (emHtml) {
+            window.TabelaHtml.render(cena, t, cfg, this.tema());
+            window.TabelaHtml.show();
+            this._canvasVisivel(false);
+        } else {
+            if (window.TabelaHtml) window.TabelaHtml.hide();
+            this._canvasVisivel(true);
+            window.Tabela.render(t, { g: g, c: cfg, w: cv.width, h: cv.height, cena: forca });
+        }
     },
 
     iniciarLoop: function () {

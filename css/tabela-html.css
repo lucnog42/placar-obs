@@ -1,0 +1,148 @@
+/* ==========================================================================
+   css/tabela-html.css — cenas tabela/abertura/intervalo/encerramento em HTML/CSS
+   Substitui o desenho no canvas para essas 4 cenas. Temas por CSS variables.
+   Dimensoes em 1920x1080 (o motor canvas desenha em 1280x720 e escala 1.5x).
+   ========================================================================== */
+
+#tabelaHtml{
+  position:absolute; inset:0; width:1920px; height:1080px;
+  display:none; z-index:2; pointer-events:none;
+}
+#tabelaHtml.ativa{ display:block; }
+
+/* ---------- temas (mesmos tokens do motor) ---------- */
+#tabelaHtml[data-tema="escuro"]    { --fg:255,255,255; --dk:8,14,24;    --acc:#ffc400; --glow:255,196,0; }
+#tabelaHtml[data-tema="claro"]     { --fg:14,26,45;    --dk:255,255,255; --acc:#d90429; --glow:217,4,41; }
+#tabelaHtml[data-tema="neon"]      { --fg:240,240,255; --dk:20,0,46;    --acc:#00e5ff; --glow:0,229,255; }
+#tabelaHtml[data-tema="broadcast"] { --fg:12,32,58;    --dk:255,255,255; --acc:#124a8c; --glow:18,74,140; }
+#tabelaHtml[data-tema="matchfacts"]{ --fg:255,255,255; --dk:9,12,17;    --acc:#e30613; --glow:227,6,19; }
+#tabelaHtml[data-tema="aco"]       { --fg:255,255,255; --dk:4,16,31;    --acc:#8fd0ff; --glow:130,200,255; }
+#tabelaHtml[data-tema="noturno"]   { --fg:236,246,255; --dk:3,13,23;    --acc:#22d3ee; --glow:0,214,255; }
+
+#tabelaHtml *{ margin:0; padding:0; box-sizing:border-box;
+  font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif; -webkit-font-smoothing:antialiased; }
+
+.th-scene{ position:absolute; inset:0; }
+
+/* ======================= HEADER (cena tabela) ======================= */
+.th-hdr{
+  position:absolute; left:60px; top:42px; width:1800px; height:108px; border-radius:24px;
+  background:rgba(var(--dk),.80); border:1px solid rgba(var(--fg),.07);
+  display:flex; align-items:center; gap:20px; padding:0 26px;
+}
+.th-logo{ width:66px; height:66px; object-fit:contain; flex:0 0 auto; }
+.th-live{
+  display:flex; align-items:center; gap:9px; background:#e30613; color:#fff;
+  font-weight:800; font-size:19px; padding:8px 19px; border-radius:26px; white-space:nowrap;
+  animation:thPulse 1.6s ease-in-out infinite;
+}
+.th-live .dot{ width:10px; height:10px; border-radius:50%; background:#fff; }
+@keyframes thPulse{ 0%,100%{opacity:.5} 50%{opacity:1} }
+.th-hdrmain{ display:flex; flex-direction:column; justify-content:center; min-width:0; }
+.th-ttl{ font-weight:800; font-size:35px; line-height:1.05; color:rgba(var(--fg),.97);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.th-sub{ font-weight:600; font-size:21px; color:rgba(var(--fg),.62);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.th-right{ margin-left:auto; text-align:right; flex:0 0 auto; }
+.th-vname{ font-weight:800; font-size:27px; color:rgba(var(--fg),.96); }
+.th-vmeta{ font-weight:600; font-size:22px; color:rgba(var(--fg),.78); }
+.th-vbar{ width:180px; height:3px; margin-left:auto; margin-top:6px;
+  background:rgba(var(--glow),.85); border-radius:2px; }
+
+/* ======================= TABELA ======================= */
+.th-tbl{ position:absolute; left:84px; top:177px; width:1752px; }
+.th-grid{ display:grid;
+  grid-template-columns:70px 60px minmax(0,1fr) 100px 62px 62px 62px 62px 62px 62px 190px;
+  align-items:center; }
+.th-thead{ height:63px; border-radius:18px;
+  background:rgba(var(--glow),.14); border:1px solid rgba(var(--glow),.38);
+  font-weight:800; font-size:20px; letter-spacing:.5px; text-transform:uppercase;
+  color:rgba(var(--fg),.82); }
+.th-thead>div{ padding:0 6px; }
+.th-body{ display:flex; flex-direction:column; gap:5px; margin-top:12px; }
+.th-row{ height:41px; border-radius:12px; background:rgba(var(--fg),.05);
+  border:1px solid rgba(var(--fg),.05); opacity:0; will-change:opacity,transform; }
+.th-row:nth-child(even){ background:rgba(var(--fg),.10); }
+.th-row.focus{ background:rgba(var(--fg),.21); border-color:rgba(var(--fg),.42); }
+.th-row>div{ padding:0 6px; display:flex; align-items:center; }
+.th-pos{ justify-content:center; font-weight:800; font-size:22px; color:rgba(var(--fg),.8); }
+.th-crest{ justify-content:center; }
+.th-crestbox{ display:flex; align-items:center; justify-content:center; width:100%; height:100%; }
+.th-crestbox img{ width:100%; height:100%; object-fit:contain; }
+.th-crestbox .mono{ width:100%; height:100%; border-radius:6px; display:flex; align-items:center;
+  justify-content:center; font-weight:800; font-size:14px; color:rgba(var(--fg),.85); }
+.th-crest .th-crestbox{ width:33px; height:33px; }
+.th-name{ font-weight:600; font-size:22px; color:rgba(var(--fg),.86); display:block!important;
+  align-self:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding-left:8px!important; }
+.th-row.focus .th-name{ font-weight:800; color:rgba(var(--fg),.99); }
+.th-num{ justify-content:center; font-weight:600; font-size:21px; color:rgba(var(--fg),.7); }
+.th-pts{ justify-content:center; font-weight:900; font-size:26px; color:rgba(var(--fg),.95); }
+.th-row.focus .th-pts{ color:var(--acc); }
+.th-form{ justify-content:center; gap:6px; }
+.th-chip{ width:27px; height:27px; border-radius:6px; display:flex; align-items:center;
+  justify-content:center; font-weight:800; font-size:15px; color:#0a0f18; }
+.th-chip.G{ background:#22c55e; } .th-chip.E{ background:#f59e0b; } .th-chip.P{ background:#ef4444; }
+.th-foot{ position:absolute; left:84px; top:996px; font-weight:600; font-size:17px; color:rgba(var(--fg),.5); }
+
+/* variante "grade" (2 colunas x 8) — temas matchfacts/aco */
+.th-tbl.grade .th-grid{ display:none; }
+.th-tbl.grade .th-thead{ display:grid; grid-template-columns:1fr 1fr; gap:24px; height:auto;
+  background:none; border:none; padding:0; }
+.th-tbl.grade .th-thead .th-colhdr{ height:54px; border-radius:12px;
+  background:rgba(var(--glow),.14); border:1px solid rgba(var(--glow),.38);
+  display:flex; align-items:center; gap:12px; padding:0 18px; }
+.th-tbl.grade .th-body{ display:grid; grid-template-columns:1fr 1fr; gap:24px;
+  grid-auto-flow:column; grid-template-rows:repeat(8, auto); }
+.th-tbl.grade .th-row{ height:66px; }
+.th-tbl.grade .th-row>div.th-num{ display:none; }
+.th-tbl.grade .th-pos{ width:auto; }
+
+/* ======================= ABERTURA ======================= */
+.th-intro{ text-align:center; }
+.th-intro .logo{ position:absolute; left:50%; top:285px; transform:translateX(-50%);
+  height:96px; max-width:360px; object-fit:contain; }
+.th-intro .titulo{ position:absolute; left:0; right:0; top:402px; font-weight:800; font-size:87px;
+  color:rgba(var(--fg),.97); line-height:1; }
+.th-intro .hoje{ position:absolute; left:0; right:0; top:500px; font-weight:900; font-size:144px;
+  letter-spacing:3px; color:var(--acc); line-height:1; }
+.th-intro .linha{ position:absolute; left:50%; top:618px; transform:translateX(-50%);
+  height:6px; width:0; background:rgba(var(--fg),.85); border-radius:3px; }
+.th-intro .sub{ position:absolute; left:0; right:0; top:660px; font-weight:600; font-size:39px;
+  letter-spacing:2px; color:rgba(var(--fg),.8); }
+.th-intro .vs{ position:absolute; left:315px; top:765px; width:1290px; height:156px; border-radius:27px;
+  background:rgba(var(--fg),.05); display:flex; align-items:center; }
+.th-intro .vs .bd{ position:absolute; top:50%; transform:translateY(-50%); width:108px; height:108px; }
+.th-intro .vs .bd .th-crestbox{ width:108px; height:108px; }
+.th-intro .vs .bd .th-crestbox .mono{ border-radius:12px; font-size:40px; }
+.th-intro .vs .na{ position:absolute; left:222px; right:50%; top:50%; transform:translateY(-50%);
+  text-align:left; font-weight:700; font-size:27px; color:rgba(var(--fg),.97); }
+.th-intro .vs .nb{ position:absolute; right:222px; left:50%; top:50%; transform:translateY(-50%);
+  text-align:right; font-weight:700; font-size:27px; color:rgba(var(--fg),.97); }
+.th-intro .vs .vsx{ position:absolute; left:0; right:0; top:50%; transform:translateY(-50%);
+  text-align:center; font-weight:900; font-size:51px; color:var(--acc); }
+.th-intro .vs .vsub{ position:absolute; left:0; right:0; bottom:14px; text-align:center;
+  font-weight:600; font-size:20px; color:rgba(var(--fg),.72); }
+.th-intro .fcf{ position:absolute; left:0; right:0; top:1008px; font-weight:700; font-size:21px;
+  letter-spacing:3px; color:rgba(var(--fg),.45); }
+
+/* ======================= INTERVALO / ENCERRAMENTO ======================= */
+.th-full{ text-align:center; }
+.th-full .titulo{ position:absolute; left:0; right:0; top:270px; font-weight:900; font-size:144px;
+  letter-spacing:5px; color:var(--acc); line-height:1; }
+.th-full .painel{ position:absolute; left:315px; top:600px; width:1290px; height:240px; border-radius:30px;
+  background:rgba(var(--fg),.05); display:flex; align-items:center; }
+.th-full .bd{ position:absolute; top:50%; transform:translateY(-50%); width:120px; height:120px; }
+.th-full .bd .th-crestbox{ width:120px; height:120px; }
+.th-full .bd .th-crestbox .mono{ border-radius:14px; font-size:44px; }
+.th-full .ga{ position:absolute; left:0; right:calc(50% + 180px); top:50%; transform:translateY(-50%);
+  text-align:right; font-weight:900; font-size:132px; color:#22d3ee; line-height:1; }
+.th-full .gb{ position:absolute; right:0; left:calc(50% + 180px); top:50%; transform:translateY(-50%);
+  text-align:left; font-weight:900; font-size:132px; color:#f472b6; line-height:1; }
+.th-full .sep{ position:absolute; left:0; right:0; top:50%; transform:translateY(-50%);
+  text-align:center; font-weight:900; font-size:84px; color:rgba(var(--fg),.4); }
+.th-full .na{ position:absolute; left:100px; width:520px; bottom:-58px; text-align:center;
+  font-weight:700; font-size:27px; color:rgba(var(--fg),.9); }
+.th-full .nb{ position:absolute; right:100px; width:520px; bottom:-58px; text-align:center;
+  font-weight:700; font-size:27px; color:rgba(var(--fg),.9); }
+.th-full .rodape{ position:absolute; left:0; right:0; top:1002px; font-weight:700; font-size:24px;
+  letter-spacing:4px; color:rgba(var(--fg),.5); }

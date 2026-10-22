@@ -6,6 +6,7 @@
 <link rel="stylesheet" href="css/base.css?v=20260616b">
 <link id="tema" rel="stylesheet" href="css/laliga.css?v=20260616b">
 <link rel="stylesheet" href="css/midia-anim.css?v=20260616b">
+<link rel="stylesheet" href="css/tabela-html.css?v=20261021a">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{width:1920px;height:1080px;background:transparent;font-family:'Arial',sans-serif;overflow:hidden;position:relative}
@@ -50,7 +51,7 @@ body{width:1920px;height:1080px;background:transparent;font-family:'Arial',sans-
     <div id="PenaltesB"><div id="PB5" class="Penaltes"></div><div id="PB4" class="Penaltes"></div><div id="PB3" class="Penaltes"></div><div id="PB2" class="Penaltes"></div><div id="PB1" class="Penaltes"></div></div>
 </div>
 </div>
-<div id="camadaTabela"><canvas id="tabelaCanvas" width="1920" height="1080"></canvas></div>
+<div id="camadaTabela"><canvas id="tabelaCanvas" width="1920" height="1080"></canvas><div id="tabelaHtml" data-tema="escuro"></div></div>
 <script src="js/eventbus.js?v=20260616b"></script>
 <script src="js/comum.js?v=20261019g1"></script>
 <script src="js/placar/core.js?v=20261019g1"></script>
@@ -63,7 +64,8 @@ body{width:1920px;height:1080px;background:transparent;font-family:'Arial',sans-
 <script src="js/placar/midia.js?v=20261020a"></script>
 <script src="tabela/dados.js?v=20261017a"></script>
 <script src="tabela/tabela.js?v=20261020a"></script>
-<script src="js/placar/tabela.js?v=20261020a"></script>
+<script src="js/placar/tabela-html.js?v=20261021a"></script>
+<script src="js/placar/tabela.js?v=20261021a"></script>
 <script>Placar.init();</script>
 </body>
 </html>
