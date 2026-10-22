@@ -352,16 +352,44 @@ Controle.voltarLoop = function(){
   Controle.setEstado({ cenaCancelar: String(Date.now()) });
   Controle.status('ok', '⏹ De volta ao loop');
 };
+/* fundo de cena: reduz para no máximo 1920x1080 e reencoda em JPEG.
+   Foto de celular em base64 passa dos 8 MB de post_max_size e o PHP descarta o corpo (400). */
+Controle._fundoDataUri = function(f, cb){
+  var tipo = (f.type || '').toLowerCase();
+  var ler = function(){ var r = new FileReader(); r.onload = function(){ cb(String(r.result)); }; r.readAsDataURL(f); };
+  if (tipo.indexOf('gif') >= 0 || tipo.indexOf('svg') >= 0) return ler();   // animação/vetor: manda original
+  var url = URL.createObjectURL(f), img = new Image();
+  img.onload = function(){
+    var w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+    var esc = Math.min(1, 1920 / w, 1080 / h);
+    var cv = document.createElement('canvas');
+    cv.width  = Math.max(1, Math.round(w * esc));
+    cv.height = Math.max(1, Math.round(h * esc));
+    cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+    URL.revokeObjectURL(url);
+    var out = cv.toDataURL('image/jpeg', 0.9);
+    if (out.length > 6 * 1024 * 1024) out = cv.toDataURL('image/jpeg', 0.72);
+    cb(out);
+  };
+  img.onerror = function(){ URL.revokeObjectURL(url); ler(); };
+  img.src = url;
+};
 Controle.uploadFundoCena = function(chave){
   var input = document.createElement('input');
   input.type = 'file'; input.accept = 'image/*,.png,.jpg,.jpeg,.webp,.gif,.svg'; input.style.display = 'none';
   input.onchange = function(){
     var f = input.files && input.files[0]; if(!f) return;
-    var r = new FileReader();
-    r.onload = function(){
-      Controle.status('sync', 'Enviando fundo...');
-      fetch(API + API_AND + 'acao=upload_fundo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chave: chave, src: String(r.result) }) })
-      .then(function(resp){ return resp.json(); })
+    Controle.status('sync', 'Preparando fundo...');
+    Controle._fundoDataUri(f, function(src){
+      Controle.status('sync', 'Enviando fundo (' + Math.round(src.length / 1024) + ' KB)...');
+      fetch(API + API_AND + 'acao=upload_fundo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chave: chave, src: src }) })
+      .then(function(resp){
+        // erro do servidor pode vir como HTML: lê texto e tenta JSON
+        return resp.text().then(function(t){
+          var d = {}; try { d = JSON.parse(t); } catch(e){ d = { erro: 'HTTP ' + resp.status }; }
+          return d;
+        });
+      })
       .then(function(d){
         if(d && d.arquivo){
           var fundos = {}; try { fundos = JSON.parse(Controle.estado.cenaFundos || '{}'); } catch(e){ fundos = {}; }
@@ -371,8 +399,7 @@ Controle.uploadFundoCena = function(chave){
         } else { Controle.status('erro', '❌ ' + (d && d.erro ? d.erro : 'erro ao subir fundo')); }
       }).catch(function(e){ Controle.status('erro', '❌ ' + e.message); });
       input.remove();
-    };
-    r.readAsDataURL(f);
+    });
   };
   document.body.appendChild(input); input.click();
 };

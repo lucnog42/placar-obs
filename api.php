@@ -297,7 +297,7 @@ function respond($data) {
 }
 
 function respond_error($msg, $code = 400) {
-    $texts = array(400 => 'Bad Request', 404 => 'Not Found', 405 => 'Method Not Allowed', 500 => 'Internal Server Error');
+    $texts = array(400 => 'Bad Request', 404 => 'Not Found', 405 => 'Method Not Allowed', 413 => 'Payload Too Large', 500 => 'Internal Server Error');
     $text = isset($texts[$code]) ? $texts[$code] : 'Error';
     header('HTTP/1.1 ' . $code . ' ' . $text);
     respond(array('erro' => $msg));
@@ -1113,6 +1113,11 @@ if ($method === 'POST') {
         $chave = isset($input['chave']) ? $input['chave'] : '';
         $src = isset($input['src']) ? $input['src'] : '';
         if (!$src) {
+            // corpo grande demais (post_max_size) => o PHP descarta o POST e o src chega vazio
+            $len = isset($_SERVER['CONTENT_LENGTH']) ? intval($_SERVER['CONTENT_LENGTH']) : 0;
+            if ($len > 1048576) {
+                respond_error('Envio de ' . round($len / 1048576, 1) . ' MB recusado: o servidor aceita ate ' . ini_get('post_max_size') . ' por requisicao. Envie uma imagem menor.', 413);
+            }
             respond_error('Parametro "src" obrigatorio (base64 data-uri).');
         }
         if (!is_dir(FUNDOS_DIR)) {

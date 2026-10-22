@@ -5,7 +5,7 @@
  * PHP só monta o HTML (includes por organização). CSS separado desktop/mobile;
  * JS separado em js/controle/*.js (app.js = UI, boot.js = init).
  */
-$v = '20261025a';
+$v = '20261026a';
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -42,15 +42,15 @@ $v = '20261025a';
 <?php include __DIR__ . '/partials/controle/bottombar.php'; ?>
 <?php include __DIR__ . '/partials/controle/debug.php'; ?>
 
-<script src="js/eventbus.js?v=20261025a"></script>
-<script src="js/comum.js?v=20261025a"></script>
-<script src="js/controle/core.js?v=20261025a"></script>
-<script src="js/controle/elementos.js?v=20261025a"></script>
-<script src="js/controle/estilo.js?v=20261025a"></script>
-<script src="js/controle/midia.js?v=20261025a"></script>
-<script src="js/controle/tabela.js?v=20261025a"></script>
+<script src="js/eventbus.js?v=20261026a"></script>
+<script src="js/comum.js?v=20261026a"></script>
+<script src="js/controle/core.js?v=20261026a"></script>
+<script src="js/controle/elementos.js?v=20261026a"></script>
+<script src="js/controle/estilo.js?v=20261026a"></script>
+<script src="js/controle/midia.js?v=20261026a"></script>
+<script src="js/controle/tabela.js?v=20261026a"></script>
 <script src="js/controle/app.js?v=<?= $v ?>"></script>
 <script src="js/controle/boot.js?v=<?= $v ?>"></script>
-<script src="js/controle/navegacao.js?v=20261025a"></script>
+<script src="js/controle/navegacao.js?v=20261026a"></script>
 </body>
 </html>

@@ -12,6 +12,8 @@ torneios/*
 !torneios/.gitkeep
 presets/*
 !presets/.gitkeep
+fundos/*
+!fundos/.gitkeep
 
 # escudos: só as cores genéricas do app entram no repositório.
 # Escudos de clubes são marcas de terceiros — baixe pelo import de CSV ou
