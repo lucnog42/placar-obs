@@ -74,8 +74,6 @@ Controle.initTabela = function () {
     Controle.renderSelectTimes();
     Controle.renderCenas();
     Controle.aplicarEstadoTabela();
-    Controle.initDragLayout();
-    if (window.addEventListener) window.addEventListener('resize', Controle.mostrarCaixaLayout);
 };
 
 /* seletor de cena fixa: sem CSV, as cenas de tabela ficam desabilitadas */
@@ -133,7 +131,6 @@ Controle._renderCenasInto = function (pfx) {
             + ' oninput="Controle.cenaDuracao(' + i + ',this.value,true)"'
             + ' onchange="Controle.cenaDuracao(' + i + ',this.value,false)">'
             + '<span class="cena-durval" id="' + pfx + 'cenaDur' + i + '">' + c.d + 's</span>'
-            + '<button class="cena-pos' + (Controle._layoutCena === c.k ? ' on' : '') + '" title="Arrastar/soltar a posi&ccedil;&atilde;o no preview" onclick="Controle.modoPosicionar(\'' + c.k + '\')">&#10021;</button>'
             + '<button class="cena-mv" title="Subir" onclick="Controle.moverCena(' + i + ',-1)">↑</button>'
             + '<button class="cena-mv" title="Descer" onclick="Controle.moverCena(' + i + ',1)">↓</button>'
             + '</div>';
@@ -287,7 +284,6 @@ Controle.aplicarEstadoTabela = function () {
     v = document.getElementById('blocoCenaFixa'); if (v) v.className = modoFixa ? '' : 'escondido';
     v = document.getElementById('secCenas'); if (v) v.className = modoFixa ? 'full escondido' : 'full';
     Controle.pintarDestaques();
-    if (Controle.mostrarCaixaLayout) Controle.mostrarCaixaLayout();
     Controle.renderSelectCena();
     v = document.getElementById('tabelaDestaque'); if (v) v.value = (e.tabelaDestaque === undefined || e.tabelaDestaque === '') ? 'auto' : e.tabelaDestaque;
     v = document.getElementById('tabelaTitulo'); if (v) v.value = e.tabelaTitulo || '';
@@ -894,92 +890,3 @@ Controle.pintarDestaques = function () {
     if (bB) bB.className = 'btn-destaque' + (!auto && iB >= 0 && String(d) === String(iB) ? ' on' : '');
     if (bA2) bA2.className = 'btn-destaque' + (auto ? ' on' : '');
 };
-
-/* ============================================================
-   TAMANHO + POSICAO POR CENA (arrastar e soltar)
-   ============================================================ */
-Controle.layoutTabela = function () {
-    try { return JSON.parse(Controle.estado.tabelaLayout || '{}') || {}; } catch (e) { return {}; }
-};
-Controle.layoutCena = function (k) {
-    var o = Controle.layoutTabela()[k] || {};
-    var e = parseFloat(o.e), x = parseFloat(o.x), y = parseFloat(o.y);
-    return {
-        e: (isNaN(e) || e < 10) ? 100 : Math.min(400, Math.round(e)),
-        x: isNaN(x) ? 50 : x,
-        y: isNaN(y) ? 50 : y
-    };
-};
-Controle.salvarLayoutCena = function (k, L) {
-    if (!k) return;
-    var o = Controle.layoutTabela();
-    o[k] = { e: Math.round(L.e), x: Math.round(L.x * 10) / 10, y: Math.round(L.y * 10) / 10 };
-    Controle.setEstado({ tabelaLayout: JSON.stringify(o) });
-};
-
-/* arma/desarma a caixa de arrastar para uma cena */
-Controle.modoPosicionar = function (k) {
-    Controle._layoutCena = (Controle._layoutCena === k) ? null : k;
-    Controle.mostrarCaixaLayout();
-    Controle.renderCenas();
-};
-
-Controle.pintarCaixa = function (L, k) {
-    var cx = document.getElementById('dragBox');
-    var c = document.getElementById('previewContainer');
-    if (!cx || !c || !c.clientWidth) return;
-    var w = Math.max(20, c.clientWidth * L.e / 100), h = Math.max(20, c.clientHeight * L.e / 100);
-    cx.style.width = w + 'px'; cx.style.height = h + 'px';
-    cx.style.left = ((L.x / 100) * c.clientWidth - w / 2) + 'px';
-    cx.style.top = ((L.y / 100) * c.clientHeight - h / 2) + 'px';
-    var tag = cx.querySelector('.drag-tag');
-    if (tag) tag.textContent = Controle.nomeCena(k || Controle._layoutCena) + ' · ' + Math.round(L.e) + '% · x' + Math.round(L.x) + ' y' + Math.round(L.y);
-};
-
-Controle.mostrarCaixaLayout = function () {
-    var lay = document.getElementById('previewDrag');
-    if (!lay) return;
-    if (!Controle._layoutCena) { lay.classList.remove('on'); return; }
-    lay.classList.add('on');
-    Controle.pintarCaixa(Controle.layoutCena(Controle._layoutCena), Controle._layoutCena);
-};
-
-/* arrastar a caixa = posicao; arrastar o canto = tamanho */
-Controle.initDragLayout = function () {
-    var cx = document.getElementById('dragBox'), c = document.getElementById('previewContainer');
-    if (!cx || !c || cx._ligado || typeof cx.addEventListener !== 'function') return;
-    cx._ligado = true;
-    var modo = null, ini = null, ultimo = null;
-
-    cx.addEventListener('pointerdown', function (ev) {
-        if (!Controle._layoutCena) return;
-        ev.preventDefault();
-        modo = (ev.target && ev.target.classList && ev.target.classList.contains('drag-handle')) ? 'tam' : 'mover';
-        ini = { x: ev.clientX, y: ev.clientY, L: Controle.layoutCena(Controle._layoutCena) };
-        ultimo = { e: ini.L.e, x: ini.L.x, y: ini.L.y };
-        try { cx.setPointerCapture(ev.pointerId); } catch (err) { }
-    });
-
-    cx.addEventListener('pointermove', function (ev) {
-        if (!modo || !ini) return;
-        var dx = ev.clientX - ini.x, dy = ev.clientY - ini.y;
-        if (modo === 'mover') {
-            ultimo.x = Math.max(0, Math.min(100, ini.L.x + (dx / c.clientWidth) * 100));
-            ultimo.y = Math.max(0, Math.min(100, ini.L.y + (dy / c.clientHeight) * 100));
-        } else {
-            ultimo.e = Math.max(20, Math.min(300, ini.L.e + ((dx + dy) / 2 / c.clientWidth) * 200));
-        }
-        Controle.pintarCaixa(ultimo, Controle._layoutCena);
-    });
-
-    var soltar = function () {
-        if (!modo) return;
-        var L = ultimo, k = Controle._layoutCena;
-        modo = null; ini = null; ultimo = null;
-        if (k && L) { Controle.salvarLayoutCena(k, L); Controle.renderCenas(); }
-    };
-    cx.addEventListener('pointerup', soltar);
-    cx.addEventListener('pointercancel', soltar);
-};
-
-/* arrastar o % de cada cena na lista (muda o tamanho) */

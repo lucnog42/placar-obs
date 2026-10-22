@@ -240,7 +240,7 @@ var TabelaDados = (function () {
   /* ---------- barras e maximos ---------- */
   function barra(id, val, max) {
     var e = $(id);
-    if (!e) return;
+    if (!e || !e.style || typeof e.style.setProperty !== 'function') return;
     var v = (max > 0) ? Math.max(0, Math.min(1, (Number(val) || 0) / max)) : 0;
     e.style.setProperty('--p', v.toFixed(3));
   }
@@ -368,8 +368,7 @@ var TabelaDados = (function () {
     cfg = cfg || {};
     var cam = document.getElementById('camadaTabela');
     if (cam && tema) cam.setAttribute('data-tema', tema);
-    var T = window.Tabela;
-    var raw = (T && T.teams) ? (T.teams() || []) : [];
+    var raw = (window.Placar && Placar.Tabela && Placar.Tabela.times) ? (Placar.Tabela.times() || []) : [];
     // cfg.a / cfg.b sao INDICES na lista original (indice()); aceita nome como fallback
     // sem CSV o confronto vem do placar (cfg.aTime/bTime), nao da classificacao
     var A = cfg.aTime || pick(raw, cfg.a), B = cfg.bTime || pick(raw, cfg.b);

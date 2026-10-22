@@ -411,7 +411,6 @@ Controle.salvarPreset=async function(){
         tabelaZonaDn:e.tabelaZonaDn||'14',tabelaEscudos:e.tabelaEscudos||'true',
         tabelaEscalacoes:e.tabelaEscalacoes||'{}',
         tabelaTimes:Controle._timesParaPreset(),
-        tabelaLayout:e.tabelaLayout||'{}',
         tabelaLocal:e.tabelaLocal||e.local||'',tabelaHora:e.tabelaHora||e.hora||'',
         tabelaLogo:e.tabelaLogo||e.logoTorneio||'',
         tabelaZonaCorUp:e.tabelaZonaCorUp||'#22c55e',tabelaZonaCorDn:e.tabelaZonaCorDn||'#ef4444',

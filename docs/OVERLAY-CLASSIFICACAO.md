@@ -7,7 +7,7 @@ e `duel` (duelo). Todas as cenas das faixas ja sao HTML/CSS — o canvas nao des
 A notificacao do overlay tambem e HTML (`#notifTabela`). As demais cenas seguem
 no canvas do motor.
 
-Motor de desenho em canvas 1920×1080 (`tabela/tabela.js`) + a camada que o liga
+O overlay é HTML/CSS 1920×1080 montado pelo PHP (`partials/cena-*.php`) + a camada que o liga
 ao placar (`js/placar/tabela.js`) + o painel (`js/controle/tabela.js`).
 
 O overlay **não exporta nada**: é uma camada dentro do `Placar.html`. Quando
@@ -49,12 +49,10 @@ e o motor usa `escuro` em `THEMES` (`g0/g1/g2` fundo quase preto, `acc` dourado)
 `lay` (variante de layout por cena) continua existindo no motor, mas o painel não
 expõe mais escolha de tema. Cor de time não entra no design.
 
-## Layout por cena (arrastar/soltar)
+## Tamanho das cenas
 
-`tabelaLayout` guarda, por cena, `{"e":escala%,"x":%,"y":%}`. No painel, o botão
-**✥** arma uma caixa sobre o preview: arrastar o meio move a cena, arrastar o
-canto azul redimensiona. A cena é desenhada com
-`translate(x%, y%) scale(e/100)`; cena sem layout salvo = 100 %, centralizada.
+Cada cena ocupa a tela inteira do overlay (1920×1080), com posição fixa. Não há
+mais escala nem arrastar/soltar por cena (`tabelaLayout` foi removido).
 
 ## Zonas da tabela
 

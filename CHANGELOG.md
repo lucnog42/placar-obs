@@ -1,5 +1,27 @@
 # Histórico
 
+## 2026-10-22 — Overlay 100% HTML/CSS (motor canvas removido)
+
+- **Todas as cenas viraram HTML/CSS**: `sponsors`, `lower` (lower third),
+  `lineups`, `feature`, `form2` e `duel` ganharam partial própria
+  (`partials/cena-*.php`) e o CSS mostra/anima por `#camadaTabela[data-cena]`.
+  Entraram junto as do ciclo anterior (tabela, abertura, intervalo, encerramento).
+- **Motor canvas removido**: `tabela/tabela.js` (836 linhas) e o `<canvas>` saíram
+  do `placar.php`. O JS do overlay só escolhe a cena (loop de 200 ms), publica a
+  cena atual e cuida de mídia/patrocínio. `.cena-inner` escala 1280×720 por 1.5
+  para usar as mesmas coordenadas do motor antigo.
+- **Notificação em HTML**: `partials/notificacao-tabela.php` (`#notifTabela`) no
+  lugar do desenho no canvas; `Placar.notifTabela()` / `limparNotifTabela()`.
+- **Patrocínio em HTML**: `js/placar/patrocinio.js` preenche label e os 3 slots
+  de logo; a rotação continua no overlay (só com Cenas Automáticas ligadas).
+- **Sem posição/escala por cena**: `tabelaLayout` e o arrastar/soltar do preview
+  (`#previewDrag`, botão ✥) foram removidos — cada cena ocupa 1920×1080 fixo.
+- **Fundos** agora cobrem as 7 cenas que têm `.cena-bg` no painel.
+- **`tests/` removido**: os snapshots em PNG dependiam do canvas e de
+  `@napi-rs/canvas`; a verificação passou a ser por harness com DOM stubado.
+- Docs (`README`, `ARQUITETURA`, `DESENVOLVIMENTO`, `OVERLAY-CLASSIFICACAO`,
+  `PAINEL`, `DADOS`, `LEIA-ME_OVERLAY_TABELAS`, `TABELA_HTML`) atualizados.
+
 ## 2026-10-21 (revisões — Rodada 5: agrupar, CSV por time, toggle de cenas, fundos)
 
 - **Menu mobile 2×**: fonte e botões do drawer aumentados no `@media(max-width:759px)`.

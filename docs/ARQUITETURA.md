@@ -80,13 +80,17 @@ de uma chamada cedo demais ficaria `undefined`.
 ## Overlay como camada
 
 O overlay **não** é uma página separada: é uma `<div id="camadaTabela">` dentro
-do `Placar.html`, com um `<canvas>` de 1920×1080 desenhado pelo motor em
-`tabela/tabela.js`. Quando o painel liga o overlay:
+do `Placar.html`, com um `.cena` de 1920×1080 por cena, montado pelo PHP
+(`partials/cena-*.php`) e mostrado pelo CSS. Quando o painel liga o overlay:
 
 1. o placar (a camada de baixo) recebe `opacity:0` + `blur` com transição de
    ~350 ms;
-2. o canvas entra com fade;
+2. a camada entra com fade e o JS só troca `#camadaTabela[data-cena]` (o CSS
+   esconde as outras cenas e anima a que está no ar);
 3. ao desligar, o inverso.
+
+Não existe mais canvas: o motor antigo (`tabela/tabela.js`, 836 linhas) foi
+removido. O JS do overlay cuida só de playlist, tempos, mídia e patrocínio.
 
 `js/placar/tabela.js` é a ponte: lê o estado, monta o objeto `cfg` do motor,
 espelha tema/cores/escudos/times e chama `Tabela.setCfg(cfg)`.
@@ -118,7 +122,6 @@ mistos) e é o que o import de CSV usa para trazer os escudos da FCF.
 
 - **`CRLF`** em todos os arquivos do app (o projeto nasceu assim; preserve ao
   editar).
-- ES5 no lado do app: `function`, `var`, sem arrow/template/`let` — exceto no
-  motor (`tabela/tabela.js`), que usa `const/let`, arrow e template literals.
+- ES5 no lado do app: `function`, `var`, sem arrow/template/`let`.
 - Nada de framework: manipulação direta de DOM e CSS.
 - `api.php` compatível com **PHP 5.3** (`array()`, sem `??`, sem tipos).

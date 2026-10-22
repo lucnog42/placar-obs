@@ -28,19 +28,6 @@ Placar.Tabela = {
 
     /* ---------- elementos ---------- */
     camada: function () { return document.getElementById('camadaTabela'); },
-    _canvasVisivel: function (v) {
-        var cv = this.canvas(); if (!cv) return;
-        var d = v ? '' : 'none';
-        if (cv.style.display !== d) cv.style.display = d;
-    },
-    canvas: function () { return document.getElementById('tabelaCanvas'); },
-    ctx2d: function () {
-        var cv = this.canvas();
-        if (!cv) return null;
-        if (!this._ctx) this._ctx = cv.getContext('2d');
-        return this._ctx;
-    },
-
     /* ---------- utilidades ---------- */
     norm: function (s) {
         return (s || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -54,7 +41,7 @@ Placar.Tabela = {
         var v = e[chave];
         if (v !== undefined && v !== '' && v !== 'auto' && !isNaN(parseInt(v))) {
             var n = parseInt(v);
-            var lista = (window.Tabela ? window.Tabela.teams() : []) || [];
+            var lista = this.times() || [];
             if (n >= 0 && n < lista.length) return n;
         }
         var i = this.casar(nome);
@@ -63,8 +50,8 @@ Placar.Tabela = {
 
     casar: function (nome) {
         var alvo = this.norm(nome);
-        if (!alvo || !window.Tabela) return null;
-        var lista = window.Tabela.teams() || [];
+        if (!alvo) return null;
+        var lista = this.times() || [];
         var melhor = null, peso = -1;
         for (var i = 0; i < lista.length; i++) {
             var t = lista[i];
@@ -210,28 +197,18 @@ Placar.Tabela = {
         catch (err) { return {}; }
     },
 
-    /* ---------- layout por cena (tamanho + posicao, editado no painel) ---------- */
-    layout: function (k) {
-        var e = Placar.estado || {}, o = null;
-        try { o = JSON.parse(e.tabelaLayout || '{}'); } catch (err) { o = null; }
-        var it = (o && o[k]) || {};
-        var esc = parseFloat(it.e), x = parseFloat(it.x), y = parseFloat(it.y);
-        return {
-            e: (isNaN(esc) || esc < 10) ? 100 : Math.min(400, esc),
-            x: isNaN(x) ? 50 : x,
-            y: isNaN(y) ? 50 : y
-        };
+    /* ---------- linha do tempo (o motor canvas nao existe mais) ---------- */
+    _segs: function (cfg) {
+        var t = 0, out = [];
+        for (var i = 0; i < cfg.scenes.length; i++) {
+            var s = cfg.scenes[i], d = Number(s.d) || 0;
+            out.push({ k: s.k, d: d, t0: t }); t += d;
+        }
+        return { segs: out, total: Math.max(t, 0.1) };
     },
-
-    aplicarLayout: function (k) {
-        var cam = this.camada();
-        if (!cam || !k) return;
-        var L = this.layout(k);
-        var sig = [k, L.e, L.x, L.y].join('|') + '|' + (Placar.estado && Placar.estado.tabelaLayout ? Placar.estado.tabelaLayout.length : 0);
-        if (sig === this._layoutSig) return;
-        this._layoutSig = sig;
-        cam.style.transformOrigin = '50% 50%';
-        cam.style.transform = 'translate(' + (L.x - 50) + '%,' + (L.y - 50) + '%) scale(' + (L.e / 100) + ')';
+    _cenaEm: function (segs, t) {
+        for (var i = 0; i < segs.length; i++) { var s = segs[i]; if (t < s.t0 + s.d) return s.k; }
+        return segs.length ? segs[segs.length - 1].k : null;
     },
 
     /* conta ao painel qual cena esta no ar (para o botao de cena fixa
@@ -318,7 +295,6 @@ Placar.Tabela = {
 
     /* ---------- ciclo de vida ---------- */
     aplicar: function () {
-        if (!window.Tabela) return;
         var e = Placar.estado || {};
         // fundos das cenas HTML (tabela/abertura/intervalo/encerramento) — sempre, nao so com a tabela ligada
         if (window.TabelaDados && window.TabelaDados.setFundos) window.TabelaDados.setFundos(e.cenaFundos);
@@ -332,32 +308,12 @@ Placar.Tabela = {
 
         // classificacao pode ter sido trocada por importacao de CSV (ou limpa)
         var times = this.times();
-        if (!times && this._timesChave) {
-            this._timesChave = null;
-            window.Tabela.setTeams([]);
-            window.Tabela.loadCrests(function () { if (Placar.Tabela.ativo) Placar.Tabela.desenhar(); });
-        } else if (times) {
-            var chave = this.chaveTimes(times);
-            if (chave !== this._timesChave) {
-                this._timesChave = chave;
-                window.Tabela.setTeams(times);
-                window.Tabela.loadCrests(function () { if (Placar.Tabela.ativo) Placar.Tabela.desenhar(); });
-            }
-        }
+        this._timesChave = times ? this.chaveTimes(times) : null;
 
         var ligado = String(e.tabelaAtivo) === 'true' || this._forcado;
         if (ligado) {
             var cfg = this.config();
-            window.Tabela.setTheme(this.tema());
-            window.Tabela.setEscudos(e.tabelaEscudos !== 'false');
-            window.Tabela.setLineups(this.escalacoes(e.tabelaEscalacoes));
-            window.Tabela.setFundo(this.fundos(e.cenaFundos));
-            window.Tabela.setColors('#ffd700', '#ffd700', '#ffd700');   // cor fixa do tema (cor de time nao entra no design)
-            window.Tabela.setEscudoTime(cfg.a, e.escudoA || '');
-            window.Tabela.setEscudoTime(cfg.b, e.escudoB || '');
-            this.carregarPatrocinadores();
-            window.Tabela.setCfg(cfg);
-            window.Tabela.loadLogo(cfg.logo, function () { if (Placar.Tabela.ativo) Placar.Tabela.desenhar(); });
+            this.carregarPatrocinadores();   // cena de patrocinadores (HTML)
             this.cfg = cfg;
             if (window.TabelaDados) { try { window.TabelaDados.fill(cfg, this.tema()); } catch (e) {} }
             var c = this.chaveDe(cfg);
@@ -420,83 +376,62 @@ Placar.Tabela = {
         }
     },
 
-    /* ---------- desenho ---------- */
+    /* ---------- escolha da cena (o CSS mostra e anima) ---------- */
     desenhar: function (now) {
-        var g = this.ctx2d();
-        if (!g) return;
-        var cfg = this.cfg || window.Tabela.cfg();
-        var cv = this.canvas();
-        var el = ((now || performance.now()) - this.t0) / 1000;
-        var t, cena = null, forca = null;
-        // cena manual forçada (prioridade máxima)
+        var cfg = this.cfg;
+        if (!cfg) return;
+        now = now || performance.now();
+        var el = (now - this.t0) / 1000;
+        var cena = null;
+
+        // cena manual (prioridade maxima)
         if (this._interromper) {
             var iel = (now - this._interromper.t0) / 1000;
-            if (iel < this._interromper.d) { cena = this._interromper.k; t = iel; forca = cena; }
-            else { this._interromper = null; }
+            if (iel < this._interromper.d) cena = this._interromper.k;
+            else this._interromper = null;
         }
-        if (!forca) {
+
+        if (!cena) {
             if (cfg.auto) {
-                var tl = window.Tabela.timeline(cfg);
-                t = tl.total > 0 ? (el % tl.total) : 0;
-                cena = window.Tabela.sceneAt(tl.segs, t).k;
+                var tl = this._segs(cfg);
+                var t = tl.total > 0 ? (el % tl.total) : 0;
+                cena = this._cenaEm(tl.segs, t);
             } else {
-                var d = (cfg.scenes[0] && cfg.scenes[0].d) || 8;
-                t = Math.min(el, d);                   // anima a entrada e segura
                 cena = cfg.scenes[0] && cfg.scenes[0].k;
             }
-            // rotacao de patrocinadores (prioridade abaixo de notif/midia manual)
+            // rotacao de patrocinadores (abaixo de notificacao/midia manual)
             if (cfg.auto && this.sponsorAtivo()) {
                 var iv = this._sponsorIntervaloMs(), du = this._sponsorDuracaoMs();
                 if (!this._proxSponsor) this._proxSponsor = now + iv;
                 var loc = now - this._proxSponsor;
-                if (loc >= 0 && loc < du) { cena = 'sponsors'; t = loc / 1000; forca = 'sponsors'; }
-                else if (loc >= du) { this._proxSponsor = this.prioridadeManual() ? (now + 1000) : (now + iv); }
-                else if (this.prioridadeManual()) { this._proxSponsor = now + iv; }
+                if (loc >= 0 && loc < du) cena = 'sponsors';
+                else if (loc >= du) this._proxSponsor = this.prioridadeManual() ? (now + 1000) : (now + iv);
+                else if (this.prioridadeManual()) this._proxSponsor = now + iv;
             } else { this._proxSponsor = 0; }
         }
-        this.aplicarLayout(cena);                      // tamanho + posicao da cena
+
         this.publicarCena(cena);
-        // cenas HTML/CSS: o PHP montou o HTML; aqui so trocamos data-cena (CSS mostra/anima).
-        // as demais cenas seguem no motor canvas.
-        var cenaEl = document.querySelector('.cena[data-scene="' + cena + '"]');
         var cam = this.camada();
-        if (cenaEl) {
-            if (cam && cam.getAttribute('data-cena') !== cena) cam.setAttribute('data-cena', cena);
-            this._canvasVisivel(false);
-        } else {
-            if (cam && cam.getAttribute('data-cena') !== '') cam.setAttribute('data-cena', '');
-            this._canvasVisivel(true);
-            window.Tabela.render(t, { g: g, c: cfg, w: cv.width, h: cv.height, cena: forca });
-        }
+        if (cam && cena && cam.getAttribute('data-cena') !== cena) cam.setAttribute('data-cena', cena);
     },
 
     iniciarLoop: function () {
         var self = this;
         this.pararLoop();
-        var passo = function (now) {
-            if (!self.ativo) { self.raf = null; return; }
-            self.desenhar(now);
-            self.raf = requestAnimationFrame(passo);
-        };
-        this.raf = requestAnimationFrame(passo);
+        this.raf = setInterval(function () {
+            if (!self.ativo) return;
+            self.desenhar(performance.now());
+        }, 200);           // 5x por segundo basta: so troca de cena, sem desenho
     },
 
     pararLoop: function () {
-        if (this.raf) cancelAnimationFrame(this.raf);
+        if (this.raf) clearInterval(this.raf);
         this.raf = null;
     },
 
     /* notificacao: agora em HTML (js/placar/notificacao.js -> #notifTabela) */
     /* ---------- entrada ---------- */
     init: function () {
-        var self = this;
-        if (window.Tabela) {
-            var times = this.times();
-            if (times) window.Tabela.setTeams(times);
-            window.Tabela.loadCrests(function () {
-                if (self.ativo) self.desenhar(performance.now());
-            });
-        }
         // estado ja carregado antes deste arquivo? aplica agora
         if (Placar.estado && Placar.estado.tabelaAtivo !== undefined) this.aplicar();
     }

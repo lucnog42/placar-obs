@@ -52,7 +52,6 @@ O coração da integração. Abre já expandida.
 | Logo do torneio | `logoTorneio` | escolhe do banco `dados/torneios/` (📤 sobe, 🔄 recarrega) |
 | Zonas + cores | `tabelaZonas`, `tabelaZonaUp`, `tabelaZonaDn`, `tabelaZonaCorUp`, `tabelaZonaCorDn` | faixas de acesso/queda |
 | Escudos na tabela | `tabelaEscudos` | liga/desliga os escudos |
-| ✥ (por cena) | `tabelaLayout` | arma a caixa no preview para **arrastar/soltar** a cena |
 | 📄 Importar CSV da classificação | `tabelaTimes` | lê o CSV, **baixa os escudos** para `dados/escudos/` e usa os times |
 | 📥 Sincronizar escudos | — | confere o banco e baixa só o que falta |
 | 🔎 Conferir biblioteca | — | diz quais times estão **sem** escudo no banco (sem baixar nada) |
@@ -61,8 +60,9 @@ O coração da integração. Abre já expandida.
 **Modo cena fixa**: ao ligar, entra já na cena que estava no ar (o placar publica
 `tabelaCenaAtual`), então a transição é contínua em vez de cortar para outra cena.
 
-**Layout por cena** (`tabelaLayout`): `{"cena":{"e":escala%,"x":%,"y":%}}`. Sem
-layout salvo, a cena desenha 100 % e centralizada. Vai junto no preset.
+**Cenas em tamanho fixo**: cada cena ocupa a tela inteira do overlay (1920×1080).
+Não existe mais posição/escala por cena — o overlay é uma sobreposição de
+transmissão, sempre alinhada à tela.
 
 ### 👥 Times & Competição
 

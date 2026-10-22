@@ -88,14 +88,14 @@ dele é descartada em silêncio.
 | `posicao` | `placarScale`, `placarX`, `placarY` |
 | `midia` | `midias`, `midiasAtivas`, `midiaAtiva`, `midiaTransicao`, `midiaDisparoId`, `midiaDisparoSeq` |
 | `basquete` | `shotClock`, `shotRodando`, `faltasA`, `faltasB`, `posse`, `bonusA`, `bonusB`, `timeoutsA`, `timeoutsB` |
-| `tabela` | `tabelaAtivo`, `tabelaCena`, `tabelaTema`, `tabelaDuracao`, `tabelaA`, `tabelaB`, `tabelaDestaque`, `tabelaEscalacao`, `tabelaTitulo`, `tabelaSub`, `tabelaZonas`, `tabelaZonaUp`, `tabelaZonaDn`, `tabelaEscudos`, `tabelaEscalacoes`, `tabelaLocal`, `tabelaHora`, `tabelaLogo`, `tabelaZonaCorUp`, `tabelaZonaCorDn`, `previewZoom`, `tabelaModo`, `tabelaLayout`, `tabelaPlay`, `tabelaCenaAtual`, `tabelaCenas`, `tabelaTimes` |
+| `tabela` | `tabelaAtivo`, `tabelaCena`, `tabelaTema`, `tabelaDuracao`, `tabelaA`, `tabelaB`, `tabelaDestaque`, `tabelaEscalacao`, `tabelaTitulo`, `tabelaSub`, `tabelaZonas`, `tabelaZonaUp`, `tabelaZonaDn`, `tabelaEscudos`, `tabelaEscalacoes`, `tabelaLocal`, `tabelaHora`, `tabelaLogo`, `tabelaZonaCorUp`, `tabelaZonaCorDn`, `previewZoom`, `tabelaModo`, `tabelaPlay`, `tabelaCenaAtual`, `tabelaCenas`, `tabelaTimes` |
 
 ### Regras
 
 - Valores são strings (`"true"`, `"0"`, `"12.5"`). O placar usa direto em CSS e
   atributos — não converta para número só por convertar.
 - JSON dentro de string quando o valor é uma lista/objeto:
-  `tabelaCenas`, `tabelaTimes`, `tabelaLayout`, `tabelaEscalacoes`, `midias`,
+  `tabelaCenas`, `tabelaTimes`, `tabelaEscalacoes`, `midias`,
   `midiasAtivas`.
 - `tabelaCenaAtual` é **publicado pelo placar** (qual cena está no ar), não é
   configuração.

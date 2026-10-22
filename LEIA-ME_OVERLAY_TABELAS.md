@@ -97,7 +97,7 @@ escudos, no mesmo esquema.
 
 | arquivo | o que é |
 |---|---|
-| `tabela/tabela.js` | motor de desenho das cenas (canvas, 7 temas, 8 cenas) |
+| `partials/cena-*.php` | as cenas do overlay (HTML/CSS, uma partial por cena) |
 | `tabela/dados.js` | classificação do grupo (16 times, escudos e cores) |
 | `js/placar/tabela.js` | camada do overlay no lado da transmissão |
 | `js/controle/tabela.js` | painel do overlay (cenas, CSV, destaque) |
@@ -152,12 +152,10 @@ preview**, na mesma coluna (o preview continua fixo ao rolar). Em tela em p&eacu
 o preview segue em cima, ocupando 100% da largura, com a barra de zoom.
 
 **Tamanho e posi&ccedil;&atilde;o por cena.** Cada linha da linha do tempo tem:
-- **%** (arraste para o lado para mudar o tamanho daquela cena, 20%&ndash;300%);
-- **&#10021;** (arma a caixa de arrastar no preview).
+- **↑ / ↓** (mudam a ordem das cenas na sequ&ecirc;ncia).
 
-Com a caixa armada, arrastar o meio move a cena (x/y) e arrastar o canto azul
-muda o tamanho. Soltar grava em `tabelaLayout` (`{"cena":{"e":escala,"x":%,"y":%}}`),
-que vai junto no preset. Cena sem layout salvo = 100% e centralizada.
+Cada cena ocupa a tela inteira do overlay (1920&times;1080); n&atilde;o existe mais
+posi&ccedil;&atilde;o/escala por cena.
 
 Tamb&eacute;m foi corrigido um `@media` que ficou aberto no CSS e fazia todos os
 estilos seguintes valerem s&oacute; em tela larga.

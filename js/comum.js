@@ -22,7 +22,7 @@ tabelaTitulo:'tabela',tabelaSub:'tabela',tabelaZonas:'tabela',tabelaZonaUp:'tabe
 tabelaZonaDn:'tabela',tabelaEscudos:'tabela',tabelaEscalacoes:'tabela',
 tabelaLocal:'tabela',tabelaHora:'tabela',tabelaLogo:'tabela',
 tabelaZonaCorUp:'tabela',tabelaZonaCorDn:'tabela',previewZoom:'tabela',
-tabelaModo:'tabela',tabelaLayout:'tabela',tabelaPlay:'tabela',tabelaCenaAtual:'tabela',tabelaCenas:'tabela',tabelaTimes:'tabela',cenaFundos:'tabela',
+tabelaModo:'tabela',tabelaPlay:'tabela',tabelaCenaAtual:'tabela',tabelaCenas:'tabela',tabelaTimes:'tabela',cenaFundos:'tabela',
 clima:'times',climaIcone:'times',spText:'torneio',sponsorsAtivo:'torneio',sponsorsIntervalo:'torneio',sponsorsDuracao:'torneio',sp1:'torneio',sp2:'torneio',sp3:'torneio',sp4:'torneio',sp5:'torneio',sp6:'torneio',sp7:'torneio',sp8:'torneio',sp9:'torneio',sp10:'torneio',sp11:'torneio',sp12:'torneio',sp13:'torneio',sp14:'torneio',sp15:'torneio',sp16:'torneio',sp17:'torneio',sp18:'torneio',sp19:'torneio',sp20:'torneio',sp21:'torneio',sp22:'torneio',sp23:'torneio',sp24:'torneio',sp25:'torneio',sp26:'torneio',sp27:'torneio',sp28:'torneio',sp29:'torneio',sp30:'torneio'};
 var FONTES={arial:"'Arial',sans-serif",impact:"'Impact',sans-serif",georgia:"'Georgia',serif",courier:"'Courier New',monospace",trebuchet:"'Trebuchet MS',sans-serif",verdana:"'Verdana',sans-serif"};
 function buildFlat(cru){return Object.assign({},cru.placar,cru.times,cru.estilo,cru.penaltes,cru.notif,cru.posicao,cru.midia,cru.basquete,cru.torneio,cru.tabela,{estadoVersao:cru.estadoVersao});}

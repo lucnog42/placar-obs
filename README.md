@@ -95,7 +95,7 @@ placar.php            página da fonte do OBS
 controle.php          painel (HTML + JS de UI específico)
 api.php                API/estado em arquivo
 config.php             define DATA_DIR (onde ficam os dados do usuário)
-tabela/tabela.js       MOTOR do overlay: canvas 1920×1080, temas e cenas
+partials/cena-*.php    cenas do overlay (PHP monta o HTML; o CSS mostra e anima)
 js/comum.js            constantes, mapa de chaves (MS) e helpers comuns
 js/eventbus.js         barramento de eventos interno
 js/placar/*.js         lado da transmissão (core, times, tema, gols, mídia…)

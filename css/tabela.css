@@ -4,7 +4,6 @@
 #camadaTabela{position:absolute;inset:0;width:1920px;height:1080px;pointer-events:none;
   opacity:0;transition:opacity .4s ease}
 #camadaTabela.ativa{opacity:1}
-#tabelaCanvas{position:absolute;inset:0;width:1920px;height:1080px}
 
 .cena{position:absolute;inset:0;width:1920px;height:1080px;overflow:hidden;display:none;isolation:isolate}
 

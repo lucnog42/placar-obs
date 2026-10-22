@@ -1,10 +1,34 @@
-# Branch `tabela-html` — cenas em HTML/CSS com PHP
+# Cenas em HTML/CSS com PHP — migração concluída
 
-Reescreve em **HTML/CSS** as cenas `tabela`, `abertura`, `intervalo` e
-`encerramento`, que antes eram desenhadas no canvas (`tabela/tabela.js`).
-As demais cenas (duel, feature, form2, lineups, sponsors, lower) **continuam no
-canvas**. A branch `multi-instancia` (produção) não é afetada.
+Todas as cenas do overlay sao **HTML/CSS**: o PHP monta (`partials/cena-*.php`),
+o CSS mostra/anima por `#camadaTabela[data-cena]` e o JS so preenche textos,
+escudos e classes. O motor canvas (`tabela/tabela.js`, 836 linhas) foi removido.
 
+| Cena | Partial |
+|---|---|
+| `table` | `partials/tabela.php` |
+| `intro` | `partials/cena-abertura.php` |
+| `intervalo` | `partials/cena-intervalo.php` |
+| `encerramento` | `partials/cena-encerramento.php` |
+| `sponsors` | `partials/cena-sponsors.php` |
+| `lower` | `partials/cena-lower.php` |
+| `lineups` | `partials/cena-lineups.php` |
+| `feature` | `partials/cena-feature.php` |
+| `form2` | `partials/cena-form2.php` |
+| `duel` | `partials/cena-duel.php` |
+
+Notificacao do overlay: `partials/notificacao-tabela.php` (`#notifTabela`).
+
+## Regras
+
+- Estagio de cada cena: `.cena-inner` = 1280x720 escalado 1.5x (coordenadas do
+  motor antigo); a cena em si ocupa 1920x1080.
+- JS nao monta HTML: so `textContent`, `src` e classes (`js/placar/tabela-dados.js`).
+- Troca de cena: `#camadaTabela[data-cena="..."]` (loop por `setInterval` de 200 ms).
+- Pool de linhas: o PHP imprime `$MAX_LINHAS` (24); o JS esconde as que sobram.
+- `j`=jogos, `g`=vitorias, `e`=empates, `p`=derrotas; `form` vem `G/P/E` (catalao)
+  e aparece como V/D/E.
+- Tema unico La Liga em CSS vars (`--bg/--fg/--ac`).
 ## Divisão de responsabilidades
 
 | Camada | Arquivo | Faz |

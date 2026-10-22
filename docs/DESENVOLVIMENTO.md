@@ -59,8 +59,7 @@ espalhados não é.
   script, preserve `\r\n` — e ao gerar arquivo novo, escreva com `newline=''` no
   Python.
 - **Lado do app em ES5** (`function`, `var`): nada de arrow, `let`, template
-  literal — exceto `tabela/tabela.js` (o motor), que usa `const/let`, arrow e
-  template literal.
+  literal.
 - **`Controle.init*()` no fim do arquivo**: função declarada depois de uma
   chamada cedo demais fica `undefined`.
 - **Chave nova no estado = chave nova no `MS`** (`js/comum.js`), senão o valor
