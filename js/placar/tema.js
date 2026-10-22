@@ -2,10 +2,9 @@
 var Placar = window.Placar || {};
 
 Placar.on('estilo:changed', function() {
-    // Tema CSS
-    var t = Placar.estado.tema || 'laliga',
-        link = document.getElementById('tema'),
-        href = 'css/' + t + '.css';
+    // Tema CSS (único: La Liga — unificado com o overlay)
+    var link = document.getElementById('tema'),
+        href = 'css/laliga.css';
     if (link && link.getAttribute('href') !== href) link.setAttribute('href', href);
 
     // Animação da notificação

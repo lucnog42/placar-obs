@@ -1,6 +1,6 @@
 // controle/estilo.js — tema, fonte, animação, posição, escala
 var Controle=window.Controle||{};
-Controle.definirTema=function(t){Controle.setEstado({tema:t});};
+Controle.definirTema=function(t){Controle.setEstado({tema:'laliga'});};
 Controle.definirAnimNotif=function(a){Controle.setEstado({notifAnimacao:a});};
 Controle.definirFonte=function(f){Controle.setEstado({fonte:f});};
 Controle.alternarNomes=function(){Controle.setEstado({nomesExpandidos:Controle.estado.nomesExpandidos==='true'?'false':'true'});};

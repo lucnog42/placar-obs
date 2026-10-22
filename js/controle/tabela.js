@@ -4,11 +4,9 @@
 // escalacoes) e escudos baixados para o banco de imagens do app.
 var Controle = window.Controle || {};
 
+/* Tema único (La Liga) — o mesmo do placar. A lista fica só com ele. */
 Controle.TABELA_TEMAS = [
-    ['auto', 'Automático (segue o placar)'],
-    ['escuro', 'Escuro'], ['claro', 'Claro'], ['neon', 'Neon'],
-    ['broadcast', 'Broadcast (claro/azul)'], ['matchfacts', 'Match Facts (vermelho)'],
-    ['aco', 'Aço (azul metálico)'], ['noturno', 'Noturno (ciano)']
+    ['laliga', '🏆 La Liga (unificado)']
 ];
 
 /* cena, rotulo, duracao padrao (s), visivel por padrao */
@@ -160,7 +158,7 @@ Controle.alternarTabela = function () {
 };
 Controle.definirModoTabela = function (v) { Controle.setEstado({ tabelaModo: v }); };
 Controle.definirCenaTabela = function (v) { Controle.setEstado({ tabelaCena: v }); };
-Controle.definirTemaTabela = function (v) { Controle.setEstado({ tabelaTema: v }); };
+Controle.definirTemaTabela = function (v) { Controle.setEstado({ tabelaTema: 'laliga' }); };
 Controle.definirDestaqueTabela = function (v) { Controle.setEstado({ tabelaDestaque: v }); };
 Controle.definirTimeTabela = function (chave, v) { var o = {}; o[chave] = v; Controle.setEstado(o); };
 Controle.definirTexto = function (chave, v) { var o = {}; o[chave] = v; Controle.setEstado(o); };
@@ -214,7 +212,7 @@ Controle.aplicarEstadoTabela = function () {
         bd.className = ligado ? 'badge no-ar' : 'badge';
     }
     var v;
-    v = document.getElementById('tabelaTema'); if (v) v.value = e.tabelaTema || 'auto';
+    v = document.getElementById('tabelaTema'); if (v) v.value = e.tabelaTema || 'laliga';
     v = document.getElementById('tabelaModo'); if (v) v.value = e.tabelaModo || 'auto';
     var modoFixa = (e.tabelaModo === 'fixa');
     v = document.getElementById('tabelaFixa'); if (v) v.checked = modoFixa;

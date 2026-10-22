@@ -421,7 +421,7 @@ Controle.salvarPreset=async function(){
         placarX:e.placarX||'50',placarY:e.placarY||'50',
         clima:e.clima||'',climaIcone:e.climaIcone||'',
         // overlay de classificacao
-        tabelaAtivo:e.tabelaAtivo||'false',tabelaTema:e.tabelaTema||'auto',
+        tabelaAtivo:e.tabelaAtivo||'false',tabelaTema:e.tabelaTema||'laliga',
         tabelaModo:e.tabelaModo||'auto',tabelaCena:e.tabelaCena||'table',
         tabelaCenas:e.tabelaCenas||'',tabelaDestaque:e.tabelaDestaque||'auto',
         tabelaTitulo:e.tabelaTitulo||'',tabelaSub:e.tabelaSub||'',
@@ -481,7 +481,7 @@ Controle.carregarPreset=async function(nome){
         var dados=await r.json();
         if(dados.erro){Controle.status('erro','❌ '+dados.erro);return;}
         // Sanitiza tema e fonte pra valores validos do futebol
-        var TEMAS_VALIDOS={laliga:1,colorido:1,simples:1};
+        var TEMAS_VALIDOS={laliga:1};
         if(!TEMAS_VALIDOS[dados.tema])dados.tema='laliga';
         if(!FONTES[dados.fonte])dados.fonte='arial';
         // Evita sobrescrever escudos existentes com vazio do preset

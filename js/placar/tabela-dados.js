@@ -127,6 +127,33 @@ var TabelaDados = (function () {
     setCrest(document.querySelector('#' + pfx + 'BdB .th-crestbox'), B);
   }
 
+  // fundo opcional por cena (intro/table/intervalo/encerramento), vindo do painel
+  function setFundos(txt) {
+    var map = {};
+    if (txt) {
+      try { map = (typeof txt === 'string') ? JSON.parse(txt) : txt; }
+      catch (e) { return; }              // estado invalido: mantem o que esta na tela
+    }
+    if (!map || typeof map !== 'object') return;
+    var cen = document.querySelectorAll('#camadaTabela .cena');
+    for (var i = 0; i < cen.length; i++) {
+      var c = cen[i], k = c.getAttribute('data-scene'), bg = c.querySelector('.cena-bg');
+      if (!bg || !k) continue;
+      var src = map[k] || '';
+      if (src) {
+        if (bg.getAttribute('data-src') !== src) {
+          bg.style.backgroundImage = 'url("' + String(src).replace(/"/g, '%22') + '")';
+          bg.setAttribute('data-src', src);
+        }
+        c.classList.add('com-fundo');
+      } else if (bg.getAttribute('data-src')) {
+        bg.style.backgroundImage = '';
+        bg.removeAttribute('data-src');
+        c.classList.remove('com-fundo');
+      }
+    }
+  }
+
   function fill(cfg, tema) {
     cfg = cfg || {};
     var cam = document.getElementById('camadaTabela');
@@ -146,5 +173,5 @@ var TabelaDados = (function () {
     fillFull('enc', cfg, A, B);
   }
 
-  return { fill: fill };
+  return { fill: fill, setFundos: setFundos };
 })();

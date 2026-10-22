@@ -1,6 +1,7 @@
 <?php $MAX = isset($MAX_LINHAS) ? (int)$MAX_LINHAS : 24; ?>
 <!-- cena: tabela (classificação) — estrutura fixa; JS preenche textos/imagens -->
 <div class="cena cena-table" data-scene="table">
+  <div class="cena-bg"></div>
   <header class="th-hdr">
     <img class="th-logo" id="thLogo" src="" alt="">
     <div class="th-live"><span class="dot"></span>AO VIVO</div>

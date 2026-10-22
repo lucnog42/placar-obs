@@ -2,18 +2,10 @@
   <h2 class="titulo">🎨 Tema &amp; Aparência</h2>
   <div class="grid-inner">
     <section class="full">
-      <p>Tema <span class="hint">vale para o placar e para o overlay da tabela</span></p>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <div>
-          <p style="font-size:10px;color:#aaa;margin-bottom:3px">Tema do overlay (tabela)</p>
-          <select id="tabelaTema" onchange="Controle.definirTemaTabela(this.value)" style="width:100%"></select>
-        </div>
-        <div>
-          <p style="font-size:10px;color:#aaa;margin-bottom:3px">Estilo do Placar</p>
-          <button class="tema-btn" data-tema="laliga" onclick="Controle.definirTema('laliga')">🏆 La Liga</button>
-          <button class="tema-btn" data-tema="colorido" onclick="Controle.definirTema('colorido')">🎨 Colorido</button>
-          <button class="tema-btn" data-tema="simples" onclick="Controle.definirTema('simples')">⬛ Simples</button>
-        </div>
+      <p>Tema <span class="hint">tema único por enquanto — vale para o placar e para o overlay</span></p>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="font-size:13px;font-weight:700;padding:6px 12px;border-radius:8px;background:#0e1624;border:1px solid #2a3a55;color:#ffd700">🏆 La Liga</span>
+        <span style="font-size:11px;color:#93a4c0">placar + overlay usam essa mesma base</span>
       </div>
     </section>
     <section class="full">

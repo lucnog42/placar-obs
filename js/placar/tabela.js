@@ -21,9 +21,6 @@ Placar.Tabela = {
     _cenaCancelarSeq: null,
     _forcado: false,
 
-    /* tema do overlay que corresponde a cada tema do placar */
-    TEMA_PLACAR: { laliga: 'escuro', colorido: 'neon', simples: 'matchfacts' },
-
     /* cenas que o motor conhece (usado para validar o painel/estado) */
     CENAS_VALIDAS: { intro: 1, table: 1, duel: 1, feature: 1, form2: 1, lineups: 1, sponsors: 1, lower: 1, intervalo: 1, encerramento: 1 },
 
@@ -86,10 +83,7 @@ Placar.Tabela = {
 
     /* ---------- tema / times ---------- */
     tema: function () {
-        var e = Placar.estado || {};
-        var t = e.tabelaTema || 'auto';
-        if (t !== 'auto') return t;
-        return this.TEMA_PLACAR[e.tema || 'laliga'] || 'escuro';   // espelha o placar
+        return 'escuro';   // tema único (La Liga) — sem espelhar cor de time
     },
 
     /* classificacao vinda do estado (importacao de CSV) */
@@ -313,6 +307,8 @@ Placar.Tabela = {
     aplicar: function () {
         if (!window.Tabela) return;
         var e = Placar.estado || {};
+        // fundos das cenas HTML (tabela/abertura/intervalo/encerramento) — sempre, nao so com a tabela ligada
+        if (window.TabelaDados && window.TabelaDados.setFundos) window.TabelaDados.setFundos(e.cenaFundos);
         var cc = e.cenaCancelar;
         if (cc && cc !== this._cenaCancelarSeq) {
             this._cenaCancelarSeq = cc;
@@ -341,7 +337,7 @@ Placar.Tabela = {
             window.Tabela.setEscudos(e.tabelaEscudos !== 'false');
             window.Tabela.setLineups(this.escalacoes(e.tabelaEscalacoes));
             window.Tabela.setFundo(this.fundos(e.cenaFundos));
-            window.Tabela.setColors(e.timeACor || '#22d3ee', e.timeBCor || '#f472b6');
+            window.Tabela.setColors('#ffd700', '#ffd700', '#ffd700');   // cor fixa do tema (cor de time nao entra no design)
             window.Tabela.setEscudoTime(cfg.a, e.escudoA || '');
             window.Tabela.setEscudoTime(cfg.b, e.escudoB || '');
             this.carregarPatrocinadores();

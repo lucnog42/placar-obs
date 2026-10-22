@@ -1,5 +1,6 @@
 <!-- cena: abertura — estrutura fixa; JS preenche textos/imagens -->
 <div class="cena cena-intro" data-scene="intro">
+  <div class="cena-bg"></div>
   <img class="in-logo" id="inLogo" src="" alt="">
   <div class="in-titulo" id="inTitulo"></div>
   <div class="in-hoje">HOJE EM CAMPO</div>

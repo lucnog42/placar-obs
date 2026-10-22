@@ -6,20 +6,23 @@
 #camadaTabela.ativa{opacity:1}
 #tabelaCanvas{position:absolute;inset:0;width:1920px;height:1080px}
 
-.cena{position:absolute;inset:0;width:1920px;height:1080px;overflow:hidden;display:none}
+.cena{position:absolute;inset:0;width:1920px;height:1080px;overflow:hidden;display:none;isolation:isolate}
+
+/* fundo opcional por cena (imagem do painel); fica atrás do conteúdo */
+.cena-bg{position:absolute;inset:0;z-index:-1;background-size:cover;background-position:center center;
+  background-repeat:no-repeat;pointer-events:none}
+.cena.com-fundo{background-color:transparent}
+.cena-table.com-fundo::before{background:transparent}
+.cena.com-fundo .cena-bg::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(var(--bg),.55),rgba(var(--bg),.72))}
 #camadaTabela[data-cena="table"]       .cena-table,
 #camadaTabela[data-cena="intro"]       .cena-intro,
 #camadaTabela[data-cena="intervalo"]   .cena-intervalo,
 #camadaTabela[data-cena="encerramento"] .cena-encerramento{display:block}
 
 /* ---------- temas (iguais em espírito ao placar) ---------- */
-#camadaTabela[data-tema="escuro"]{--bg:6,10,14;--fg:255,255,255;--ac:39,174,96;--ac2:255,196,0}
-#camadaTabela[data-tema="claro"]{--bg:255,255,255;--fg:18,24,30;--ac:20,90,200;--ac2:210,60,40}
-#camadaTabela[data-tema="neon"]{--bg:6,2,20;--fg:236,230,255;--ac:0,255,170;--ac2:255,60,200}
-#camadaTabela[data-tema="broadcast"]{--bg:10,16,24;--fg:240,246,255;--ac:255,90,60;--ac2:60,180,255}
-#camadaTabela[data-tema="matchfacts"]{--bg:0,0,0;--fg:255,255,255;--ac:255,196,0;--ac2:255,90,0}
-#camadaTabela[data-tema="aco"]{--bg:24,28,34;--fg:233,238,244;--ac:130,180,220;--ac2:255,255,255}
-#camadaTabela[data-tema="noturno"]{--bg:8,10,20;--fg:230,236,246;--ac:140,120,255;--ac2:80,200,255}
+/* Tema único — La Liga (mesma base do placar). Um só tema para placar + overlay. */
+#camadaTabela{--bg:10,10,10;--fg:255,255,255;--ac:255,215,0;--ac2:255,255,255}
 
 .cena{color:rgba(var(--fg),1);font-family:'Arial','Helvetica Neue',sans-serif}
 

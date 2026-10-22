@@ -19,10 +19,10 @@ var FF = 'Inter,"Segoe UI",Roboto,Arial,sans-serif';
 var MOSTRAR_ESCUDOS = true;   // escudos do site; false = monograma
 
 const THEMES = {
-  escuro: { g0:'#0b1524', g1:'#0d1b2f', g2:'#070c14', glow:'255,196,0', grid:'rgba(255,255,255,.035)',
-            fg:'255,255,255', dk:'8,14,24', panel:'rgba(8,14,24,.80)', acc:'#ffc400', red:'#e30613',
+  escuro: { g0:'#141414', g1:'#1a1a1a', g2:'#080808', glow:'255,215,0', grid:'rgba(255,255,255,.035)',
+            fg:'255,255,255', dk:'10,10,10', panel:'rgba(10,10,10,.80)', acc:'#ffd700', red:'#e30613',
             lay:{table:'lista',duel:'cards',feature:'painel',lineups:'painel'},
-            css:{bg:'#080d15',panel:'#101a29',line:'#22304a',txt:'#e8eefc',mut:'#93a4c0',card:'#0b1420'} },
+            css:{bg:'#0a0a0a',panel:'#141414',line:'#2a2a2a',txt:'#f2f2f2',mut:'#a3a3a3',card:'#101010'} },
   claro:  { g0:'#f2f6fb', g1:'#e4ebf4', g2:'#d7e0ec', glow:'217,4,41', grid:'rgba(14,26,45,.06)',
             fg:'14,26,45', dk:'255,255,255', panel:'rgba(255,255,255,.86)', acc:'#d90429', red:'#d90429',
             lay:{table:'lista',duel:'cards',feature:'painel',lineups:'painel'},
