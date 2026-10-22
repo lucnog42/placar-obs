@@ -8,7 +8,7 @@ overlay sai e o placar volta.
 ## Como usar
 
 1. Suba os arquivos no seu servidor (mesma pasta do `api.php`).
-2. Abra o `Controle.html`.
+2. Abra o `controle.php`.
 3. Seção **📊 Overlay · Tabelas** → botão **▶ Ligar overlay**.
 
 O `Placar.html` (fonte de navegador do OBS) recebe a camada automaticamente.
@@ -108,7 +108,7 @@ escudos, no mesmo esquema.
 | arquivo | mudança |
 |---|---|
 | `Placar.html` | `<div id="camadaTabela">` + scripts |
-| `Controle.html` | seção do overlay, repertório unificado, clima, zoom do preview, subir logo, sem o seletor de esporte |
+| `controle.php` | seção do overlay, repertório unificado, clima, zoom do preview, subir logo, sem o seletor de esporte |
 | `js/comum.js` | chaves novas no mapa `MS` (`tabelaModo`, `tabelaCenas`, `tabelaTimes`, `clima`, `climaIcone`, `midiaDisparo*`) |
 | `js/placar/core.js` | emite `tabela:changed` (já existia) |
 | `js/placar/midia.js` | mídias de texto + disparo avulso + GIF |

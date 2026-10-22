@@ -6,7 +6,7 @@ mesma configuração.
 
 ```
                  POST (merge)                 GET ?v=N (poll)
-Controle.html ───────────────► api.php ◄─────────────────── Placar.html
+controle.php ───────────────► api.php ◄─────────────────── Placar.html
    painel                      estado.json                    OBS / transmissão
                                   │
                                   ├── escudos/     (banco de escudos)
@@ -72,7 +72,7 @@ interessa e se redesenha. O painel tem o mesmo desenho (`Controle.on(...)`).
 
 ## Ordem de carregamento
 
-`Placar.html` e `Controle.html` carregam os scripts na ordem de dependência:
+`Placar.html` e `controle.php` carregam os scripts na ordem de dependência:
 `comum.js` → `eventbus.js` → módulos. Em `js/controle/tabela.js` o
 `Controle.initTabela()` é chamado **no fim do arquivo** — função declarada abaixo
 de uma chamada cedo demais ficaria `undefined`.

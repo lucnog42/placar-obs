@@ -1,0 +1,435 @@
+/* ====== DEBUG ====== */
+Controle.debugContador = 0;
+Controle.debugContadorAtivo = true;
+Controle.debugLogLines = [];
+Controle.debugPingMs = 0;
+
+Controle.togglePreview = function() {
+  var w = document.getElementById('previewWrapper');
+  w.classList.toggle('preview-off');
+  var btn = w.querySelector('#previewBar button');
+  if (w.classList.contains('preview-off')) {
+    btn.textContent = 'Mostrar';
+    document.getElementById('previewFrame').src = '';
+  } else {
+    btn.textContent = 'Esconder';
+    document.getElementById('previewFrame').src = Controle.placarUrl();
+    setTimeout(function(){ Controle.resizePreview(); }, 300);
+  }
+};
+
+Controle.resizePreview = function() {
+  var c = document.getElementById('previewContainer');
+  var f = document.getElementById('previewFrame');
+  if (!c || !f) return;
+  var wrapper = document.getElementById('previewWrapper');
+  var bar = document.getElementById('previewBar');
+  var zoom = Controle._zoom || 1;
+  var deitado = !!(window.matchMedia && window.matchMedia('(min-width:1100px)').matches);
+  var largura = Math.max(160, (wrapper ? wrapper.clientWidth : c.parentElement.clientWidth) - 2);
+  var altura = 0;
+  if (deitado) {
+    var caixa = (wrapper ? wrapper.clientHeight : 0) - (bar ? (bar.offsetHeight || 30) : 30) - 6;
+    if (caixa < 120) caixa = ((window.innerHeight || 800) - 60) * 0.5;
+    altura = Math.max(160, caixa);
+  }
+  var w = largura, h = w * 9 / 16;
+  if (altura && h > altura) { h = altura; w = h * 16 / 9; }
+  w = Math.max(160, Math.floor(w * zoom));
+  h = Math.round(w * 9 / 16);
+  c.style.width = w + 'px';
+  c.style.height = h + 'px';
+  var scale = w / 1920;
+  f.style.transform = 'translate(-50%, -50%) scale(' + scale + ')';
+};
+window.addEventListener('resize', Controle.resizePreview);
+
+Controle.toggleDebugContador = function() {
+  Controle.debugContadorAtivo = document.getElementById('debugContadorToggle').checked;
+  var s = document.getElementById('debugContadorStatus');
+  s.textContent = Controle.debugContadorAtivo ? 'LIGADO' : 'DESLIGADO';
+  s.style.color = Controle.debugContadorAtivo ? '#4CAF50' : '#888';
+};
+Controle.zerarDebugContador = function() {
+  Controle.debugContador = 0;
+  document.getElementById('debugContador').textContent = '0';
+};
+Controle.limparDebugLog = function() {
+  Controle.debugLogLines = [];
+  document.getElementById('debugLog').textContent = 'Nenhum poll ainda...';
+  document.getElementById('debugLogCount').textContent = '0 registros';
+};
+Controle.addDebugLog = function(entry) {
+  Controle.debugLogLines.unshift(entry);
+  if (Controle.debugLogLines.length > 5) Controle.debugLogLines.pop();
+  document.getElementById('debugLog').textContent = Controle.debugLogLines.join('\n');
+  document.getElementById('debugLogCount').textContent = Controle.debugLogLines.length + ' registros';
+};
+Controle.updateDebugPing = function(ms) {
+  Controle.debugPingMs = ms;
+  var el = document.getElementById('debugPing');
+  var st = document.getElementById('debugPingStatus');
+  el.textContent = ms + ' ms';
+  el.className = 'debug-ping ' + (ms < 50 ? 'fast' : ms < 200 ? 'medium' : 'slow');
+  st.textContent = ms < 50 ? 'Rapido' : ms < 200 ? 'Normal' : 'Lento';
+  st.style.color = ms < 50 ? '#4CAF50' : ms < 200 ? '#ff9800' : '#f44336';
+};
+Controle.incrementarDebugContador = function() {
+  if (Controle.debugContadorAtivo) {
+    Controle.debugContador++;
+    document.getElementById('debugContador').textContent = Controle.debugContador;
+  }
+};
+Controle.toggleDebugStatus = function() {
+  var on = document.getElementById('debugStatusToggle').checked;
+  var label = document.getElementById('debugStatusLabel');
+  if (on) {
+    Controle.setEstado({mostrarStatus: 'true'});
+    label.textContent = 'VISIVEL';
+    label.style.color = '#4CAF50';
+  } else {
+    Controle.setEstado({mostrarStatus: 'false'});
+    label.textContent = 'OCULTO';
+    label.style.color = '#888';
+  }
+};
+Controle.forcarEstado = function() {
+  var raw = document.getElementById('debugJsonInput').value.trim();
+  if (!raw) { alert('JSON vazio!'); return; }
+  try {
+    var obj = JSON.parse(raw);
+    Controle.setEstado(obj);
+    Controle.incrementarDebugContador();
+  } catch(e) {
+    alert('JSON invalido: ' + e.message);
+  }
+};
+
+/* ====== SUB-CONTROLES (multi-instancia) ====== */
+Controle._instanciaExcluir = null;
+
+Controle.listarInstancias = function() {
+  fetch(API+API_AND+'acao=listar_instancias')
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    var el = document.getElementById('listaInstancias');
+    var aviso = document.getElementById('instanciaAviso');
+    if(!el) return;
+    var lista = (d && d.instancias) || [];
+    var ativa = (typeof INSTANCIA !== 'undefined') ? INSTANCIA : '';
+    if(aviso){
+      if(ativa){ aviso.innerHTML = '✓ Instância ativa: <b style="color:#4ade80">' + ativa + '</b>'; aviso.style.color = '#4ade80'; }
+      else { aviso.innerHTML = '⚠ Nenhuma instância selecionada — escolha (ou crie) uma para continuar.'; aviso.style.color = '#f59e0b'; }
+    }
+    if(!lista.length){ el.innerHTML = '<span style="color:#888;font-size:11px">Nenhum sub-controle. Crie o primeiro acima.</span>'; return; }
+    var h = '';
+    for(var i=0;i<lista.length;i++){
+      var it = lista[i];
+      var url = 'placar.php?i=' + encodeURIComponent(it.id);
+      var estaAtiva = (it.id === ativa);
+      h += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px;border:1px solid ' + (estaAtiva ? '#4ade80' : '#333') + ';border-radius:6px;background:' + (estaAtiva ? '#0f1f18' : '#0b1420') + '">'
+        + '<span style="font-weight:bold;color:#fff;min-width:110px">' + (it.nome || it.id) + '</span>'
+        + '<code style="color:#9cf;font-size:11px">' + it.id + '</code>'
+        + (estaAtiva
+            ? '<span style="color:#4ade80;font-size:11px;font-weight:bold">✓ ativa</span>'
+            : '<button onclick="location.href=\'controle.php?i=' + encodeURIComponent(it.id) + '\'" style="padding:4px 8px;border-radius:4px;border:none;background:#4CAF50;color:#fff;cursor:pointer">▶ Usar</button>')
+        + '<button onclick="window.open(\'' + url + '\',\'_blank\')" style="padding:4px 8px;border-radius:4px;border:none;background:#2196F3;color:#fff;cursor:pointer">📺 OBS</button>'
+        + '<button onclick="Controle.abrirEditarInstancia(\'' + it.id + '\',\'' + (it.nome || '').replace(/'/g,"\\'") + '\')" style="padding:4px 8px;border-radius:4px;border:none;background:#f59e0b;color:#fff;cursor:pointer">✏️</button>'
+        + '<button onclick="Controle.pedirExcluirInstancia(\'' + it.id + '\')" style="padding:4px 8px;border-radius:4px;border:none;background:#f44336;color:#fff;cursor:pointer">✕</button>'
+        + '</div>';
+    }
+    el.innerHTML = h;
+  })
+  .catch(function(e){ Controle.status('erro','❌ listar instancias: ' + e.message); });
+};
+
+Controle.abrirCriarInstancia = function() {
+  document.getElementById('modalInstanciaTitulo').textContent = '➕ Criar Instância';
+  var idEl = document.getElementById('subctrlId');
+  idEl.disabled = false;
+  idEl.value = '';
+  document.getElementById('subctrlNome').value = '';
+  document.getElementById('subctrlPerfil').value = '';
+  Controle.carregarPerfisSelect();
+  Controle.abrirModal('modalInstancia');
+};
+
+Controle.salvarInstanciaModal = function() {
+  var idEl = document.getElementById('subctrlId');
+  var id = idEl.value.trim();
+  var nome = document.getElementById('subctrlNome').value.trim();
+  var editando = idEl.disabled;
+  if(!id){ alert('Informe o id (ex.: equipeA)'); return; }
+  if(editando) {
+    fetch(API+API_AND+'acao=renomear_instancia', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ id:id, nome:nome })
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      idEl.disabled = false;
+      Controle.fecharModal('modalInstancia');
+      Controle.listarInstancias();
+      Controle.status('ok', '✅ Instância "' + id + '" atualizada');
+    })
+    .catch(function(e){ Controle.status('erro','❌ ' + e.message); });
+    return;
+  }
+  var perfil = document.getElementById('subctrlPerfil').value;
+  fetch(API+API_AND+'acao=criar_instancia', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ id:id, nome:nome, perfil:perfil })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    if(d && d.erro){ alert('Erro: ' + d.erro); return; }
+    idEl.value = '';
+    document.getElementById('subctrlNome').value = '';
+    Controle.fecharModal('modalInstancia');
+    Controle.listarInstancias();
+    Controle.status('ok', '✅ Sub-controle "' + id + '" criado');
+  })
+  .catch(function(e){ Controle.status('erro','❌ ' + e.message); });
+};
+
+Controle.carregarPerfisSelect = function() {
+  var sel = document.getElementById('subctrlPerfil');
+  if(!sel) return;
+  fetch(API+API_AND+'acao=listar_perfis')
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    var lista = (d && d.perfis) || [];
+    var h = '<option value="">— sem perfil —</option>';
+    for(var i=0;i<lista.length;i++){
+      var p = lista[i];
+      h += '<option value="' + p.nome + '">' + p.nome + '</option>';
+    }
+    sel.innerHTML = h;
+  })
+  .catch(function(){});
+};
+
+Controle.abrirEditarInstancia = function(id, nome) {
+  document.getElementById('modalInstanciaTitulo').textContent = '✏️ Editar "' + id + '"';
+  document.getElementById('subctrlId').value = id;
+  document.getElementById('subctrlId').disabled = true;
+  document.getElementById('subctrlNome').value = nome || '';
+  Controle.abrirModal('modalInstancia');
+};
+
+Controle.pedirExcluirInstancia = function(id) {
+  Controle._instanciaExcluir = id;
+  document.getElementById('excluirNome').textContent = id;
+  Controle.abrirModal('modalExcluir');
+};
+
+Controle.confirmarExcluirInstancia = function() {
+  if(!Controle._instanciaExcluir) return;
+  Controle.removerInstancia(Controle._instanciaExcluir);
+  Controle._instanciaExcluir = null;
+  Controle.fecharModal('modalExcluir');
+};
+
+Controle.removerInstancia = function(id) {
+  fetch(API+API_AND+'acao=remover_instancia', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ id:id })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(){ Controle.listarInstancias(); Controle.status('ok','Sub-controle removido'); })
+  .catch(function(e){ Controle.status('erro','❌ ' + e.message); });
+};
+
+Controle.definirSpText = function(v) {
+  Controle.setEstado({ spText: v });
+};
+
+Controle._sponsorsN = 3;
+Controle.renderSponsors = function() {
+  var el = document.getElementById('sponsorSlots');
+  if(!el) return;
+  var e = Controle.estado || {};
+  var max = 0;
+  for(var k in e){ var m = /^sp(\d+)$/.exec(k); if(m){ var n = parseInt(m[1],10); if(n > max) max = n; } }
+  var N = Math.max(3, max, Controle._sponsorsN || 3);
+  Controle._sponsorsN = N;
+  var h = '';
+  for(var i = 1; i <= N; i++){
+    var nome = e['sp'+i] || '';
+    var img = nome ? ('<img src="torneios/'+nome+'" style="max-width:76px;max-height:76px;object-fit:contain" onerror="this.style.display=\'none\'">') : ('logo '+i);
+    h += '<div style="text-align:center">';
+    h += '<div id="spPrev'+i+'" style="width:80px;height:80px;border:1px dashed #2a3a55;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#5b6f88">'+img+'</div>';
+    h += '<div style="margin-top:4px;display:flex;gap:4px;justify-content:center">';
+    h += '<button onclick="Controle.uploadSponsor('+i+')" style="font-size:10px;padding:2px 6px">Subir</button>';
+    h += '<button onclick="Controle.removerPatrocinador('+i+')" style="font-size:10px;padding:2px 6px;color:#f87171" title="Remover logo">✕</button>';
+    h += '</div></div>';
+  }
+  el.innerHTML = h;
+};
+Controle.adicionarPatrocinador = function() {
+  var N = (Controle._sponsorsN || 3) + 1;
+  if(N > 30){ Controle.status('erro','Máximo de 30 patrocinadores'); return; }
+  Controle._sponsorsN = N;
+  Controle.renderSponsors();
+  var midias = Controle.getMidiasCtrl();
+  midias.push({ id:'cena_patrocinadores_' + Date.now(), tipo:'cena', cena:'sponsors', nome:'Patrocinadores', duracao:8, intervalo:0, transicao:'fade' });
+  Controle.setEstado({ midias: JSON.stringify(midias) });
+  Controle.renderMidias();
+  Controle.status('ok','✅ Patrocinador '+N+' adicionado (+ cena no repertório)');
+};
+Controle.removerPatrocinador = function(n) {
+  var st = {}; st['sp'+n] = '';
+  Controle.setEstado(st);
+  Controle.renderSponsors();
+  Controle.status('ok','Patrocinador '+n+' removido');
+};
+Controle.definirSponsorRotacao = function(campo, val) {
+  var d = {};
+  if(campo === 'ativo') d.sponsorsAtivo = val ? 'true' : 'false';
+  else if(campo === 'intervalo') d.sponsorsIntervalo = String(val);
+  else if(campo === 'duracao') d.sponsorsDuracao = String(val);
+  Controle.setEstado(d);
+  Controle.syncSponsors();
+};
+Controle.syncSponsors = function() {
+  var e = Controle.estado || {};
+  var chk = document.getElementById('sponsorsAtivo');
+  if(chk) chk.checked = e.sponsorsAtivo === 'true';
+  var lbl = document.getElementById('sponsorsAtivoLabel');
+  if(lbl) lbl.textContent = (e.sponsorsAtivo === 'true') ? 'ligada' : 'desligada';
+  var iv = document.getElementById('sponsorsIntervalo');
+  if(iv && !iv.value) iv.value = e.sponsorsIntervalo || '120';
+  var du = document.getElementById('sponsorsDuracao');
+  if(du && !du.value) du.value = e.sponsorsDuracao || '8';
+  Controle.renderSponsors();
+};
+
+Controle.CUSTOMIZACOES = [
+  { id:'feat_gol', rotulo:'⚽ Gol' },
+  { id:'feat_faltas', rotulo:'🟨 Faltas (cartões)' },
+  { id:'feat_midias', rotulo:'🖼 Mídias' },
+  { id:'feat_substituicoes', rotulo:'🔁 Substituições' },
+  { id:'feat_fila', rotulo:'▶ Fila de reprodução' },
+  { id:'feat_intervalos', rotulo:'⏸ Intervalos' }
+];
+Controle.featAtiva = function(id){ return (Controle.estado || {})[id] !== 'false'; };
+Controle.renderCustomizacoes = function(){
+  var el = document.getElementById('listaCustomizacoes');
+  if(!el) return;
+  var h = '';
+  for(var i = 0; i < Controle.CUSTOMIZACOES.length; i++){
+    var f = Controle.CUSTOMIZACOES[i];
+    var on = Controle.featAtiva(f.id);
+    h += '<div class="cor-item" style="justify-content:space-between">';
+    h += '<span class="cor-nome">' + f.rotulo + '</span>';
+    h += '<label class="toggle-sw" title="liga/desliga"><input type="checkbox" data-feat="' + f.id + '" ' + (on ? 'checked' : '') + ' onchange="Controle.toggleCustomizacao(this)"><span class="slider"></span></label>';
+    h += '</div>';
+  }
+  el.innerHTML = h;
+  var sec = document.getElementById('secaoIntervalos');
+  if(sec) sec.style.display = Controle.featAtiva('feat_intervalos') ? '' : 'none';
+};
+Controle.toggleCustomizacao = function(input){
+  var id = input.getAttribute('data-feat');
+  var d = {}; d[id] = input.checked ? 'true' : 'false';
+  Controle.setEstado(d);
+  Controle.renderMenuRapido();
+};
+Controle.renderMenuRapido = function(){
+  var el = document.getElementById('menuRapido');
+  if(!el) return;
+  var itens = [
+    { feat:'feat_gol', h:'<button onclick="Controle.notifRapida(\'gol\')" style="background:#dc2626;color:#fff;font-size:13px;padding:10px 14px">⚽ Gol</button>' },
+    { feat:'feat_faltas', h:'<button onclick="Controle.notifRapida(\'amarelo\')" style="background:#facc15;color:#000;font-size:13px;padding:10px 14px">🟨 Faltas</button><button onclick="Controle.notifRapida(\'vermelho\')" style="background:#7f1d1d;color:#fff;font-size:13px;padding:10px 14px">🟥 Expulsão</button>' },
+    { feat:'feat_midias', h:'<button onclick="Controle.abrirRepertorio()" style="background:#2a3a55;font-size:13px;padding:10px 14px">🖼 Mídias</button>' },
+    { feat:'feat_substituicoes', h:'<button onclick="Controle.novaSubstituicao()" style="background:#2a3a55;font-size:13px;padding:10px 14px">🔁 Substituições</button>' },
+    { feat:'feat_fila', h:'<button onclick="Controle.abrirRepertorio()" style="background:#2a3a55;font-size:13px;padding:10px 14px">▶ Fila</button>' }
+  ];
+  var h = '';
+  for(var i = 0; i < itens.length; i++){
+    if(Controle.featAtiva(itens[i].feat)) h += itens[i].h;
+  }
+  if(!h) h = '<span style="color:#5b6f88;font-size:11px">Nenhuma ação habilitada.</span>';
+  el.innerHTML = h;
+};
+
+Controle.intervalo = function(k){
+  var nomes = { intro:'Abertura', intervalo:'Intervalo', encerramento:'Encerramento' };
+  if(Controle._cenaForcada === k){ Controle.voltarLoop(); Controle._cenaForcada = null; return; }
+  var dur = 0;
+  var midias = Controle.getMidiasCtrl();
+  var id = 'cena_' + k;
+  var m = null;
+  for(var i = 0; i < midias.length; i++){ if(midias[i].id === id){ m = midias[i]; break; } }
+  if(!m){ m = { id:id, tipo:'cena', cena:k, nome:nomes[k]||k, duracao:dur, intervalo:0, transicao:'fade' }; midias.push(m); }
+  else { m.duracao = dur; }
+  Controle._cenaForcada = k;
+  Controle.setEstado({ midias: JSON.stringify(midias), midiaDisparoId: id, midiaDisparoSeq: String(Date.now()) });
+  Controle.renderMidias();
+  Controle.status('ok', '▶ ' + (nomes[k]||k));
+};
+Controle.voltarLoop = function(){
+  Controle.setEstado({ cenaCancelar: String(Date.now()) });
+  Controle.status('ok', '⏹ De volta ao loop');
+};
+Controle.uploadFundoCena = function(chave){
+  var input = document.createElement('input');
+  input.type = 'file'; input.accept = 'image/*,.png,.jpg,.jpeg,.webp,.gif,.svg'; input.style.display = 'none';
+  input.onchange = function(){
+    var f = input.files && input.files[0]; if(!f) return;
+    var r = new FileReader();
+    r.onload = function(){
+      Controle.status('sync', 'Enviando fundo...');
+      fetch(API + API_AND + 'acao=upload_fundo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chave: chave, src: String(r.result) }) })
+      .then(function(resp){ return resp.json(); })
+      .then(function(d){
+        if(d && d.arquivo){
+          var fundos = {}; try { fundos = JSON.parse(Controle.estado.cenaFundos || '{}'); } catch(e){ fundos = {}; }
+          fundos[chave] = d.arquivo + '?v=' + Date.now();
+          Controle.setEstado({ cenaFundos: JSON.stringify(fundos) });
+          Controle.status('ok', '✅ Fundo (' + chave + ') salvo');
+        } else { Controle.status('erro', '❌ ' + (d && d.erro ? d.erro : 'erro ao subir fundo')); }
+      }).catch(function(e){ Controle.status('erro', '❌ ' + e.message); });
+      input.remove();
+    };
+    r.readAsDataURL(f);
+  };
+  document.body.appendChild(input); input.click();
+};
+Controle.limparFundoCena = function(){
+  Controle.setEstado({ cenaFundos: '{}' });
+  Controle.status('ok', 'Fundos removidos');
+};
+Controle.novaSubstituicao = function(){ Controle.notifRapida('substituicao'); };
+
+Controle.uploadSponsor = function(n) {
+  var input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*,.png,.jpg,.jpeg,.webp,.gif,.svg';
+  input.onchange = function() {
+    var f = input.files && input.files[0];
+    if(!f) return;
+    var r = new FileReader();
+    r.onload = function() {
+      var nome = f.name.replace(/\.[^.]+$/, '');
+      fetch(API+API_AND+'acao=upload_logo', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ nome:nome, src:r.result })
+      })
+      .then(function(resp){ return resp.json(); })
+      .then(function(d){
+        if(d && d.arquivo) {
+          var st = {}; st['sp'+n] = d.arquivo;
+          Controle.setEstado(st);
+          if(Controle.renderSponsors) Controle.renderSponsors();
+          Controle.status('ok', '✅ Logo do patrocinador ' + n + ' salvo');
+        } else { Controle.status('erro', '❌ ' + (d && d.erro ? d.erro : 'erro ao subir logo')); }
+      })
+      .catch(function(e){ Controle.status('erro','❌ ' + e.message); });
+      input.remove();
+    };
+    r.readAsDataURL(f);
+  };
+  document.body.appendChild(input);
+  input.click();
+};

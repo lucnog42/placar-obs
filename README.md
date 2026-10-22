@@ -11,7 +11,7 @@ campeonato: a classificação entra por CSV.
 
 ```
 placar.php   →  o que entra no OBS (fonte de navegador, 1920×1080)
-Controle.html →  o painel de quem opera a transmissão
+controle.php →  o painel de quem opera a transmissão
 api.php       →  estado compartilhado + uploads + presets (PHP, arquivo JSON)
 estado.json   →  o estado salvo (todo mundo que abre a página vê o mesmo)
 ```
@@ -21,7 +21,7 @@ estado.json   →  o estado salvo (todo mundo que abre a página vê o mesmo)
 Não há banco de dados nem sessão. Tudo vive num **arquivo JSON único**
 (`estado.json`), escrito de forma atômica pelo `api.php`:
 
-- o **painel** (`Controle.html`) escreve no estado (`POST`);
+- o **painel** (`controle.php`) escreve no estado (`POST`);
 - o **placar** (`placar.php`) lê o estado em ciclo curto (`GET ?v=N`, que
   responde `{_same:true}` quando nada mudou);
 - **qualquer sessão, em qualquer máquina, vê exatamente a mesma configuração** —
@@ -34,13 +34,13 @@ Requisitos: **PHP 5.3+** com escrita na pasta do app. Nada além disso.
 1. Copie os arquivos para uma pasta do seu servidor (a mesma do `api.php`).
 2. Garanta permissão de escrita na pasta (o app cria/atualiza `estado.json`,
    `escudos/`, `midias/`, `torneios/`, `presets/`).
-3. Abra **`Controle.html`** no navegador de quem opera.
+3. Abra **`controle.php`** no navegador de quem opera.
 4. No OBS, adicione **`placar.php`** como *Fonte de Navegador*, 1920×1080,
    fundo transparente ligado.
 
 ```
 http://SEU-SERVIDOR/placar/placar.php     → OBS
-http://SEU-SERVIDOR/placar/Controle.html   → painel
+http://SEU-SERVIDOR/placar/controle.php   → painel
 ```
 
 ## Recursos
@@ -80,7 +80,7 @@ http://SEU-SERVIDOR/placar/Controle.html   → painel
 | Documento | Assunto |
 |---|---|
 | [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md) | como as três páginas conversam, o estado e o mapa de chaves |
-| [`docs/PAINEL.md`](docs/PAINEL.md) | cada seção do `Controle.html` e o que ela faz |
+| [`docs/PAINEL.md`](docs/PAINEL.md) | cada seção do `controle.php` e o que ela faz |
 | [`docs/OVERLAY-CLASSIFICACAO.md`](docs/OVERLAY-CLASSIFICACAO.md) | motor do overlay: cenas, temas, timeline, layout por cena |
 | [`docs/API.md`](docs/API.md) | todos os endpoints do `api.php` |
 | [`docs/DADOS.md`](docs/DADOS.md) | formato do CSV da classificação, escalações e chaves do estado |
@@ -92,7 +92,7 @@ http://SEU-SERVIDOR/placar/Controle.html   → painel
 
 ```
 placar.php            página da fonte do OBS
-Controle.html          painel (HTML + JS de UI específico)
+controle.php          painel (HTML + JS de UI específico)
 api.php                API/estado em arquivo
 estado.json            estado compartilhado (criado em execução, fora do git)
 tabela/tabela.js       MOTOR do overlay: canvas 1920×1080, temas e cenas

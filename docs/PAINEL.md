@@ -1,4 +1,4 @@
-# Painel (`Controle.html`)
+# Painel (`controle.php`)
 
 O painel é o navegador de quem opera a transmissão. Ele tem três blocos: barra de
 status, preview do placar e as seções em acordeão.
