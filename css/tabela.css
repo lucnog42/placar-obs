@@ -19,6 +19,7 @@
 #camadaTabela[data-cena="intro"]       .cena-intro,
 #camadaTabela[data-cena="intervalo"]   .cena-intervalo,
 #camadaTabela[data-cena="encerramento"] .cena-encerramento{display:block}
+#camadaTabela[data-cena="sponsors"] .cena-sponsors{display:block}
 
 /* ---------- temas (iguais em espírito ao placar) ---------- */
 /* Tema único — La Liga (mesma base do placar). Um só tema para placar + overlay. */
@@ -126,3 +127,33 @@
 #camadaTabela[data-layout="grade"] .th-tbl{display:grid;grid-template-columns:1fr 1fr;gap:20px;border:0;background:transparent}
 #camadaTabela[data-layout="grade"] .th-thead{display:none}
 #camadaTabela[data-layout="grade"] .th-body{display:grid;grid-template-columns:1fr 1fr;grid-column:1 / -1;gap:10px}
+
+/* ================= PATROCINADORES (cena HTML) ================= */
+.cena-sponsors{display:none}
+.sp-wrap{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:44px}
+.sp-label{margin:0;font-size:24px;font-weight:800;letter-spacing:7px;text-transform:uppercase;color:rgba(var(--ac),.95)}
+.sp-grade{display:grid;grid-template-columns:repeat(3,380px);gap:30px}
+.sp-slot{position:relative;height:250px;border-radius:20px;display:flex;align-items:center;justify-content:center;
+  background:rgba(var(--fg),.05);border:1px solid rgba(var(--fg),.13);overflow:hidden}
+.sp-img{max-width:300px;max-height:190px;object-fit:contain;display:none}
+.sp-slot.com-logo .sp-img{display:block}
+.sp-slot.com-logo .sp-falta{display:none}
+.sp-falta{font-size:18px;font-weight:700;color:rgba(var(--fg),.4)}
+.sp-vazio{margin:0;font-size:16px;color:rgba(var(--fg),.45)}
+
+/* ================= NOTIFICACAO do overlay (HTML) ================= */
+.notif-tabela{position:absolute;left:8%;right:8%;top:44%;z-index:5;
+  display:flex;align-items:center;gap:22px;padding:22px 28px;border-radius:20px;
+  background:rgba(var(--bg),.92);border:1px solid rgba(var(--fg),.18);border-left:12px solid var(--nt,#ffd700);
+  opacity:0;visibility:hidden;transform:translateY(-50%) scale(.92);
+  transition:opacity .25s ease,transform .25s ease,visibility .25s}
+.notif-tabela.show{opacity:1;visibility:visible;transform:translateY(-50%) scale(1)}
+.notif-tabela .nt-ico{font-size:30px;line-height:1;color:var(--nt,#ffd700)}
+.notif-tabela .nt-txts{display:flex;flex-direction:column;min-width:0}
+.notif-tabela .nt-ttl{font-size:24px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--nt,#ffd700)}
+.notif-tabela .nt-txt{font-size:32px;font-weight:700;color:rgba(var(--fg),.97);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.notif-tabela.tipo-gol{--nt:#e11d48}
+.notif-tabela.tipo-amarelo{--nt:#facc15}
+.notif-tabela.tipo-vermelho{--nt:#ef4444}
+.notif-tabela.tipo-substituicao{--nt:#22d3ee}
+.notif-tabela.tipo-info{--nt:rgba(var(--ac),1)}

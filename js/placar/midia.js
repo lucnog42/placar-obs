@@ -38,10 +38,10 @@ Placar._cancelar=function(id){
 
 /* ---------- midias de texto (notificacoes) ---------- */
 Placar._mostrarTexto=function(m){
-    // Fase D: notificacao desenhada no motor/canvas da tabela (mesmo tema)
-    if(window.Tabela && Placar.Tabela && Placar.Tabela.dispararNotif){
+    // Fase D: overlay ligado -> notificacao em HTML sobre a cena (sem canvas)
+    if(window.Tabela && Placar.Tabela && Placar.Tabela.ativo && Placar.notifTabela){
         Placar._notifAtual=m.id;
-        Placar.Tabela.dispararNotif(m.notif||'gol', m.texto||'', parseInt(m.duracao)||4);
+        Placar.notifTabela(m.notif||'gol', m.texto||'', parseInt(m.duracao)||4);
         return;
     }
     var box=document.getElementById('notificacao');
@@ -65,7 +65,7 @@ Placar._esconderTexto=function(id){
     if(Placar._notifAtual!==id)return;
     var box=document.getElementById('notificacao');
     Placar._notifAtual=null;
-    if(Placar.Tabela && Placar.Tabela.limparNotif)Placar.Tabela.limparNotif();
+    if(Placar.limparNotifTabela)Placar.limparNotifTabela();
     if(!box)return;
     box.classList.remove('show');
     setTimeout(function(){if(!Placar._notifAtual)box.classList.add('hidden');},400);

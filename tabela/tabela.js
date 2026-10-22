@@ -13,7 +13,6 @@ var overrides = {};        // nome do time -> Image (escudo forcado)
 var ovLabel = {};          // nome do time -> origem do escudo forcado
 var A_COL='#22d3ee', B_COL='#f472b6', C_COL='#ffc400';
 var lineups = {};          // escalacoes: nome normalizado -> [{num,player,pos}]
-var spImgs = [null,null,null];
 var W = 1280, H = 720;
 var FF = 'Inter,"Segoe UI",Roboto,Arial,sans-serif';
 var MOSTRAR_ESCUDOS = true;   // escudos do site; false = monograma
@@ -552,46 +551,6 @@ function lineupsGrade(g,l,t,c){
 }
 
 /* ---------- cena: patrocinadores ---------- */
-function drawSponsors(g,l,t,c){
-  const list=spImgs.filter(Boolean), label=c.spText||'PATROCINADORES';
-  const slots=(list.length?list.length:3);
-  if(c.sp==='spot'){
-    const im=list[0], p=easeOut(seg(l,.05,.8));
-    g.save(); g.globalAlpha=p;
-    field(g,240,190,800,340,{bg:rw(.05),bd:rw(.13),r:24});
-    txt(g,label,640,158,{f:'800 14px '+FF,c:ACC,al:'center',ls:3});
-    if(im){ const s=Math.min(420/im.width,230/im.height); g.drawImage(im,640-im.width*s/2,365-im.height*s/2,im.width*s,im.height*s); }
-    else txt(g,'Carregue um logo',640,365,{f:'700 20px '+FF,c:rw(.45),al:'center',bl:'middle'});
-    g.restore();
-  } else if(c.sp==='cards'){
-    for(let k=0;k<slots;k++){
-      const im=list[k], p=easeOut(seg(l,.08+k*.16,.6)), x=140+k*380, y=300, w=340, h=250;
-      g.save(); g.globalAlpha=p; g.translate(0,(1-p)*40);
-      field(g,x,y,w,h,{bg:rw(.05),bd:rw(.13),r:20});
-      if(im){ const s=Math.min((w-80)/im.width,(h-80)/im.height); g.drawImage(im,x+w/2-im.width*s/2,y+h/2-im.height*s/2,im.width*s,im.height*s); }
-      else txt(g,'logo '+(k+1),x+w/2,y+h/2,{f:'700 18px '+FF,c:rw(.4),al:'center',bl:'middle'});
-      g.restore();
-    }
-    txt(g,label,640,240,{f:'800 14px '+FF,c:ACC,al:'center',ls:3});
-  } else {
-    const p=easeOut(seg(l,.05,.7));
-    g.save(); g.globalAlpha=p; g.translate(0,(1-p)*40);
-    field(g,180,310,920,190,{bg:TH.panel,bd:rw(.14),r:20});
-    txt(g,label,640,272,{f:'800 13px '+FF,c:ACC,al:'center',ls:3});
-    const cw=920/slots;
-    for(let k=0;k<slots;k++){
-      const im=list[k], x=180+k*cw+cw/2, ip=easeOut(seg(l,.3+k*.15,.6));
-      g.globalAlpha=p*ip;
-      if(im){ const s=Math.min((cw-80)/im.width,110/im.height); g.drawImage(im,x-im.width*s/2,405-im.height*s/2,im.width*s,im.height*s); }
-      else txt(g,'logo '+(k+1),x,405,{f:'700 16px '+FF,c:rw(.4),al:'center',bl:'middle'});
-      g.globalAlpha=p;
-      if(k<slots-1){ g.fillStyle=rw(.12); g.fillRect(180+(k+1)*cw-1,360,1,90); }
-    }
-    g.restore();
-  }
-}
-
-/* ---------- cena 4: faixa inferior (3 estilos) ---------- */
 function lowerCompact(g,l,t,c){
   const A=TEAMS[c.a], B=TEAMS[c.b];
   const p=easeOut(seg(l,.05,.6));
@@ -682,54 +641,8 @@ function drawScene(g,t,c,kForca){
   else if(s.k==='feature') drawFeature(g,s.local,t,c);
   else if(s.k==='form2') drawForm2(g,s.local,t,c);
   else if(s.k==='lineups') drawLineups(g,s.local,t,c);
-  else if(s.k==='sponsors') drawSponsors(g,s.local,t,c);
   else if(s.k==='lower') drawLower(g,s.local,t,c);
   return s;
-}
-
-/* ---------- notificacao (overlay temporaria no mesmo canvas/motor) ---------- */
-var NOTIF = null;
-function setNotif(o){
-  if(!o || !o.texto){ NOTIF = null; return; }
-  NOTIF = { tipo: o.tipo || 'info', texto: o.texto, born: Date.now(), dur: Math.max(1, (o.dur || 4)) * 1000 };
-}
-function clearNotif(){ NOTIF = null; }
-function temNotif(){ return !!NOTIF; }
-function drawNotif(g){
-  if(!NOTIF) return;
-  var age = Date.now() - NOTIF.born;
-  if(age >= NOTIF.dur){ NOTIF = null; return; }
-  var enter = cl(age / 350, 0, 1);
-  var exit  = cl((NOTIF.dur - age) / 350, 0, 1);
-  var a = Math.min(enter, exit);
-  var col = NOTIF.tipo === 'gol' ? RED :
-            NOTIF.tipo === 'amarelo' ? '#facc15' :
-            NOTIF.tipo === 'vermelho' ? RED :
-            NOTIF.tipo === 'substituicao' ? '#22d3ee' : ACC;
-  var titulo = NOTIF.tipo === 'gol' ? 'GOOOOL!' :
-               NOTIF.tipo === 'amarelo' ? 'CARTÃO AMARELO' :
-               NOTIF.tipo === 'vermelho' ? 'CARTÃO VERMELHO' :
-               NOTIF.tipo === 'substituicao' ? 'SUBSTITUIÇÃO' : 'AVISO';
-  var y = H * 0.44 - (1 - easeOut(enter)) * 80 + (1 - easeOut(exit)) * 60;
-  var bw = W * 0.84, bh = 150, bx = (W - bw) / 2, by = y - bh / 2;
-  g.save();
-  g.globalAlpha = a;
-  field(g, bx, by, bw, bh, { bg: rd(.90), bd: 'rgba(' + TH.glow + ',.45)', r: 20 });
-  rr(g, bx, by, 12, bh, 6); g.fillStyle = col; g.fill();
-  g.beginPath(); g.arc(bx + 76, y, 30, 0, 7); g.fillStyle = col; g.fill();
-  g.beginPath(); g.arc(bx + 76, y, 30, 0, 7); g.strokeStyle = 'rgba(0,0,0,.25)'; g.lineWidth = 2; g.stroke();
-  txt(g, titulo, bx + 128, y - 26, { f: '900 28px ' + FF, c: col, al: 'left', bl: 'middle', ls: 3, max: bw - 158 });
-  txt(g, NOTIF.texto, bx + 128, y + 30, { f: '700 36px ' + FF, c: rw(.97), al: 'left', bl: 'middle', max: bw - 158, shrink: 22 });
-  g.restore();
-  g.globalAlpha = 1;
-}
-function renderNotif(opts){
-  opts = opts || {};
-  var g = opts.g, w = opts.w || W, h = opts.h || H;
-  if(!g) return;
-  g.setTransform(w / W, 0, 0, h / H, 0, 0);
-  g.clearRect(0, 0, W, H);
-  drawNotif(g);
 }
 
 function renderFrame(t, opts){
@@ -742,7 +655,6 @@ function renderFrame(t, opts){
   var sk = opts.cena || sceneAt(timeline(c).segs, t).k;
   paintFundo(g, sk);
   drawScene(g, t, c, opts.cena);
-  drawNotif(g);
 }
 
 
@@ -805,8 +717,6 @@ function setEscudoTime(i, src, label){
 function setColors(a,b,c){ if(a) A_COL=a; if(b) B_COL=b; if(c) C_COL=c; }
 function setEscudos(v){ MOSTRAR_ESCUDOS = !!v; }
 function setLineups(o){ lineups = o || {}; }
-function setPatrocinadores(imgs3){ spImgs = imgs3 || [null,null,null]; }
-
 /* Carrega os escudos; cada um que entra redesenha (onload) e avisa o chamador. */
 function loadCrests(onload){
   var gen = CREST_GEN;                      // se a lista trocar no meio, esta carga e descartada
@@ -827,8 +737,8 @@ return {
   setTheme:setTheme, setTeams:setTeams, setColors:setColors, setEscudos:setEscudos,
   getColors:function(){return {a:A_COL,b:B_COL,c:C_COL};},
   setEscudoTime:setEscudoTime,
-  setLineups:setLineups, setPatrocinadores:setPatrocinadores, loadCrests:loadCrests, loadLogo:loadLogo,
-  setFundo:setFundo, setNotif:setNotif, clearNotif:clearNotif, temNotif:temNotif, renderNotif:renderNotif,
+  setLineups:setLineups, loadCrests:loadCrests, loadLogo:loadLogo,
+  setFundo:setFundo,
   timeline:timeline, sceneAt:sceneAt, teams:function(){ return TEAMS; },
   nomes:function(){ return TEAMS.map(function(t){ return t.name; }); },
   escudo:function(i){ return imgs[i] || null; }

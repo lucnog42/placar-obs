@@ -1,5 +1,10 @@
 # Overlay de classificação
 
+Cenas ja migradas para HTML/CSS (PHP monta, CSS mostra, JS so preenche):
+`table`, `intro` (abertura), `intervalo`, `encerramento` e `sponsors` (patrocinadores).
+A notificacao do overlay tambem e HTML (`#notifTabela`). As demais cenas seguem
+no canvas do motor.
+
 Motor de desenho em canvas 1920×1080 (`tabela/tabela.js`) + a camada que o liga
 ao placar (`js/placar/tabela.js`) + o painel (`js/controle/tabela.js`).
 

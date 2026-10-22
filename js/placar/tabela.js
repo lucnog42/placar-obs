@@ -273,28 +273,16 @@ Placar.Tabela = {
         return out;
     },
     carregarPatrocinadores: function () {
-        if (!window.Tabela) return;
-        var self = this;
-        var nomes = this.sponsorNomes();
-        var chave = nomes.join('|');
-        if (chave === this._sponsorChave) return;
-        this._sponsorChave = chave;
-        if (!nomes.length) { window.Tabela.setPatrocinadores([null, null, null]); return; }
-        var imgs = [], pend = nomes.length;
-        nomes.forEach(function (nome, i) {
-            var im = new Image();
-            im.onload = function () { imgs[i] = im; if (--pend === 0) fim(); };
-            im.onerror = function () { imgs[i] = null; if (--pend === 0) fim(); };
-            im.src = DADOS + 'torneios/' + nome;
-        });
-        function fim() { window.Tabela.setPatrocinadores(imgs); if (self.ativo) self.desenhar(performance.now()); }
+        // a cena de patrocinadores agora e HTML: so preenchemos os slots (sem imagens em canvas)
+        if (Placar.Patrocinio) Placar.Patrocinio.aplicar();
     },
     sponsorAtivo: function () { return String((Placar.estado || {}).sponsorsAtivo) === 'true'; },
     _sponsorIntervaloMs: function () { var v = parseInt((Placar.estado || {}).sponsorsIntervalo, 10); return (isNaN(v) || v < 5) ? 120000 : v * 1000; },
     _sponsorDuracaoMs: function () { var v = parseInt((Placar.estado || {}).sponsorsDuracao, 10); return (isNaN(v) || v < 1) ? 8000 : v * 1000; },
     /* notificação ou mídia manual no ar têm prioridade sobre a rotação */
     prioridadeManual: function () {
-        if (window.Tabela && window.Tabela.temNotif && window.Tabela.temNotif()) return true;
+        var nt = document.getElementById('notifTabela');
+        if (nt && nt.classList.contains('show')) return true;
         var cam = document.getElementById('camadaMidia');
         return !!(cam && cam.querySelector('.ativo'));
     },
@@ -496,31 +484,7 @@ Placar.Tabela = {
         this.raf = null;
     },
 
-    /* ---------- notificacao (Fase D: desenhada no mesmo canvas do motor) ---------- */
-    dispararNotif: function (tipo, texto, dur) {
-        if (!window.Tabela || !window.Tabela.setNotif) return;
-        window.Tabela.setNotif({ tipo: tipo, texto: texto, dur: dur || 4 });
-        if (this.ativo) return;
-        var self = this, cam = this.camada();
-        if (cam) cam.classList.add('ativa');
-        var passo = function () {
-            var g = self.ctx2d(), cv = self.canvas();
-            if (g && cv && window.Tabela.renderNotif) window.Tabela.renderNotif({ g: g, w: cv.width, h: cv.height });
-            if (!window.Tabela.temNotif()) {
-                if (cam) cam.classList.remove('ativa');
-                self._notifRaf = null;
-                return;
-            }
-            self._notifRaf = requestAnimationFrame(passo);
-        };
-        if (this._notifRaf) cancelAnimationFrame(this._notifRaf);
-        this._notifRaf = requestAnimationFrame(passo);
-    },
-
-    limparNotif: function () {
-        if (window.Tabela && window.Tabela.clearNotif) window.Tabela.clearNotif();
-    },
-
+    /* notificacao: agora em HTML (js/placar/notificacao.js -> #notifTabela) */
     /* ---------- entrada ---------- */
     init: function () {
         var self = this;
