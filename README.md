@@ -13,13 +13,13 @@ campeonato: a classificação entra por CSV.
 placar.php   →  o que entra no OBS (fonte de navegador, 1920×1080)
 controle.php →  o painel de quem opera a transmissão
 api.php       →  estado compartilhado + uploads + presets (PHP, arquivo JSON)
-estado.json   →  o estado salvo (todo mundo que abre a página vê o mesmo)
+dados/estados/ →  os estados salvos, uma pasta por instância (todo mundo que abre a página vê o mesmo)
 ```
 
 ## Como funciona
 
 Não há banco de dados nem sessão. Tudo vive num **arquivo JSON único**
-(`estado.json`), escrito de forma atômica pelo `api.php`:
+(`dados/estados/<instância>/estado.json`), escrito de forma atômica pelo `api.php`:
 
 - o **painel** (`controle.php`) escreve no estado (`POST`);
 - o **placar** (`placar.php`) lê o estado em ciclo curto (`GET ?v=N`, que
@@ -112,7 +112,8 @@ que é ignorado pelo git e nunca é tocado por uma atualização:
 
 ```
 dados/
-├── estado.json, estado-<instancia>.json (+ .bak / .lock)
+├── estados/<instancia>/estado.json (+ .bak / .lock)   ← um estado por instância
+├── estados/estado.json                     ← só quando não se usa ?i=
 ├── instancias.json, cores.json, grupos.json
 ├── presets/<instancia>/*.json
 └── escudos/   fundos/   midias/   torneios/   csvs/

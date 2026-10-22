@@ -183,8 +183,9 @@ Controle.salvarInstanciaModal = function() {
     idEl.value = '';
     document.getElementById('subctrlNome').value = '';
     Controle.fecharModal('modalInstancia');
-    Controle.listarInstancias();
-    Controle.status('ok', '✅ Sub-controle "' + id + '" criado');
+    Controle.status('ok', '✅ Sub-controle "' + id + '" criado — abrindo…');
+    // já seleciona a instância nova (recarrega o painel apontando para ela)
+    location.href = 'controle.php?i=' + encodeURIComponent(id);
   })
   .catch(function(e){ Controle.status('erro','❌ ' + e.message); });
 };

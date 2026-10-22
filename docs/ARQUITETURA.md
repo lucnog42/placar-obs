@@ -7,7 +7,7 @@ mesma configuração.
 ```
                  POST (merge)                 GET ?v=N (poll)
 controle.php ───────────────► api.php ◄─────────────────── placar.php
-   painel                dados/estado.json                 OBS / transmissão
+   painel         dados/estados/<instância>/estado.json     OBS / transmissão
                                   │
                                   └── dados/       (tudo o que o operador cria)
                                       ├── estado*.json, instancias.json, cores.json, grupos.json
@@ -17,7 +17,7 @@ controle.php ───────────────► api.php ◄──�
 
 ## O estado
 
-`estado.json` é um objeto com seções fixas:
+`dados/estados/<instância>/estado.json` é um objeto com seções fixas:
 
 ```jsonc
 {

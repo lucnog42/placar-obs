@@ -27,6 +27,7 @@ require_once BASE_DIR . '/config.php';          // DATA_DIR (dados do usuario)
 define('DADOS_URL', 'dados');                   // prefixo publico das midias do usuario
 
 define('ESTADO_FILE', DATA_DIR . '/estado.json');
+define('ESTADOS_DIR', DATA_DIR . '/estados');      // um subpasta por instancia
 define('ESTADO_BAK', DATA_DIR . '/estado.json.bak');
 define('LOCK_FILE', DATA_DIR . '/estado.lock');
 define('INSTANCIAS_FILE', DATA_DIR . '/instancias.json');
@@ -40,7 +41,7 @@ define('CORES_FILE', DATA_DIR . '/cores.json');
 define('GRUPOS_FILE', DATA_DIR . '/grupos.json');
 
 function ensure_dirs() {
-    $dirs = array(DATA_DIR, PRESETS_DIR, ESCUDOS_DIR, MIDIAS_DIR, TORNEIOS_DIR, CSVS_DIR, FUNDOS_DIR);
+    $dirs = array(DATA_DIR, ESTADOS_DIR, PRESETS_DIR, ESCUDOS_DIR, MIDIAS_DIR, TORNEIOS_DIR, CSVS_DIR, FUNDOS_DIR);
     foreach ($dirs as $d) {
         if (!is_dir($d)) {
             mkdir($d, 0755, true);
@@ -87,20 +88,27 @@ if (isset($_GET['i'])) {
 }
 if ($INSTANCIA === '.' || $INSTANCIA === '..') { $INSTANCIA = ''; }
 
-function estado_path() {
+/* pasta do estado desta instancia (uma subpasta por instancia).
+   Sem ?i= o estado fica direto em dados/estados/ (compatibilidade). */
+function estado_dir() {
     global $INSTANCIA;
-    return ($INSTANCIA === '') ? (DATA_DIR . '/estado.json') : (DATA_DIR . '/estado-' . $INSTANCIA . '.json');
+    if ($INSTANCIA === '') { return ESTADOS_DIR; }
+    return ESTADOS_DIR . '/' . $INSTANCIA;
+}
+
+function estado_path() {
+    return estado_dir() . '/estado.json';
 }
 
 function estado_bak_path() {
-    global $INSTANCIA;
-    return ($INSTANCIA === '') ? (DATA_DIR . '/estado.json.bak') : (DATA_DIR . '/estado-' . $INSTANCIA . '.json.bak');
+    return estado_dir() . '/estado.json.bak';
 }
 
 function estado_lock_path() {
-    global $INSTANCIA;
-    return ($INSTANCIA === '') ? (DATA_DIR . '/estado.lock') : (DATA_DIR . '/estado-' . $INSTANCIA . '.lock');
+    return estado_dir() . '/estado.lock';
 }
+
+if (!is_dir(estado_dir())) { @mkdir(estado_dir(), 0755, true); }
 
 function instancias_path() {
     return INSTANCIAS_FILE;
@@ -162,6 +170,7 @@ function save_estado_for($id, $data) {
     global $INSTANCIA;
     $prev = $INSTANCIA;
     $INSTANCIA = $id;
+    if (!is_dir(estado_dir())) { @mkdir(estado_dir(), 0755, true); }
     $ok = save_estado($data);
     $INSTANCIA = $prev;
     return $ok;
@@ -722,10 +731,13 @@ if ($method === 'POST') {
             $novas[] = $it;
         }
         save_instancias($novas);
-        foreach (array('estado-' . $id . '.json', 'estado-' . $id . '.json.bak', 'estado-' . $id . '.lock') as $f) {
-            $p = DATA_DIR . '/' . $f;
+        // apaga a pasta de estado da instancia
+        $dir = ESTADOS_DIR . '/' . $id;
+        foreach (array('estado.json', 'estado.json.bak', 'estado.lock') as $f) {
+            $p = $dir . '/' . $f;
             if (file_exists($p)) { @unlink($p); }
         }
+        @rmdir($dir);
         respond(array('ok' => true));
     }
 

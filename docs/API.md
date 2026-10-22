@@ -72,7 +72,7 @@ O item de mídia vive no estado (`midia.midias`), com `arquivo`, `nome`, `tipo`,
 
 ## Detalhes de implementação
 
-- `estado.json` é criado com os defaults na primeira leitura se não existir.
+- `dados/estados/<instância>/estado.json` é criado com os defaults na primeira leitura se não existir.
 - Escrita atômica: `file_put_contents(…, LOCK_EX)`.
 - Uploads usam `save_data_uri()` / `list_escudo_files()` (helpers no topo do
   arquivo) e aceitam `;base64,` com qualquer `mime:image/*`.
