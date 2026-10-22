@@ -289,6 +289,21 @@ Placar.Tabela = {
         if (this._forcado) { this._forcado = false; this.desligar(); }
     },
 
+    /* ---------- persistencia da posicao da sequencia (playlist) ----------
+       Salva um timestamp absoluto por instancia no localStorage do browser
+       source. Um reload do overlay retoma de onde parou; desligar zera. */
+    _plKey: function () { return 'placar.playlistT0' + (typeof INSTANCIA !== 'undefined' && INSTANCIA ? '.' + INSTANCIA : ''); },
+    _savePlaylistT0: function (ms) {
+        try {
+            var k = this._plKey();
+            if (ms > 0) localStorage.setItem(k, String(ms));
+            else localStorage.removeItem(k);
+        } catch (e) { }
+    },
+    _loadPlaylistT0: function () {
+        try { return parseInt(localStorage.getItem(this._plKey()), 10) || 0; } catch (e) { return 0; }
+    },
+
     /* ---------- ciclo de vida ---------- */
     aplicar: function () {
         if (!window.Tabela) return;
@@ -352,8 +367,14 @@ Placar.Tabela = {
         this._t1 = setTimeout(function () {            // 2) so entao o overlay entra
             if (!self.ativo) return;
             cam.classList.add('ativa');
-            self.t0 = performance.now();
-            self.desenhar(self.t0);
+            var nowE = Date.now(), saved = self._loadPlaylistT0();
+            if (saved > 0 && nowE >= saved && (nowE - saved) < 6 * 3600 * 1000) {
+                self.t0 = performance.now() - (nowE - saved);   // retoma a sequencia
+            } else {
+                self.t0 = performance.now();
+                self._savePlaylistT0(nowE);                     // comeca do inicio
+            }
+            self.desenhar(performance.now());
             self.iniciarLoop();
         }, 380);
     },
@@ -364,6 +385,7 @@ Placar.Tabela = {
         this.ativo = false;
         this._interromper = null;
         this._forcado = false;
+        this._savePlaylistT0(0);          // desligou: proxima vez comeca do inicio
         this.pararLoop();
         clearTimeout(this._t1);
         if (cam) cam.classList.remove('ativa');        // overlay sai primeiro
@@ -374,6 +396,7 @@ Placar.Tabela = {
 
     reiniciar: function () {
         this.t0 = performance.now();
+        this._savePlaylistT0(Date.now());     // reinicio explicito: nova posicao inicial
         if (this.ativo) {
             this.desenhar(this.t0);
             this.iniciarLoop();
