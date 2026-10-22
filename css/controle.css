@@ -273,3 +273,8 @@ h2.titulo{text-align:left}
 .time-notif-btn.on{background:#2196F3;border-color:#2196F3}
 .jogador-notif-btn{font-size:11px;padding:4px 8px;border-radius:8px;border:1px solid #2a3a55;background:#0e1624;color:#e8eefc;cursor:pointer}
 .jogador-notif-btn.on{background:#22c55e;border-color:#22c55e;color:#04240f}
+
+/* sem CSV da classificação: aviso + cenas de tabela desativadas */
+.aviso-csv{font-size:12px;line-height:1.45;color:#fbbf24;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:8px;padding:8px 10px;margin-top:8px}
+.cena-linha.sem-csv{opacity:.4}
+.cena-linha.sem-csv .cena-nome{text-decoration:line-through}

@@ -21,6 +21,14 @@ Controle.TABELA_CENAS_META = [
     ['lower', 'Faixa inferior (placar)', 8, false]
 ];
 
+/* cenas que dependem da classificacao (CSV importado) */
+Controle.TABELA_CENAS_CSV = { table: 1, duel: 1, feature: 1, form2: 1, lineups: 1 };
+
+/* ha classificacao carregada? (sem CSV nao existem cenas de tabela) */
+Controle.temClassificacao = function () {
+    return Controle.timesTabela().length > 0;
+};
+
 Controle.cenasPadrao = function () {
     return Controle.TABELA_CENAS_META.map(function (m) { return { k: m[0], d: m[2], on: m[3] }; });
 };
@@ -61,15 +69,28 @@ Controle.initTabela = function () {
     }).join('');
 
     var sc = document.getElementById('tabelaCena');
-    if (sc) sc.innerHTML = Controle.TABELA_CENAS_META.map(function (m) {
-        return '<option value="' + m[0] + '">' + m[1] + '</option>';
-    }).join('');
+    if (sc) Controle.renderSelectCena();
 
     Controle.renderSelectTimes();
     Controle.renderCenas();
     Controle.aplicarEstadoTabela();
     Controle.initDragLayout();
     if (window.addEventListener) window.addEventListener('resize', Controle.mostrarCaixaLayout);
+};
+
+/* seletor de cena fixa: sem CSV, as cenas de tabela ficam desabilitadas */
+Controle.renderSelectCena = function () {
+    var sc = document.getElementById('tabelaCena');
+    if (!sc) return;
+    var tem = Controle.temClassificacao();
+    sc.innerHTML = Controle.TABELA_CENAS_META.map(function (m) {
+        var off = !tem && Controle.TABELA_CENAS_CSV[m[0]];
+        return '<option value="' + m[0] + '"' + (off ? ' disabled' : '') + '>'
+            + m[1] + (off ? ' — precisa do CSV' : '') + '</option>';
+    }).join('');
+    var atual = (Controle.estado || {}).tabelaCena || 'table';
+    if (!tem && Controle.TABELA_CENAS_CSV[atual]) atual = 'intro';
+    sc.value = atual;
 };
 
 /* opcoes dos seletores de time (usa a classificacao do estado, se houver) */
@@ -79,7 +100,7 @@ Controle.timesTabela = function () {
         var o = JSON.parse(e.tabelaTimes || '[]');
         if (o && o.length) return o;
     } catch (err) { }
-    return (window.TABELA_DADOS || {}).teams || [];
+    return [];   // sem CSV nao ha classificacao padrao
 };
 
 Controle.renderSelectTimes = function () {
@@ -102,8 +123,10 @@ Controle._renderCenasInto = function (pfx) {
     var lista = Controle.cenas(), total = 0, html = '';
     lista.forEach(function (c, i) {
         if (c.on) total += c.d;
-        html += '<div class="cena-linha' + (c.on ? '' : ' off') + '">'
-            + '<input type="checkbox" ' + (c.on ? 'checked' : '') + ' onchange="Controle.cenaLigada(' + i + ',this.checked)">'
+        var semCsv = !Controle.temClassificacao() && Controle.TABELA_CENAS_CSV[c.k];
+        html += '<div class="cena-linha' + (c.on ? '' : ' off') + (semCsv ? ' sem-csv' : '') + '"'
+            + (semCsv ? ' title="importe o CSV da classificação para usar esta cena"' : '') + '>'
+            + '<input type="checkbox" ' + (c.on ? 'checked' : '') + (semCsv ? ' disabled' : '') + ' onchange="Controle.cenaLigada(' + i + ',this.checked)">'
             + '<span class="cena-nome">' + Controle.nomeCena(c.k) + '</span>'
             + '<input class="cena-knob" type="range" min="2" max="40" step="1" value="' + c.d + '"'
             + ' title="Dura&ccedil;&atilde;o desta cena"'
@@ -154,7 +177,13 @@ Controle.resetarCenas = function () { Controle.salvarCenas(Controle.cenasPadrao(
 
 /* ---------- campos simples ---------- */
 Controle.alternarTabela = function () {
-    Controle.setEstado({ tabelaAtivo: Controle.estado.tabelaAtivo === 'true' ? 'false' : 'true' });
+    var ligando = Controle.estado.tabelaAtivo !== 'true';
+    if (ligando && !Controle.temClassificacao()) {
+        Controle.status('erro', '❌ Importe o CSV da classificação para ligar o overlay de tabela '
+            + '(abertura, intervalo e encerramento continuam funcionando na aba Operar).');
+        return;
+    }
+    Controle.setEstado({ tabelaAtivo: ligando ? 'true' : 'false' });
 };
 Controle.definirCenaTabela = function (v) { Controle.setEstado({ tabelaCena: v }); };
 Controle.definirDestaqueTabela = function (v) { Controle.setEstado({ tabelaDestaque: v }); };
@@ -200,6 +229,11 @@ Controle.aplicarEstadoTabela = function () {
         bd.innerText = ligado ? 'NO AR' : 'fora do ar';
         bd.className = ligado ? 'badge no-ar' : 'badge';
     }
+    /* sem classificacao o overlay de tabela nao liga: só abertura/intervalo/encerramento */
+    var temCsv = Controle.temClassificacao();
+    var aviso = document.getElementById('tabelaSemCsv');
+    if (aviso) aviso.className = temCsv ? 'escondido' : '';
+    if (bt) bt.disabled = (!temCsv && !ligado);
     var v;
     v = document.getElementById('tabelaTema'); if (v) v.value = e.tabelaTema || 'laliga';
     v = document.getElementById('tabelaModo'); if (v) v.value = e.tabelaModo || 'auto';
@@ -211,7 +245,7 @@ Controle.aplicarEstadoTabela = function () {
     v = document.getElementById('secCenas'); if (v) v.className = modoFixa ? 'full escondido' : 'full';
     Controle.pintarDestaques();
     if (Controle.mostrarCaixaLayout) Controle.mostrarCaixaLayout();
-    v = document.getElementById('tabelaCena'); if (v) v.value = e.tabelaCena || 'table';
+    Controle.renderSelectCena();
     v = document.getElementById('tabelaDestaque'); if (v) v.value = (e.tabelaDestaque === undefined || e.tabelaDestaque === '') ? 'auto' : e.tabelaDestaque;
     v = document.getElementById('tabelaTitulo'); if (v) v.value = e.tabelaTitulo || '';
     v = document.getElementById('tabelaSub'); if (v) v.value = e.tabelaSub || '';
@@ -225,7 +259,7 @@ Controle.aplicarEstadoTabela = function () {
     v = document.getElementById('tabelaEscInfo'); if (v) v.textContent = Controle.resumoEscalacoes(e.tabelaEscalacoes);
     var lt = Controle.timesTabela();
     var sig = lt.length + '|' + ((lt[0] || {}).name || '') + '|' + ((lt[lt.length - 1] || {}).name || '');
-    if (sig !== Controle._timesSig) { Controle._timesSig = sig; Controle.renderSelectTimes(); }
+    if (sig !== Controle._timesSig) { Controle._timesSig = sig; Controle.renderSelectTimes(); Controle.renderSelectCena(); }
     Controle.atualizarResumoTabela();
     Controle.renderCenas();
     if (Controle.renderTimesCrest) Controle.renderTimesCrest();
@@ -244,9 +278,13 @@ Controle.atualizarResumoTabela = function () {
     if (e.local) partes.push(e.local);
     if (e.hora) partes.push(e.hora);
     if (e.clima) partes.push(e.clima);
+    if (!Controle.temClassificacao()) {
+        el.innerHTML = '⚠ sem classificação: <b>importe o CSV</b> para as cenas de tabela';
+        return;
+    }
     el.innerHTML = partes.length
         ? '✔ puxando: <b>' + partes.join(' · ') + '</b>'
-        : 'sem dados na aba Times &amp; Competição (o overlay usa os padrões)';
+        : 'sem dados na aba Times &amp; Competição';
 };
 
 /* ---------- importacao da classificacao (CSV) ---------- */

@@ -6,7 +6,7 @@
    ========================================================================== */
 var Tabela = (function(){
 'use strict';
-var D = window.TABELA_DADOS || { teams: [] };
+var D = { teams: [] };   // abastecido por setTeams() (CSV do painel)
 var TEAMS = D.teams || [];
 var SITE_CREST = {}; TEAMS.forEach(function(t){ if(t.crest) SITE_CREST[t.name] = t.crest; });
 var overrides = {};        // nome do time -> Image (escudo forcado)

@@ -159,9 +159,10 @@ var TabelaDados = (function () {
     var cam = document.getElementById('camadaTabela');
     if (cam && tema) cam.setAttribute('data-tema', tema);
     var T = window.Tabela;
-    var raw = (T && T.teams) ? (T.teams() || []) : ((window.TABELA_DADOS || {}).teams || []);
+    var raw = (T && T.teams) ? (T.teams() || []) : [];
     // cfg.a / cfg.b sao INDICES na lista original (indice()); aceita nome como fallback
-    var A = pick(raw, cfg.a), B = pick(raw, cfg.b);
+    // sem CSV o confronto vem do placar (cfg.aTime/bTime), nao da classificacao
+    var A = cfg.aTime || pick(raw, cfg.a), B = cfg.bTime || pick(raw, cfg.b);
     var times = raw.slice();
     if (cfg.sort !== false) {
       times.sort(function (x, y) { return (y.pts - x.pts) || ((y.f - y.c) - (x.f - x.c)) || ((x.pos || 0) - (y.pos || 0)); });

@@ -96,13 +96,11 @@ controle.php          painel (HTML + JS de UI específico)
 api.php                API/estado em arquivo
 config.php             define DATA_DIR (onde ficam os dados do usuário)
 tabela/tabela.js       MOTOR do overlay: canvas 1920×1080, temas e cenas
-tabela/dados.js        classificação padrão do grupo (16 times)
 js/comum.js            constantes, mapa de chaves (MS) e helpers comuns
 js/eventbus.js         barramento de eventos interno
 js/placar/*.js         lado da transmissão (core, times, tema, gols, mídia…)
 js/controle/*.js       lado do painel (core, elementos, tabela, mídia…)
 css/*.css              CSS do placar, do overlay e do painel
-img/                   ícone do app (bola da notificação)
 dados/                 DADOS DO USUÁRIO (fora do git — ver abaixo)
 ```
 
@@ -143,12 +141,17 @@ Veja [`docs/DESENVOLVIMENTO.md`](docs/DESENVOLVIMENTO.md).
 Este repositório **não inclui nenhuma imagem de conteúdo**: nem escudos de
 clubes, nem logos de competições (são marcas de terceiros — clubes e FCF), nem
 o CSV da classificação. Tudo isso mora em `dados/` (ver acima), que não é
-versionado. A única imagem do código é `img/bola.png`, o ícone da notificação.
+versionado. Não há **uma única imagem** no repositório: o app é só código.
 
 Os escudos genéricos de cor (`Vermelho.png`, `Roxo.png`, `Azul.png`…) também
 são dados: ficam em `dados/escudos/`. Ao importar o CSV da classificação, o
 painel baixa os escudos do `fcf.cat` para o **seu** servidor; a partir daí o
 overlay serve as imagens localmente.
+
+**Sem CSV não existe tabela.** Não há classificação embutida no código: até o
+primeiro import, as cenas de tabela, duelo, destaque, forma e escalações ficam
+desativadas no painel. Abertura, intervalo e encerramento continuam
+funcionando, porque usam o confronto que está no placar.
 
 ## Limitações conhecidas
 

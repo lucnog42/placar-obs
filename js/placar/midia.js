@@ -54,7 +54,6 @@ Placar._mostrarTexto=function(m){
     ['notifText','notifText2','notifText3','notifText4'].forEach(function(i){
         var e=document.getElementById(i);if(e)e.innerText=c;
     });
-    box.querySelectorAll('.bola-spin').forEach(function(b){b.style.display=tipo==='gol'?'':'none';});
     box.classList.remove('gol','amarelo','vermelho');box.classList.add(tipo);
     var track=document.getElementById('notifTrack');
     if(track){track.style.animation='none';void track.offsetWidth;track.style.animation='';}

@@ -212,17 +212,6 @@
 .notificacao.amarelo .notif-text { color: #f9a825; }
 .notificacao.vermelho .notif-text { color: #ef5350; }
 
-/* Bola giratória dentro do track */
-.notif-track .bola-spin {
-    width: var(--bola-size, 36px);
-    height: var(--bola-size, 36px);
-    object-fit: contain;
-    animation: spinBall var(--bola-duration, 1.8s) linear infinite;
-    flex-shrink: 0;
-    align-self: center;
-    margin-right: 4px;
-}
-
 /* ===========================
    4 ANIMAÇÕES DE ENTRADA
    =========================== */
@@ -295,9 +284,5 @@
     0%   { transform: translateX(0); }
     100% { transform: translateX(-75%); }
 }
-
-/* Bola girando */
-@keyframes spinBall {
-    from { transform: rotate(0deg); }
     to   { transform: rotate(360deg); }
 }

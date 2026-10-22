@@ -37,7 +37,7 @@ function env(preencher) {
         document: { getElementById: id => els[id] || (els[id] = mkEl(id)), querySelectorAll: () => [], createElement: t => mkEl(t), body: { appendChild() { } } }
     };
     c.window = c; c.globalThis = c; vm.createContext(c);
-    for (const f of ['js/eventbus.js', 'js/comum.js', 'tabela/dados.js', 'tabela/tabela.js', 'js/placar/core.js', 'js/placar/tabela.js'])
+    for (const f of ['js/eventbus.js', 'js/comum.js', 'tabela/tabela.js', 'js/placar/core.js', 'js/placar/tabela.js'])
         vm.runInContext(fs.readFileSync(B + f, 'utf8'), c, { filename: f });
     return { c, els, rafs };
 }

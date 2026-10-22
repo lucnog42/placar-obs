@@ -27,10 +27,6 @@ Placar.on('notif:changed', function() {
         if (e) e.innerText = c;
     });
 
-    box.querySelectorAll('.bola-spin').forEach(function(b) {
-        b.style.display = tipo === 'gol' ? '' : 'none';
-    });
-
     box.classList.remove('gol', 'amarelo', 'vermelho');
     box.classList.add(tipo);
 

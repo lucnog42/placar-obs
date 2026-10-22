@@ -9,6 +9,11 @@
         <button id="toggleNomesBtn" onclick="Controle.alternarNomes()" style="background:#2a3a55">📝 Nomes</button>
         <button onclick="Controle.toggleOverlayPop()" style="background:#2a3a55">⚙️ Configuração</button>
       </div>
+      <div id="tabelaSemCsv" class="escondido aviso-csv">
+        ⚠ <b>Nenhuma classificação carregada.</b> As cenas de <b>tabela, duelo, destaque, forma e escalações</b>
+        ficam desativadas até você importar o CSV da classificação.
+        Abertura, intervalo e encerramento continuam funcionando.
+      </div>
       <div class="overlay-pop" id="overlayPop">
         <p style="font-size:11px;color:#93a4c0;margin:0 0 6px">Modo de exibição</p>
         <div class="modo-row">

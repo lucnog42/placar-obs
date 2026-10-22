@@ -19,10 +19,10 @@
 
     <div id="notificacao" class="notificacao hidden">
         <div class="notif-text-wrapper"><div class="notif-track" id="notifTrack">
-            <img class="bola-spin" src="img/bola.png" alt=""><span id="notifText" class="notif-text"></span>
-            <img class="bola-spin" src="img/bola.png" alt=""><span id="notifText2" class="notif-text"></span>
-            <img class="bola-spin" src="img/bola.png" alt=""><span id="notifText3" class="notif-text"></span>
-            <img class="bola-spin" src="img/bola.png" alt=""><span id="notifText4" class="notif-text"></span>
+            <span id="notifText" class="notif-text"></span>
+            <span id="notifText2" class="notif-text"></span>
+            <span id="notifText3" class="notif-text"></span>
+            <span id="notifText4" class="notif-text"></span>
         </div></div>
     </div>
 </div>

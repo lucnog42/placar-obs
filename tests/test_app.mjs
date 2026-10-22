@@ -44,7 +44,7 @@ context.window = context;              // window === global (como no browser)
 context.globalThis = context;
 vm.createContext(context);
 
-for (const f of ['js/eventbus.js', 'js/comum.js', 'tabela/dados.js', 'tabela/tabela.js',
+for (const f of ['js/eventbus.js', 'js/comum.js', 'tabela/tabela.js',
                  'js/placar/core.js', 'js/placar/tabela.js']) {
     vm.runInContext(fs.readFileSync(B + f, 'utf8'), context, { filename: f });
 }

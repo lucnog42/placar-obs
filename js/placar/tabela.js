@@ -23,6 +23,8 @@ Placar.Tabela = {
 
     /* cenas que o motor conhece (usado para validar o painel/estado) */
     CENAS_VALIDAS: { intro: 1, table: 1, duel: 1, feature: 1, form2: 1, lineups: 1, sponsors: 1, lower: 1, intervalo: 1, encerramento: 1 },
+    /* cenas que só existem se houver classificacao (CSV importado) */
+    CENAS_CSV: { table: 1, duel: 1, feature: 1, form2: 1, lineups: 1 },
 
     /* ---------- elementos ---------- */
     camada: function () { return document.getElementById('camadaTabela'); },
@@ -96,6 +98,17 @@ Placar.Tabela = {
         } catch (err) { return null; }
     },
 
+    /* sem CSV: a abertura/intervalo/encerramento mostram o confronto que está no
+       placar (nao ha classificacao para casar os indices). */
+    timeDoPlacar: function (lado) {
+        var e = Placar.estado || {};
+        var nome = (lado === 'A') ? (e.timeA || '') : (e.timeB || '');
+        var sigla = (lado === 'A') ? (e.siglaA || '') : (e.siglaB || '');
+        var esc = (lado === 'A') ? (e.escudoA || '') : (e.escudoB || '');
+        if (!nome && !sigla && !esc) return null;
+        return { name: nome, short: sigla || nome, crest: esc, escudo: esc };
+    },
+
     /* linha do tempo: [{k,d}] apenas das cenas visiveis, na ordem do painel */
     cenas: function (txt) {
         var lista = null;
@@ -127,11 +140,13 @@ Placar.Tabela = {
     /* ---------- configuracao enviada ao motor ---------- */
     config: function () {
         var e = Placar.estado || {};
-        var d = (window.TABELA_DADOS || {}).padrao || {};
+        var d = {};
+        var tem = !!this.times();              // sem CSV importado nao ha classificacao
         var modo = e.tabelaModo || 'auto';
         var lista = this.cenas(e.tabelaCenas);
         var cenaFixa = e.tabelaCena || 'table';
         if (!this.CENAS_VALIDAS[cenaFixa]) cenaFixa = 'table';
+        if (!tem && this.CENAS_CSV[cenaFixa]) cenaFixa = 'intro';
         var scenes;
         if (modo === 'fixa') {
             scenes = [{ k: cenaFixa, d: this.duracaoCena(e.tabelaCenas, cenaFixa) }];
@@ -140,6 +155,13 @@ Placar.Tabela = {
         } else {
             scenes = CENAS_PADRAO.map(function (s) { return { k: s.k, d: s.d }; });   // sem linha do tempo salva
         }
+        if (!tem) {                            // sem CSV: sobram só as cenas que nao precisam dele
+            var semCsv = this.CENAS_CSV;
+            scenes = scenes.filter(function (s) { return !semCsv[s.k]; });
+            if (!scenes.length) scenes = [{ k: 'intro', d: this.duracaoCena(e.tabelaCenas, 'intro') }];
+        }
+        var A = tem ? null : this.timeDoPlacar('A');
+        var B = tem ? null : this.timeDoPlacar('B');
         var dest = this.indice('tabelaDestaque', null, d.c || 0);
         var sub = [e.grupo, e.categoria, e.fase].filter(Boolean).join(' · ');
         var lt = e.tabelaLogo || e.logoTorneio || '';      // logo do torneio (sub-banco torneios/)
@@ -151,6 +173,7 @@ Placar.Tabela = {
             c: dest,
             tl: dest,                       // um seletor so manda no destaque e na escalacao
             bg: 'transparent',
+            aTime: A, bTime: B,             // sem CSV: confronto vem do placar, nao da tabela
             scenes: scenes,
             auto: scenes.length > 1,
             dim: false,
@@ -319,7 +342,7 @@ Placar.Tabela = {
         var times = this.times();
         if (!times && this._timesChave) {
             this._timesChave = null;
-            window.Tabela.setTeams(((window.TABELA_DADOS || {}).teams) || []);
+            window.Tabela.setTeams([]);
             window.Tabela.loadCrests(function () { if (Placar.Tabela.ativo) Placar.Tabela.desenhar(); });
         } else if (times) {
             var chave = this.chaveTimes(times);

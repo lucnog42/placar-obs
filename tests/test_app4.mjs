@@ -71,7 +71,7 @@ function novoAmbiente(scripts) {
     context.window = context;
     context.globalThis = context;
     vm.createContext(context);
-    const lista = scripts || ['js/eventbus.js', 'js/comum.js', 'tabela/dados.js', 'tabela/tabela.js',
+    const lista = scripts || ['js/eventbus.js', 'js/comum.js', 'tabela/tabela.js',
                               'js/placar/core.js', 'js/placar/midia.js', 'js/placar/tabela.js'];
     for (const f of lista) {
         vm.runInContext(fs.readFileSync(B + f, 'utf8'), context, { filename: f });
@@ -190,7 +190,7 @@ ok(P._disparoSeq === '123456', 'disparo avulso registrado (seq ' + P._disparoSeq
 ok(notifBox._cls.has('show'), 'notificacao disparada mesmo com a midia fora das ativas');
 
 console.log('== 8. parseClassificacao (CSV real do fcf.cat) ==');
-const amb2 = novoAmbiente(['js/eventbus.js', 'js/comum.js', 'tabela/dados.js', 'js/controle/core.js', 'js/controle/midia.js', 'js/controle/tabela.js']);
+const amb2 = novoAmbiente(['js/eventbus.js', 'js/comum.js', 'js/controle/core.js', 'js/controle/midia.js', 'js/controle/tabela.js']);
 const C = amb2.context.Controle;
 const csv = fs.readFileSync('../dados/classificacio_quarta_catalana_grup18.csv', 'utf8');
 const res = C.parseClassificacao(csv);
@@ -336,7 +336,11 @@ ok(capturado && capturado.length === rel15.urls.length && capturado[0].nome === 
    'botao Sincronizar pega os ' + rel15.urls.length + ' escudos da classificacao atual');
 
 console.log('== 16. escudo do banco entra na TABELA de classificacao ==');
-const base16 = JSON.parse(fs.readFileSync(B + 'tabela/dados.js', 'utf8').replace(/^[^{]*/, '').replace(/;\s*$/, '')).teams;
+// a classificacao padrao saiu do codigo (agora so via CSV): sem o arquivo, lista vazia
+const _arqDados = B + 'tabela/dados.js';
+const base16 = fs.existsSync(_arqDados)
+    ? JSON.parse(fs.readFileSync(_arqDados, 'utf8').replace(/^[^{]*/, '').replace(/;\s*$/, '')).teams
+    : [];
 const comEscudo = base16.map((t, i) => Object.assign({}, t, { crest: i === 0 ? 'escudos/Vermelho.png' : '' }));
 const semEscudo = base16.map(t => Object.assign({}, t, { crest: '' }));
 const flat = (extra = {}) => { const c = cru(extra); return context.buildFlat(c); };
