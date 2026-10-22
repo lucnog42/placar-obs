@@ -2,6 +2,7 @@
 <!-- cena: escalacao — HTML estatico (pool de linhas); js preenche jogadores -->
 <div class="cena cena-lineups" data-scene="lineups">
   <div class="cena-bg"></div>
+  <div class="cena-inner">
   <div class="lu-painel">
     <header class="lu-hdr">
       <div class="lu-crest th-crestbox"><img alt=""><span class="mono"></span></div>
@@ -26,5 +27,5 @@
     </div>
 
     <p class="lu-vazio" id="luVazio">Carregue o CSV das escalações</p>
-  </div>
+  </div>  </div>
 </div>

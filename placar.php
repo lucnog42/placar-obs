@@ -8,16 +8,16 @@
  *   (a classificação vem do CSV importado no painel; tabela-dados.js pinta o DOM).
  */
 $MAX_LINHAS = 24;          // pool de linhas da classificação (JS esconde as não usadas)
-$v = '20261102a';          // cache-busting
+$v = '20261103a';          // cache-busting
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <title>Placar OBS</title>
-<link rel="stylesheet" href="css/base.css?v=20261102a">
-<link id="tema" rel="stylesheet" href="css/laliga.css?v=20261102a">
-<link rel="stylesheet" href="css/midia-anim.css?v=20261102a">
+<link rel="stylesheet" href="css/base.css?v=20261103a">
+<link id="tema" rel="stylesheet" href="css/laliga.css?v=20261103a">
+<link rel="stylesheet" href="css/midia-anim.css?v=20261103a">
 <link rel="stylesheet" href="css/tabela.css?v=<?= $v ?>">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -41,18 +41,21 @@ body{width:1920px;height:1080px;background:transparent;font-family:'Arial',sans-
   <?php include __DIR__ . '/partials/cena-sponsors.php'; ?>
   <?php include __DIR__ . '/partials/cena-lower.php'; ?>
   <?php include __DIR__ . '/partials/cena-lineups.php'; ?>
+  <?php include __DIR__ . '/partials/cena-feature.php'; ?>
+  <?php include __DIR__ . '/partials/cena-form2.php'; ?>
+  <?php include __DIR__ . '/partials/cena-duel.php'; ?>
   <?php include __DIR__ . '/partials/notificacao-tabela.php'; ?>
 </div>
 
-<script src="js/eventbus.js?v=20261102a"></script>
-<script src="js/comum.js?v=20261102a"></script>
-<script src="js/placar/core.js?v=20261102a"></script>
-<script src="js/placar/timer.js?v=20261102a"></script>
-<script src="js/placar/gols.js?v=20261102a"></script>
-<script src="js/placar/times.js?v=20261102a"></script>
-<script src="js/placar/penaltes.js?v=20261102a"></script>
-<script src="js/placar/notificacao.js?v=20261102a"></script>
-<script src="js/placar/tema.js?v=20261102a"></script>
+<script src="js/eventbus.js?v=20261103a"></script>
+<script src="js/comum.js?v=20261103a"></script>
+<script src="js/placar/core.js?v=20261103a"></script>
+<script src="js/placar/timer.js?v=20261103a"></script>
+<script src="js/placar/gols.js?v=20261103a"></script>
+<script src="js/placar/times.js?v=20261103a"></script>
+<script src="js/placar/penaltes.js?v=20261103a"></script>
+<script src="js/placar/notificacao.js?v=20261103a"></script>
+<script src="js/placar/tema.js?v=20261103a"></script>
 <script src="js/placar/midia.js?v=<?= $v ?>"></script>
 <script src="js/placar/patrocinio.js?v=<?= $v ?>"></script>
 <script src="tabela/tabela.js?v=<?= $v ?>"></script>

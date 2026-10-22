@@ -237,6 +237,133 @@ var TabelaDados = (function () {
     }
   }
 
+  /* ---------- barras e maximos ---------- */
+  function barra(id, val, max) {
+    var e = $(id);
+    if (!e) return;
+    var v = (max > 0) ? Math.max(0, Math.min(1, (Number(val) || 0) / max)) : 0;
+    e.style.setProperty('--p', v.toFixed(3));
+  }
+
+  function maxDe(campo, times) {
+    var m = 0;
+    for (var i = 0; i < times.length; i++) m = Math.max(m, Number(times[i][campo]) || 0);
+    return m || 1;
+  }
+
+  function timePorIndice(cfg, times) {
+    var i = Math.max(0, Math.min(times.length - 1, parseInt(cfg.c, 10) || 0));
+    return times[i] || null;
+  }
+
+  /* ---------- time destaque ---------- */
+  function fillFeature(cfg, times) {
+    var tm = timePorIndice(cfg, times);
+    if (!tm) return;
+    var i = Math.max(0, Math.min(times.length - 1, parseInt(cfg.c, 10) || 0));
+    txt('ftNome', String(tm.name || '').toUpperCase());
+    txt('ftPos', tm.pos != null ? tm.pos + 'º lugar' : '');
+    txt('ftPts', num(tm.pts));
+    setCrest(document.querySelector('.ft-crest'), tm);
+    barra('ftFBar', tm.f, maxDe('f', times));
+    barra('ftCBar', tm.c, maxDe('c', times));
+    txt('ftFB', num(tm.f));
+    txt('ftCB', num(tm.c));
+    pintarForm($('ftChips'), tm, cfg);
+
+    var vals = [tm.j, tm.g, tm.e, tm.p, tm.f, tm.c, tm.dg], st = document.querySelectorAll('#ftStats .ft-stat b');
+    for (var k = 0; k < st.length; k++) st[k].textContent = num(vals[k]);
+
+    var linhas = document.querySelectorAll('#ftLista .ft-linha');
+    for (var n = 0; n < linhas.length; n++) {
+      var ii = i + n - 3, o = times[ii], ln = linhas[n];
+      ln.classList.toggle('on', ii === i);
+      ln.classList.toggle('oculta', !o);
+      if (!o) continue;
+      var q = function (s) { return ln.querySelector(s); };
+      var pe = q('.fl-pos'), ne = q('.fl-nome'), pt = q('.fl-pts');
+      if (pe) pe.textContent = o.pos != null ? o.pos : '';
+      if (ne) ne.textContent = o.short || o.name || '';
+      if (pt) pt.textContent = num(o.pts) + ' pts';
+      setCrest(q('.fl-crest'), o);
+    }
+  }
+
+  /* ---------- ultimos jogos ---------- */
+  function fillForm2(cfg, times) {
+    var tm = timePorIndice(cfg, times);
+    if (!tm) return;
+    var form = (tm.form || []).slice(-5);
+    txt('f2Nome', String(tm.name || '').toUpperCase());
+    txt('f2Pos', (tm.pos != null ? tm.pos + 'º lugar · ' : '') + num(tm.pts) + ' pts');
+    setCrest(document.querySelector('.f2-crest'), tm);
+
+    var box = document.querySelector('.f2-esq');
+    if (box) box.classList.toggle('sem-form', !form.length);
+
+    var pil = document.querySelectorAll('#f2Seq .f2-pilula');
+    for (var k = 0; k < pil.length; k++) {
+      var p = pil[k], f = form[k];
+      p.className = 'f2-pilula';
+      p.textContent = '';
+      if (!f) { p.classList.add('oculta'); continue; }
+      var u = String(f).toUpperCase();
+      p.textContent = CH_TXT[u] || u;
+      p.classList.add(CH_CLS[u] || 'e');
+    }
+
+    barra('f2FBar', tm.f, maxDe('f', times));
+    barra('f2CBar', tm.c, maxDe('c', times));
+    txt('f2FB', num(tm.f));
+    txt('f2CB', num(tm.c));
+
+    var v = 0, e = 0, d = 0;
+    for (var g = 0; g < form.length; g++) {
+      if (form[g] === 'G') v++; else if (form[g] === 'E') e++; else if (form[g] === 'P') d++;
+    }
+    var st = document.querySelectorAll('#f2Stats .f2-stat b');
+    var vals = [v, e, d, tm.f, tm.c, (Number(tm.dg) > 0 ? '+' : '') + num(tm.dg)];
+    for (var s = 0; s < st.length; s++) st[s].textContent = num(vals[s]);
+
+    var j = Number(tm.j) || 0;
+    txt('f2Media', (j ? (Number(tm.f) || 0) / j : 0).toFixed(2));
+    txt('f2Ppg', (j ? (Number(tm.pts) || 0) / j : 0).toFixed(2));
+    txt('f2Apr', (j ? Math.round((Number(tm.pts) || 0) / (3 * j) * 100) : 0) + '%');
+  }
+
+  /* ---------- duelo ---------- */
+  var LADOS_DU = [
+    { pos: 'duPa', nome: 'duNa', pts: 'duPtsA', j: 'duJA', v: 'duVA', e: 'duEA', d: 'duDA', f: 'duFA', c: 'duCA', fb: 'duFBarA', cb: 'duCBarA', crest: '.du-a .du-crest' },
+    { pos: 'duPb', nome: 'duNb', pts: 'duPtsB', j: 'duJB', v: 'duVB', e: 'duEB', d: 'duDB', f: 'duFB', c: 'duCB', fb: 'duFBarB', cb: 'duCBarB', crest: '.du-b .du-crest' }
+  ];
+
+  function fillDuel(cfg, A, B, times) {
+    var duplas = [[A, LADOS_DU[0]], [B, LADOS_DU[1]]];
+    for (var i = 0; i < duplas.length; i++) {
+      var tm = duplas[i][0], m = duplas[i][1];
+      if (!tm) continue;
+      txt(m.pos, tm.pos != null ? tm.pos + 'º lugar' : '');
+      txt(m.nome, String(tm.name || '').toUpperCase());
+      txt(m.pts, num(tm.pts));
+      txt(m.j, num(tm.j));
+      txt(m.v, num(tm.g));
+      txt(m.e, num(tm.e));
+      txt(m.d, num(tm.p));
+      txt(m.f, num(tm.f));
+      txt(m.c, num(tm.c));
+      barra(m.fb, tm.f, maxDe('f', times));
+      barra(m.cb, tm.c, maxDe('c', times));
+      setCrest(document.querySelector(m.crest), tm);
+    }
+    if (A && B) {
+      var dif = (Number(A.pts) || 0) - (Number(B.pts) || 0);
+      txt('duResA', (A.pos != null ? A.pos + 'º · ' : '') + num(A.pts) + ' pts');
+      txt('duResB', num(B.pts) + ' pts' + (B.pos != null ? ' · ' + B.pos + 'º' : ''));
+      txt('duResC', dif === 0 ? 'empate na pontuação'
+        : 'diferença de ' + Math.abs(dif) + ' pt' + (Math.abs(dif) > 1 ? 's' : ''));
+    }
+  }
+
   function fill(cfg, tema) {
     cfg = cfg || {};
     var cam = document.getElementById('camadaTabela');
@@ -257,6 +384,9 @@ var TabelaDados = (function () {
     fillFull('enc', cfg, A, B);
     fillLower(cfg, A, B);
     fillLineups(cfg, times);
+    fillFeature(cfg, times);
+    fillForm2(cfg, times);
+    fillDuel(cfg, A, B, times);
   }
 
   return { fill: fill, setFundos: setFundos };

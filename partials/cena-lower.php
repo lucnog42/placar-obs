@@ -2,6 +2,7 @@
 <!-- cena: lower third (faixa inferior) — HTML estatico; js preenche textos/escudos -->
 <div class="cena cena-lower" data-scene="lower">
   <div class="cena-bg"></div>
+  <div class="cena-inner">
   <div class="lw-faixa">
     <div class="lw-lado lw-a">
       <div class="lw-crest th-crestbox"><img alt=""><span class="mono"></span></div>
@@ -26,5 +27,5 @@
       </div>
       <div class="lw-crest th-crestbox"><img alt=""><span class="mono"></span></div>
     </div>
-  </div>
+  </div>  </div>
 </div>

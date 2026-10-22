@@ -2,7 +2,8 @@
 
 Cenas ja migradas para HTML/CSS (PHP monta, CSS mostra, JS so preenche):
 `table`, `intro` (abertura), `intervalo`, `encerramento`, `sponsors` (patrocinadores),
-`lower` (lower third) e `lineups` (escalacao).
+`lower` (lower third), `lineups` (escalacao), `feature` (time destaque), `form2` (ultimos jogos)
+e `duel` (duelo). Todas as cenas das faixas ja sao HTML/CSS — o canvas nao desenha mais nenhuma.
 A notificacao do overlay tambem e HTML (`#notifTabela`). As demais cenas seguem
 no canvas do motor.
 
