@@ -1,5 +1,5 @@
 /* ==========================================================================
-   tabela/tabela.js — motor canvas das cenas restantes (duel/feature/lineups/sponsors/lower)
+   tabela/tabela.js — motor canvas das cenas restantes (duel/feature/form2)
    Extraido do overlay standalone: aqui e so desenho, sem painel e sem GIF.
    Uso:  Tabela.setTheme('noturno'); Tabela.setCfg({...});
          Tabela.render(ctx, t, {g:ctx, c:cfg, w:1920, h:1080});
