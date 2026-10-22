@@ -26,7 +26,6 @@ define('ESTADO_FILE', BASE_DIR . '/estado.json');
 define('PRESETS_DIR', BASE_DIR . '/presets');
 define('ESCUDOS_DIR', BASE_DIR . '/escudos');
 define('MIDIAS_DIR', BASE_DIR . '/midias');
-define('PERFIS_DIR', BASE_DIR . '/perfis');
 define('CORES_FILE', BASE_DIR . '/cores.json');
 define('GRUPOS_FILE', BASE_DIR . '/grupos.json');
 define('CSVS_DIR', BASE_DIR . '/csvs');
@@ -35,7 +34,7 @@ define('LOCK_FILE', BASE_DIR . '/estado.lock');
 define('ESTADO_BAK', BASE_DIR . '/estado.json.bak');
 
 function ensure_dirs() {
-    $dirs = array(PRESETS_DIR, ESCUDOS_DIR, MIDIAS_DIR, PERFIS_DIR, CSVS_DIR, FUNDOS_DIR);
+    $dirs = array(PRESETS_DIR, ESCUDOS_DIR, MIDIAS_DIR, CSVS_DIR, FUNDOS_DIR);
     foreach ($dirs as $d) {
         if (!is_dir($d)) {
             mkdir($d, 0755, true);
@@ -250,40 +249,6 @@ function deep_merge($base, $overlay) {
 }
 
 // mapa flat -> secao (espelha o MS do js/comum.js)
-function ms_section($key) {
-    static $ms = null;
-    if ($ms === null) {
-        $ms = array(
-            'golsA'=>'placar','golsB'=>'placar','tempo'=>'placar','tempoInicio'=>'placar','rodando'=>'placar','esporte'=>'placar','periodo'=>'placar',
-            'timeA'=>'times','timeB'=>'times','siglaA'=>'times','siglaB'=>'times','escudoA'=>'times','escudoB'=>'times','timeACor'=>'times','timeBCor'=>'times',
-            'competicao'=>'times','categoria'=>'times','grupo'=>'times','fase'=>'times','data'=>'times','hora'=>'times','local'=>'times','logoTorneio'=>'times',
-            'clima'=>'times','climaIcone'=>'times',
-            'tema'=>'estilo','fonte'=>'estilo','nomesExpandidos'=>'estilo','notifAnimacao'=>'estilo','mostrarStatus'=>'estilo','feat_gol'=>'estilo','feat_faltas'=>'estilo','feat_midias'=>'estilo','feat_substituicoes'=>'estilo','feat_fila'=>'estilo','feat_intervalos'=>'estilo','cenaCancelar'=>'estilo',
-            'penaltesAtivos'=>'penaltes','PA1'=>'penaltes','PA2'=>'penaltes','PA3'=>'penaltes','PA4'=>'penaltes','PA5'=>'penaltes','PB1'=>'penaltes','PB2'=>'penaltes','PB3'=>'penaltes','PB4'=>'penaltes','PB5'=>'penaltes',
-            'notifTipo'=>'notif','notifTexto'=>'notif','notifId'=>'notif',
-            'placarScale'=>'posicao','placarX'=>'posicao','placarY'=>'posicao',
-            'midias'=>'midia','midiasAtivas'=>'midia','midiaAtiva'=>'midia','midiaTransicao'=>'midia','midiaDisparoId'=>'midia','midiaDisparoSeq'=>'midia',
-            'shotClock'=>'basquete','shotRodando'=>'basquete','faltasA'=>'basquete','faltasB'=>'basquete','posse'=>'basquete','bonusA'=>'basquete','bonusB'=>'basquete','timeoutsA'=>'basquete','timeoutsB'=>'basquete',
-            'tabelaAtivo'=>'tabela','tabelaCena'=>'tabela','tabelaTema'=>'tabela','tabelaDuracao'=>'tabela','tabelaA'=>'tabela','tabelaB'=>'tabela','tabelaDestaque'=>'tabela','tabelaEscalacao'=>'tabela','tabelaTitulo'=>'tabela','tabelaSub'=>'tabela','tabelaZonas'=>'tabela','tabelaZonaUp'=>'tabela','tabelaZonaDn'=>'tabela','tabelaEscudos'=>'tabela','tabelaEscalacoes'=>'tabela','tabelaLocal'=>'tabela','tabelaHora'=>'tabela','tabelaLogo'=>'tabela','tabelaZonaCorUp'=>'tabela','tabelaZonaCorDn'=>'tabela','previewZoom'=>'tabela','tabelaModo'=>'tabela','tabelaLayout'=>'tabela','tabelaPlay'=>'tabela','tabelaCenaAtual'=>'tabela','tabelaCenas'=>'tabela','tabelaTimes'=>'tabela','spText'=>'torneio','sponsorsAtivo'=>'torneio','sponsorsIntervalo'=>'torneio','sponsorsDuracao'=>'torneio','sp1'=>'torneio','sp2'=>'torneio','sp3'=>'torneio','sp4'=>'torneio','sp5'=>'torneio','sp6'=>'torneio','sp7'=>'torneio','sp8'=>'torneio','sp9'=>'torneio','sp10'=>'torneio','sp11'=>'torneio','sp12'=>'torneio','sp13'=>'torneio','sp14'=>'torneio','sp15'=>'torneio','sp16'=>'torneio','sp17'=>'torneio','sp18'=>'torneio','sp19'=>'torneio','sp20'=>'torneio','sp21'=>'torneio','sp22'=>'torneio','sp23'=>'torneio','sp24'=>'torneio','sp25'=>'torneio','sp26'=>'torneio','sp27'=>'torneio','sp28'=>'torneio','sp29'=>'torneio','sp30'=>'torneio'
-        );
-    }
-    return isset($ms[$key]) ? $ms[$key] : null;
-}
-
-// converte um perfil (flat) em overlay de secoes aninhadas (sem os defaults)
-function perfil_para_overlay($flat) {
-    $out = array();
-    if (!is_array($flat)) { return $out; }
-    foreach ($flat as $key => $value) {
-        $sec = ms_section($key);
-        if ($sec !== null) {
-            if (!isset($out[$sec])) { $out[$sec] = array(); }
-            $out[$sec][$key] = $value;
-        }
-    }
-    return $out;
-}
-
 function get_post_data() {
     $raw = file_get_contents('php://input');
     $data = json_decode($raw, true);
@@ -616,43 +581,6 @@ if ($method === 'GET') {
         respond(array('ok' => true));
     }
 
-    if ($acao === 'listar_perfis') {
-        $perfis = array();
-        if (is_dir(PERFIS_DIR)) {
-            $dh = opendir(PERFIS_DIR);
-            if ($dh) {
-                while (($entry = readdir($dh)) !== false) {
-                    if ($entry === '.' || $entry === '..') continue;
-                    if (strtolower(pathinfo($entry, PATHINFO_EXTENSION)) !== 'json') continue;
-                    $name = pathinfo($entry, PATHINFO_FILENAME);
-                    $raw = file_get_contents(PERFIS_DIR . '/' . $entry);
-                    $data = json_decode($raw, true);
-                    if ($data) {
-                        $tt = array();
-                        if (isset($data['tabelaTimes'])) {
-                            $tmp = json_decode($data['tabelaTimes'], true);
-                            if (is_array($tmp)) { $tt = $tmp; }
-                        }
-                        $perfis[] = array(
-                            'nome' => $name,
-                            'timeA' => isset($data['timeA']) ? $data['timeA'] : '',
-                            'timeB' => isset($data['timeB']) ? $data['timeB'] : '',
-                            'competicao' => isset($data['competicao']) ? $data['competicao'] : '',
-                            'categoria' => isset($data['categoria']) ? $data['categoria'] : '',
-                            'grupo' => isset($data['grupo']) ? $data['grupo'] : '',
-                            'fase' => isset($data['fase']) ? $data['fase'] : '',
-                            'tabelaTitulo' => isset($data['tabelaTitulo']) ? $data['tabelaTitulo'] : '',
-                            'nTimes' => count($tt)
-                        );
-                    }
-                }
-                closedir($dh);
-            }
-        }
-        usort($perfis, function($a, $b) { return strcmp($a['nome'], $b['nome']); });
-        respond(array('perfis' => $perfis));
-    }
-
     if ($acao === 'carregar_preset') {
         $nome = isset($_GET['nome']) ? $_GET['nome'] : '';
         if (!$nome) {
@@ -671,18 +599,6 @@ if ($method === 'GET') {
         if (!$data) {
             respond_error('Preset corrompido.', 500);
         }
-        respond($data);
-    }
-
-    if ($acao === 'carregar_perfil') {
-        $nome = isset($_GET['nome']) ? $_GET['nome'] : '';
-        if (!$nome) { respond_error('Parametro "nome" obrigatorio.'); }
-        if (strpos($nome, '/') !== false || strpos($nome, '\\') !== false || $nome === '.' || $nome === '..') { respond_error('Nome invalido.'); }
-        $path = PERFIS_DIR . '/' . $nome . '.json';
-        if (!file_exists($path)) { respond_error('Perfil nao encontrado.', 404); }
-        $raw = file_get_contents($path);
-        $data = json_decode($raw, true);
-        if (!$data) { respond_error('Perfil corrompido.', 500); }
         respond($data);
     }
 
@@ -709,7 +625,6 @@ if ($method === 'POST') {
         $id = isset($input['id']) ? trim($input['id']) : '';
         if (!preg_match('/^[A-Za-z0-9_\- ]+$/', $id)) { respond_error('Parametro "id" invalido (letras, numeros, espaco, _ e -).'); }
         $nome = isset($input['nome']) ? $input['nome'] : '';
-        $perfil = isset($input['perfil']) ? $input['perfil'] : '';
         if ($id === '' || $id === '.' || $id === '..') {
             respond_error('Parametro "id" obrigatorio (letras, numeros, espaco, _ e -).');
         }
@@ -719,17 +634,9 @@ if ($method === 'POST') {
                 respond_error('Ja existe uma instancia com este id.');
             }
         }
-        $instancias[] = array('id' => $id, 'nome' => $nome, 'perfil' => $perfil);
+        $instancias[] = array('id' => $id, 'nome' => $nome);
         save_instancias($instancias);
         $seed = default_estado();
-        if ($perfil !== '') {
-            $ppath = PERFIS_DIR . '/' . $perfil . '.json';
-            if (file_exists($ppath)) {
-                $praw = @file_get_contents($ppath);
-                $pdata = json_decode($praw, true);
-                if (is_array($pdata)) { $seed = deep_merge($seed, perfil_para_overlay($pdata)); }
-            }
-        }
         save_estado_for($id, $seed);
         respond(array('ok' => true, 'id' => $id, 'url' => 'placar.php?i=' . $id));
     }
@@ -803,48 +710,6 @@ if ($method === 'POST') {
         }
         save_instancias($instancias);
         respond(array('ok' => true, 'achou' => $achou));
-    }
-
-    if ($acao === 'salvar_perfil') {
-        $input = get_post_data();
-        $nome = isset($input['nome']) ? $input['nome'] : '';
-        $dados = isset($input['dados']) ? $input['dados'] : array();
-        if (!$nome) { respond_error('Parametro "nome" obrigatorio.'); }
-        if (strpos($nome, '/') !== false || strpos($nome, '\\') !== false || $nome === '.' || $nome === '..') { respond_error('Nome invalido.'); }
-        if (!is_dir(PERFIS_DIR)) { mkdir(PERFIS_DIR, 0755, true); }
-        $json = json_encode($dados);
-        if ($json === false) { respond_error('Falha ao codificar perfil.', 500); }
-        $tmp = PERFIS_DIR . '/' . $nome . '.json.tmp.' . getmypid();
-        if (@file_put_contents($tmp, $json, LOCK_EX) === false) { @unlink($tmp); respond_error('Falha ao salvar perfil.', 500); }
-        if (!@rename($tmp, PERFIS_DIR . '/' . $nome . '.json')) { @unlink($tmp); respond_error('Falha ao salvar perfil.', 500); }
-        respond(array('ok' => true, 'nome' => $nome));
-    }
-
-    if ($acao === 'remover_perfil') {
-        $input = get_post_data();
-        $nome = isset($input['nome']) ? $input['nome'] : '';
-        if (!$nome) { respond_error('Parametro "nome" obrigatorio.'); }
-        if (strpos($nome, '/') !== false || strpos($nome, '\\') !== false || $nome === '.' || $nome === '..') { respond_error('Nome invalido.'); }
-        $path = PERFIS_DIR . '/' . $nome . '.json';
-        if (file_exists($path)) { unlink($path); }
-        respond(array('ok' => true));
-    }
-
-    if ($acao === 'aplicar_perfil') {
-        $input = get_post_data();
-        $perfil = isset($input['perfil']) ? $input['perfil'] : '';
-        if (!$perfil) { respond_error('Parametro "perfil" obrigatorio.'); }
-        if (strpos($perfil, '/') !== false || strpos($perfil, '\\') !== false || $perfil === '.' || $perfil === '..') { respond_error('Nome invalido.'); }
-        $ppath = PERFIS_DIR . '/' . $perfil . '.json';
-        if (!file_exists($ppath)) { respond_error('Perfil nao encontrado.', 404); }
-        $praw = file_get_contents($ppath);
-        $pdata = json_decode($praw, true);
-        if (!is_array($pdata)) { respond_error('Perfil corrompido.', 500); }
-        $estado = load_estado();
-        $estado = deep_merge($estado, perfil_para_overlay($pdata));
-        $estado['estadoVersao'] = intval($estado['estadoVersao']) + 1;
-        save_estado($estado);
-        respond(array('ok' => true, 'perfil' => $perfil, 'estadoVersao' => $estado['estadoVersao']));
     }
 
     if ($acao === 'salvar_preset') {

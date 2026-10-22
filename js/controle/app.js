@@ -149,8 +149,6 @@ Controle.abrirCriarInstancia = function() {
   idEl.disabled = false;
   idEl.value = '';
   document.getElementById('subctrlNome').value = '';
-  document.getElementById('subctrlPerfil').value = '';
-  Controle.carregarPerfisSelect();
   Controle.abrirModal('modalInstancia');
 };
 
@@ -175,10 +173,9 @@ Controle.salvarInstanciaModal = function() {
     .catch(function(e){ Controle.status('erro','❌ ' + e.message); });
     return;
   }
-  var perfil = document.getElementById('subctrlPerfil').value;
   fetch(API+API_AND+'acao=criar_instancia', {
     method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ id:id, nome:nome, perfil:perfil })
+    body: JSON.stringify({ id:id, nome:nome })
   })
   .then(function(r){ return r.json(); })
   .then(function(d){
@@ -190,23 +187,6 @@ Controle.salvarInstanciaModal = function() {
     Controle.status('ok', '✅ Sub-controle "' + id + '" criado');
   })
   .catch(function(e){ Controle.status('erro','❌ ' + e.message); });
-};
-
-Controle.carregarPerfisSelect = function() {
-  var sel = document.getElementById('subctrlPerfil');
-  if(!sel) return;
-  fetch(API+API_AND+'acao=listar_perfis')
-  .then(function(r){ return r.json(); })
-  .then(function(d){
-    var lista = (d && d.perfis) || [];
-    var h = '<option value="">— sem perfil —</option>';
-    for(var i=0;i<lista.length;i++){
-      var p = lista[i];
-      h += '<option value="' + p.nome + '">' + p.nome + '</option>';
-    }
-    sel.innerHTML = h;
-  })
-  .catch(function(){});
 };
 
 Controle.abrirEditarInstancia = function(id, nome) {

@@ -9,7 +9,7 @@
       <p>💾 Salvar Configuração Atual</p>
       <div style="display:flex;gap:4px;align-items:center">
         <span style="font-size:11px;color:#aaa;flex:1">Nome auto: <b style="color:#ffd700" id="presetNomeAuto">TimeA_x_TimeB</b><br><span id="presetInfoExtra" style="font-size:10px;color:#666"></span></span>
-        <button onclick="Controle.salvarPreset()" style="background:#4CAF50;color:#fff">💾 Salvar como perfil</button>
+        <button onclick="Controle.salvarPreset()" style="background:#4CAF50;color:#fff">💾 Salvar preset</button>
       </div>
     </section>
     <section class="full">

@@ -6,8 +6,6 @@
     <input type="text" id="subctrlId" placeholder="equipeA">
     <label style="font-size:11px;color:#aaa">nome (ex.: Equipe A)</label>
     <input type="text" id="subctrlNome" placeholder="Equipe A">
-    <label style="font-size:11px;color:#aaa">perfil (opcional)</label>
-    <select id="subctrlPerfil"><option value="">— sem perfil —</option></select>
     <div class="modal-actions">
       <button class="cancel" onclick="Controle.fecharModal('modalInstancia')">Cancelar</button>
       <button class="ok" onclick="Controle.salvarInstanciaModal()">Salvar</button>

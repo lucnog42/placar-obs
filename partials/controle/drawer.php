@@ -12,7 +12,7 @@
   <a class="drawer-item" onclick="Controle.irPara(8)">📋 Resumo &amp; Salvar</a>
   <a class="drawer-item" onclick="Controle.irPara(9)">🎯 Operar ao vivo</a>
   <hr style="border-color:#22304a;margin:8px 14px">
-  <button class="drawer-btn" onclick="Controle.salvarPreset()">💾 Salvar como perfil</button>
+  <button class="drawer-btn" onclick="Controle.salvarPreset()">💾 Salvar preset</button>
   <button class="drawer-btn" onclick="Controle.togglePreview()">👁 Preview</button>
   <div class="drawer-foot">Placar OBS · FCF Quarta Catalana</div>
 </nav>
