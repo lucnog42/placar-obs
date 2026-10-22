@@ -12,7 +12,6 @@ var SITE_CREST = {}; TEAMS.forEach(function(t){ if(t.crest) SITE_CREST[t.name] =
 var overrides = {};        // nome do time -> Image (escudo forcado)
 var ovLabel = {};          // nome do time -> origem do escudo forcado
 var A_COL='#22d3ee', B_COL='#f472b6', C_COL='#ffc400';
-var lineups = {};          // escalacoes: nome normalizado -> [{num,player,pos}]
 var W = 1280, H = 720;
 var FF = 'Inter,"Segoe UI",Roboto,Arial,sans-serif';
 var MOSTRAR_ESCUDOS = true;   // escudos do site; false = monograma
@@ -102,14 +101,6 @@ function wrap(g,s,max,lines=2){ g.font=g.font; const words=s.split(' '); const o
   if(out.length<lines) out.push(cur); else out[lines-1]=fit(g,out[lines-1]+' '+cur,max);
   return out.slice(0,lines); }
 const norm = s => (s||'').toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
-function lineupOf(tm){
-  if(!tm) return null;
-  const k=norm(tm.name);
-  if(lineups[k]) return lineups[k];
-  const hit=Object.keys(lineups).find(x=>x.startsWith(k.slice(0,9))||k.startsWith(x.slice(0,9)));
-  return hit? lineups[hit] : null;
-}
-const col = i => TEAMS[i].color;
 function initials(n){ const w=n.replace(/[^\p{L}\s.]/gu,' ').split(/\s+/).filter(x=>x.length>1&&!/^(CLUB|FUTBOL|FUTBOLSALA|ASSOC\.?|ESP\.?|CF|CD|CE|UD|FC|A|B)$/i.test(x)); return (w.slice(0,2).map(x=>x[0]).join('') || n[0]||'?').toUpperCase(); }
 function badge(g,i,x,y,s){ // escudo: imagem crua (sem recorte/moldura) ou monograma
   const t=TEAMS[i];
@@ -204,7 +195,6 @@ const DEFAULT_LAY={duel:'cards',feature:'painel',lineups:'painel'};
 function layOf(k){ const L=(TH&&TH.lay)||{}; return L[k]||DEFAULT_LAY[k]; }
 function drawDuel(g,l,t,c){ return layOf('duel')==='pilula' ? duelPilula(g,l,t,c) : duelCards(g,l,t,c); }
 function drawFeature(g,l,t,c){ return layOf('feature')==='faixa' ? featFaixa(g,l,t,c) : featPainel(g,l,t,c); }
-function drawLineups(g,l,t,c){ return layOf('lineups')==='grade' ? lineupsGrade(g,l,t,c) : lineupsPainel(g,l,t,c); }
 /* ---------- cena 3: duelo ---------- */
 function duelCards(g,l,t,c){
   const A=TEAMS[c.a], B=TEAMS[c.b];
@@ -405,35 +395,6 @@ function featPainel(g,l,t,c){
   g.restore();
 }
 /* ---------- cena: escalações ---------- */
-function lineupsPainel(g,l,t,c){
-  const ti=Math.max(0,Math.min(TEAMS.length-1,c.tl)), tm=TEAMS[ti], list=lineupOf(tm);
-  const acc = ink(ti===c.a?A_COL : (ti===c.b?B_COL : C_COL));
-  const p=easeOut(seg(l,.05,.7));
-  g.save(); g.globalAlpha=p; g.translate(0,(1-p)*40);
-  field(g,56,124,1168,520,{bg:rw(.05),bd:rw(.13),r:20});
-  badge(g,ti,152,214,104);
-  txt(g,tm.short.toUpperCase(),222,196,{f:'800 28px '+FF,c:rw(.97),max:620,shrink:16});
-  txt(g,tm.pos+'º lugar · '+tm.pts+' pts · '+tm.j+' jogos',222,228,{f:'600 15px '+FF,c:acc,max:620,shrink:10});
-  txt(g,'ESCALAÇÃO',1180,196,{f:'800 12px '+FF,c:rw(.55),al:'right',ls:2});
-  txt(g,tm.name,1180,224,{f:'600 14px '+FF,c:rw(.6),al:'right',max:400,shrink:10});
-  g.fillStyle=rw(.10); g.fillRect(88,258,1120,2);
-  if(!list){ txt(g,'Carregue o CSV das escalações',640,430,{f:'600 18px '+FF,c:rw(.5),al:'center',bl:'middle'}); g.restore(); return; }
-  const n=list.length, perCol=Math.ceil(n/2), rowH=Math.min(46,(520-176)/Math.max(perCol,1));
-  list.forEach((pl,k)=>{
-    const col=Math.floor(k/perCol), row=k%perCol;
-    const rp=easeOut(seg(l,.25+k*.045,.4)); if(rp<=0) return;
-    g.globalAlpha=p*rp;
-    const x=88+col*576, y=284+row*rowH, w=552;
-    rr(g,x,y,w,rowH-6,9); g.fillStyle=(row%2?rw(.03):rw(.065)); g.fill();
-    rr(g,x+10,y+3,38,rowH-12,8); g.fillStyle=rw(.13); g.fill();
-    txt(g,pl.num||'–',x+29,y+(rowH-6)/2+1,{f:'800 15px '+FF,c:acc,al:'center',bl:'middle'});
-    txt(g,pl.player,x+60,y+(rowH-6)/2+1,{f:'600 15px '+FF,c:rw(.95),bl:'middle',max:w-140,shrink:11});
-    if(pl.pos) txt(g,pl.pos,x+w-12,y+(rowH-6)/2+1,{f:'700 11px '+FF,c:rw(.6),al:'right',bl:'middle',max:80});
-    g.globalAlpha=p;
-  });
-  g.restore();
-}
-
 /* ---------- variante: duelo em pílula + comparativo 3 colunas ---------- */
 function duelPilula(g,l,t,c){
   const A=TEAMS[c.a], B=TEAMS[c.b];
@@ -520,118 +481,6 @@ function featFaixa(g,l,t,c){
   g.restore();
 }
 
-/* ---------- variante: escalações em grade (4 colunas) ---------- */
-function lineupsGrade(g,l,t,c){
-  const ti=Math.max(0,Math.min(TEAMS.length-1,c.tl)), tm=TEAMS[ti], list=lineupOf(tm);
-  const acc = ink(ti===c.a?A_COL : (ti===c.b?B_COL : C_COL));
-  const p=easeOut(seg(l,.05,.7));
-  g.save(); g.globalAlpha=p; g.translate(0,(1-p)*40);
-  field(g,56,124,1168,520,{bg:rw(.05),bd:rw(.13),r:20});
-  badge(g,ti,152,214,104);
-  txt(g,tm.short.toUpperCase(),222,196,{f:'800 28px '+FF,c:rw(.97),max:620,shrink:16});
-  txt(g,tm.pos+'º lugar · '+tm.pts+' pts · '+tm.j+' jogos',222,228,{f:'600 15px '+FF,c:acc,max:620,shrink:10});
-  txt(g,'ESCALAÇÃO',1180,196,{f:'800 12px '+FF,c:rw(.55),al:'right',ls:2});
-  txt(g,tm.name,1180,224,{f:'600 14px '+FF,c:rw(.6),al:'right',max:400,shrink:10});
-  g.fillStyle=rw(.10); g.fillRect(88,258,1120,2);
-  if(!list){ txt(g,'Carregue o CSV das escalações',640,430,{f:'600 18px '+FF,c:rw(.5),al:'center',bl:'middle'}); g.restore(); return; }
-  const COLS=4, perCol=Math.ceil(list.length/COLS), cw=(1120-(COLS-1)*16)/COLS, rowH=Math.min(74,344/Math.max(perCol,1));
-  list.forEach((pl,k)=>{
-    const col=Math.floor(k/perCol), row=k%perCol;
-    const rp=easeOut(seg(l,.25+k*.04,.4)); if(rp<=0) return;
-    g.globalAlpha=p*rp;
-    const x=88+col*(cw+16), y=284+row*rowH;
-    rr(g,x,y,cw,rowH-8,9); g.fillStyle=(col%2?rw(.035):rw(.06)); g.fill();
-    rr(g,x+10,y+6,30,rowH-20,7); g.fillStyle=rw(.13); g.fill();
-    txt(g,pl.num||'–',x+25,y+6+(rowH-20)/2+1,{f:'800 14px '+FF,c:acc,al:'center',bl:'middle'});
-    txt(g,pl.player,x+48,y+(rowH-8)/2-9,{f:'600 13px '+FF,c:rw(.95),max:cw-58,shrink:10});
-    if(pl.pos) txt(g,pl.pos,x+48,y+(rowH-8)/2+9,{f:'700 10px '+FF,c:rw(.55),max:cw-58});
-    g.globalAlpha=p;
-  });
-  g.restore();
-}
-
-/* ---------- cena: patrocinadores ---------- */
-function lowerCompact(g,l,t,c){
-  const A=TEAMS[c.a], B=TEAMS[c.b];
-  const p=easeOut(seg(l,.05,.6));
-  const y=606,h=90;
-  g.save(); g.globalAlpha=p; g.translate((1-p)*-80,0);
-  txt(g,c.ttl+(c.sub?' · '+c.sub:''),756,y-10,{f:'800 12px '+FF,c:ACC,al:'right',ls:1,max:700});
-  field(g,56,y,700,h,{bg:TH.panel,bd:rw(.14),r:14});
-  g.fillStyle=rw(.12); g.fillRect(406,y+16,1,h-32);
-  badge(g,c.a,110,y+h/2,60); badge(g,c.b,460,y+h/2,60);
-  txt(g,A.short,148,y+h/2-11,{f:'800 18px '+FF,c:rw(.97),max:270,bl:'middle',shrink:11});
-  txt(g,B.short,498,y+h/2-11,{f:'800 18px '+FF,c:rw(.97),max:270,bl:'middle',shrink:11});
-  txt(g,A.pos+'º · '+A.pts+' pts',148,y+h/2+13,{f:'700 13px '+FF,c:rw(.65),max:270,bl:'middle'});
-  txt(g,B.pos+'º · '+B.pts+' pts',498,y+h/2+13,{f:'700 13px '+FF,c:rw(.65),max:270,bl:'middle'});
-  g.restore();
-}
-function lowerScore(g,l,t,c){
-  const A=TEAMS[c.a], B=TEAMS[c.b];
-  const p=easeOut(seg(l,.05,.6));
-  const w=1010,h=112,x=(W-w)/2,y=604,cy=y+h/2;
-  g.save(); g.globalAlpha=p; g.translate(0,(1-p)*50);
-  field(g,x,y,w,h,{bg:TH.panel,bd:rw(.16),r:18});
-  badge(g,c.a,x+70,cy,64); badge(g,c.b,x+w-70,cy,64);
-  txt(g,A.short,x+112,cy-12,{f:'800 19px '+FF,c:rw(.97),max:330,shrink:12});
-  txt(g,B.short,x+w-112,cy-12,{f:'800 19px '+FF,c:rw(.97),al:'right',max:330,shrink:12});
-  txt(g,A.pos+'º · '+A.j+'J',x+112,cy+14,{f:'700 12px '+FF,c:rw(.6),max:330});
-  txt(g,B.pos+'º · '+B.j+'J',x+w-112,cy+14,{f:'700 12px '+FF,c:rw(.6),al:'right',max:330});
-  rr(g,x+w/2-62,y+22,124,68,14); g.fillStyle=rw(.08); g.fill();
-  txt(g,String(A.pts),x+w/2-22,cy+1,{f:'900 38px '+FF,c:ink(A_COL),al:'center',bl:'middle'});
-  txt(g,'·',x+w/2,cy,{f:'800 26px '+FF,c:rw(.5),al:'center',bl:'middle'});
-  txt(g,String(B.pts),x+w/2+22,cy+1,{f:'900 38px '+FF,c:ink(B_COL),al:'center',bl:'middle'});
-  txt(g,c.ttl+(c.sub?' · '+c.sub:''),x+w/2,y-14,{f:'800 13px '+FF,c:ACC,al:'center',ls:2,max:720});
-  g.restore();
-}
-
-function drawLower(g,l,t,c){
-  if(c.lt==='compact') return lowerCompact(g,l,t,c);
-  if(c.lt==='score') return lowerScore(g,l,t,c);
-  return lowerFull(g,l,t,c);
-}
-function lowerFull(g,l,t,c){
-  const A=TEAMS[c.a], B=TEAMS[c.b];
-  const pB=easeOut(seg(l,.05,.7));
-  const y=468, h=192, x=52, w=1176;
-  g.save(); g.globalAlpha=pB; g.translate(0,(1-pB)*90);
-  field(g,x,y,w,h,{bg:rd(.9),bd:rw(.14),r:20});
-  const gr=g.createLinearGradient(x,0,x+w,0); gr.addColorStop(0,A_COL+'55'); gr.addColorStop(.5,rd(0)); gr.addColorStop(1,B_COL+'55');
-  rr(g,x,y,w,h,20); g.fillStyle=gr; g.fill();
-  // varredura de luz
-  const sw=340, sx=x-400+ (l/Math.max(l,1))*0, prog=easeIO(seg(l,.15,1.1));
-  const lx=x-380+ (w+760)*prog;
-  const lg=g.createLinearGradient(lx-170,0,lx+170,0); lg.addColorStop(0,rw(0)); lg.addColorStop(.5,rw(.10)); lg.addColorStop(1,rw(0));
-  g.save(); rr(g,x,y,w,h,20); g.clip(); g.fillStyle=lg; g.fillRect(lx-200,y,400,h); g.restore();
-  // esquerda
-  const pl=easeOut(seg(l,.3,.7)), pr=easeOut(seg(l,.45,.7));
-  g.save(); g.globalAlpha=pl; g.translate((1-pl)*-60,0);
-  badge(g,c.a,x+96,y+h/2-6,104);
-  txt(g,A.short.toUpperCase(),x+168,y+54,{f:'800 24px '+FF,c:rw(.97),max:372,shrink:15});
-  txt(g,`${A.pos}º lugar · ${A.pts} pts · ${A.j} jogos (${A.g}V ${A.e}E ${A.p}D)`,x+168,y+84,{f:'600 15px '+FF,c:ink(A_COL)});
-  txt(g,`gols: ${A.f} pró / ${A.c} contra`,x+168,y+108,{f:'600 14px '+FF,c:rw(.6)});
-  if(c.form) chips(g,A.form,x+168,y+124,{s:24,gap:5});
-  g.restore();
-  g.save(); g.globalAlpha=pr; g.translate((1-pr)*60,0);
-  badge(g,c.b,x+w-96,y+h/2-6,104);
-  txt(g,B.short.toUpperCase(),x+w-168,y+54,{f:'800 24px '+FF,c:rw(.97),al:'right',max:372,shrink:15});
-  txt(g,`${B.pos}º lugar · ${B.pts} pts · ${B.j} jogos (${B.g}V ${B.e}E ${B.p}D)`,x+w-168,y+84,{f:'600 15px '+FF,c:ink(B_COL),al:'right'});
-  txt(g,`gols: ${B.f} pró / ${B.c} contra`,x+w-168,y+108,{f:'600 14px '+FF,c:rw(.6),al:'right'});
-  if(c.form){ g.save(); g.globalAlpha=1; const n=B.form.length; chips(g,B.form,x+w-168-(n*29-5),y+124,{s:24,gap:5}); g.restore(); }
-  g.restore();
-  // centro
-  const pc=easeOut(seg(l,.7,.6));
-  g.save(); g.globalAlpha=pc;
-  const cx=x+w/2, cy=y+h/2-16, r=34+4*Math.sin(t*3.2);
-  g.beginPath(); g.arc(cx,cy,r,0,7); g.fillStyle='rgba(255,196,0,.14)'; g.fill();
-  g.strokeStyle=ACC; g.lineWidth=2.5; g.stroke();
-  txt(g,'VS',cx,cy+1,{f:'900 26px '+FF,c:ACC,al:'center',bl:'middle'});
-  txt(g,c.sub,cx,cy+58,{f:'800 13px '+FF,c:rw(.72),al:'center',bl:'middle',ls:2,max:420});
-  txt(g,'fcf.cat',cx,cy+80,{f:'600 12px '+FF,c:rw(.45),al:'center',bl:'middle'});
-  g.restore();
-  g.restore();
-}
-
 /* ---------- render principal ---------- */
 function drawScene(g,t,c,kForca){
   const {segs}=timeline(c);
@@ -640,8 +489,6 @@ function drawScene(g,t,c,kForca){
   if(s.k==='duel') drawDuel(g,s.local,t,c);
   else if(s.k==='feature') drawFeature(g,s.local,t,c);
   else if(s.k==='form2') drawForm2(g,s.local,t,c);
-  else if(s.k==='lineups') drawLineups(g,s.local,t,c);
-  else if(s.k==='lower') drawLower(g,s.local,t,c);
   return s;
 }
 
@@ -716,7 +563,6 @@ function setEscudoTime(i, src, label){
 }
 function setColors(a,b,c){ if(a) A_COL=a; if(b) B_COL=b; if(c) C_COL=c; }
 function setEscudos(v){ MOSTRAR_ESCUDOS = !!v; }
-function setLineups(o){ lineups = o || {}; }
 /* Carrega os escudos; cada um que entra redesenha (onload) e avisa o chamador. */
 function loadCrests(onload){
   var gen = CREST_GEN;                      // se a lista trocar no meio, esta carga e descartada
@@ -737,7 +583,7 @@ return {
   setTheme:setTheme, setTeams:setTeams, setColors:setColors, setEscudos:setEscudos,
   getColors:function(){return {a:A_COL,b:B_COL,c:C_COL};},
   setEscudoTime:setEscudoTime,
-  setLineups:setLineups, loadCrests:loadCrests, loadLogo:loadLogo,
+  loadCrests:loadCrests, loadLogo:loadLogo,
   setFundo:setFundo,
   timeline:timeline, sceneAt:sceneAt, teams:function(){ return TEAMS; },
   nomes:function(){ return TEAMS.map(function(t){ return t.name; }); },

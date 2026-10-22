@@ -154,6 +154,89 @@ var TabelaDados = (function () {
     }
   }
 
+  /* ---------- lower third: faixa com os dois times ---------- */
+  function metaTime(tm) {
+    if (!tm) return '';
+    var v = (tm.g != null ? tm.g : tm.v), e = tm.e, d = (tm.p != null ? tm.p : tm.d);
+    return (tm.pos != null ? tm.pos + 'º lugar · ' : '') + num(tm.pts) + ' pts · ' + num(tm.j) + ' jogos' +
+      (v != null || e != null || d != null ? ' (' + num(v) + 'V ' + num(e) + 'E ' + num(d) + 'D)' : '');
+  }
+
+  function golsTime(tm) {
+    if (!tm) return '';
+    return 'gols: ' + num(tm.f != null ? tm.f : tm.gp) + ' pró / ' + num(tm.c != null ? tm.c : tm.gc) + ' contra';
+  }
+
+  var CH_CLS = { G: 'v', P: 'd', E: 'e', V: 'v', D: 'd' };
+  var CH_TXT = { G: 'V', P: 'D', E: 'E', V: 'V', D: 'D' };
+
+  function pintarForm(container, tm, cfg) {
+    if (!container) return;
+    var chips = container.querySelectorAll('.th-chip');
+    var form = (tm && tm.form) ? tm.form.slice(-chips.length) : [];
+    for (var i = 0; i < chips.length; i++) {
+      var ch = chips[i], r = (cfg.form === false) ? null : form[i];
+      ch.className = 'th-chip';
+      if (r) { var k = String(r).toUpperCase(); ch.textContent = CH_TXT[k] || r; ch.classList.add(CH_CLS[k] || 'e'); }
+      else ch.textContent = '';
+    }
+  }
+
+  function fillLower(cfg, A, B) {
+    txt('lwNa', A ? (A.short || A.name) : '');
+    txt('lwNb', B ? (B.short || B.name) : '');
+    txt('lwMa', metaTime(A));
+    txt('lwMb', metaTime(B));
+    txt('lwGa', golsTime(A));
+    txt('lwGb', golsTime(B));
+    txt('lwSub', cfg.sub);
+    setCrest(document.querySelector('.lw-a .th-crestbox'), A);
+    setCrest(document.querySelector('.lw-b .th-crestbox'), B);
+    pintarForm($('lwFa'), A, cfg);
+    pintarForm($('lwFb'), B, cfg);
+  }
+
+  /* ---------- escalacao de um time ---------- */
+  function lineupOf(cfg, tm) {
+    var L = (cfg && cfg.lineups) || {};
+    if (!tm) return null;
+    var k = norm(tm.name) || norm(tm.short);
+    if (!k) return null;
+    if (L[k]) return L[k];
+    var keys = Object.keys(L);
+    for (var i = 0; i < keys.length; i++) {
+      var x = norm(keys[i]);
+      if (x.indexOf(k.slice(0, 9)) === 0 || k.indexOf(x.slice(0, 9)) === 0) return L[keys[i]];
+    }
+    return null;
+  }
+
+  function fillLineups(cfg, times) {
+    var painel = document.querySelector('.lu-painel');
+    if (!painel) return;
+    var i = Math.max(0, Math.min(times.length - 1, parseInt(cfg.tl, 10) || 0));
+    var tm = times[i] || null;
+    var list = lineupOf(cfg, tm);
+
+    txt('luNome', tm ? (tm.short || tm.name) : '');
+    txt('luMeta', metaTime(tm));
+    txt('luTime', tm ? tm.name : '');
+    setCrest(document.querySelector('.lu-crest'), tm);
+
+    painel.classList.toggle('sem-lista', !list);
+    var linhas = document.querySelectorAll('#luLista .lu-linha');
+    for (var r = 0; r < linhas.length; r++) {
+      var ln = linhas[r], pl = list ? list[r] : null;
+      ln.classList.toggle('oculta', !pl);
+      if (!pl) continue;
+      var q = function (s) { return ln.querySelector(s); };
+      var nEl = q('.lu-num'), jEl = q('.lu-jog'), pEl = q('.lu-pos');
+      if (nEl) nEl.textContent = pl.num || '–';
+      if (jEl) jEl.textContent = pl.player || '';
+      if (pEl) pEl.textContent = pl.pos || '';
+    }
+  }
+
   function fill(cfg, tema) {
     cfg = cfg || {};
     var cam = document.getElementById('camadaTabela');
@@ -172,6 +255,8 @@ var TabelaDados = (function () {
     fillIntro(cfg, A, B);
     fillFull('int', cfg, A, B);
     fillFull('enc', cfg, A, B);
+    fillLower(cfg, A, B);
+    fillLineups(cfg, times);
   }
 
   return { fill: fill, setFundos: setFundos };

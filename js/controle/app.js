@@ -362,7 +362,8 @@ Controle.voltarLoop = function(){
    FUNDOS DAS CENAS — biblioteca própria (PNG / JPG / GIF)
    O arquivo mora em dados/fundos/; a cena guarda só o caminho.
    ============================================================ */
-Controle.FUNDO_CENAS = [['intro','Abertura'],['intervalo','Intervalo'],['encerramento','Encerramento'],['table','Tabela']];
+Controle.FUNDO_CENAS = [['intro','Abertura'],['intervalo','Intervalo'],['encerramento','Encerramento'],['table','Tabela'],
+                        ['lower','Lower third'],['lineups','Escalação'],['sponsors','Patrocinadores']];
 Controle._fundoAlvo = 'intro';
 
 Controle._fundoMapa = function(){

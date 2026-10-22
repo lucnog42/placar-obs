@@ -1,7 +1,8 @@
 # Overlay de classificação
 
 Cenas ja migradas para HTML/CSS (PHP monta, CSS mostra, JS so preenche):
-`table`, `intro` (abertura), `intervalo`, `encerramento` e `sponsors` (patrocinadores).
+`table`, `intro` (abertura), `intervalo`, `encerramento`, `sponsors` (patrocinadores),
+`lower` (lower third) e `lineups` (escalacao).
 A notificacao do overlay tambem e HTML (`#notifTabela`). As demais cenas seguem
 no canvas do motor.
 

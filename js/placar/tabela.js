@@ -190,7 +190,9 @@ Placar.Tabela = {
             vIcon: e.climaIcone || '',
             spText: e.spText || d.spText || 'PATROCINADORES',
             golsA: e.golsA || '0',
-            golsB: e.golsB || '0'
+            golsB: e.golsB || '0',
+            lineups: this.escalacoes(e.tabelaEscalacoes),   // { timeNormalizado: [jogadores] }
+            form: e.tabelaForm !== 'false'
         };
     },
 

@@ -20,6 +20,8 @@
 #camadaTabela[data-cena="intervalo"]   .cena-intervalo,
 #camadaTabela[data-cena="encerramento"] .cena-encerramento{display:block}
 #camadaTabela[data-cena="sponsors"] .cena-sponsors{display:block}
+#camadaTabela[data-cena="lower"] .cena-lower{display:block}
+#camadaTabela[data-cena="lineups"] .cena-lineups{display:block}
 
 /* ---------- temas (iguais em espírito ao placar) ---------- */
 /* Tema único — La Liga (mesma base do placar). Um só tema para placar + overlay. */
@@ -157,3 +159,52 @@
 .notif-tabela.tipo-vermelho{--nt:#ef4444}
 .notif-tabela.tipo-substituicao{--nt:#22d3ee}
 .notif-tabela.tipo-info{--nt:rgba(var(--ac),1)}
+
+/* ================= LOWER THIRD ================= */
+.cena-lower{display:none}
+.lw-faixa{position:absolute;left:52px;right:52px;top:468px;height:192px;border-radius:20px;
+  display:flex;align-items:center;justify-content:space-between;padding:0 44px;
+  background:rgba(var(--bg),.90);border:1px solid rgba(var(--fg),.14);overflow:hidden}
+.lw-faixa::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(90deg,rgba(var(--ac),.16),transparent 45%,transparent 55%,rgba(var(--ac),.16))}
+.lw-lado{display:flex;align-items:center;gap:22px;width:calc(50% - 150px);position:relative}
+.lw-b{justify-content:flex-end;text-align:right}
+.lw-crest{width:104px;height:104px;flex:0 0 104px}
+.lw-txts{display:flex;flex-direction:column;gap:2px;min-width:0}
+.lw-nome{font-size:24px;font-weight:800;color:rgba(var(--fg),.97);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lw-meta{font-size:15px;font-weight:600;color:rgba(var(--ac),.95)}
+.lw-gols{font-size:14px;color:rgba(var(--fg),.6)}
+.lw-form{display:flex;gap:5px;margin-top:3px}
+.lw-b .lw-form{justify-content:flex-end}
+.lw-centro{position:absolute;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:5px}
+.lw-vs{width:68px;height:68px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:26px;font-weight:900;color:rgba(var(--ac),1);background:rgba(var(--ac),.14);border:2.5px solid rgba(var(--ac),1)}
+.lw-sub{font-size:13px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(var(--fg),.72);max-width:420px;text-align:center}
+.lw-fonte{font-size:12px;color:rgba(var(--fg),.45)}
+#camadaTabela[data-cena="lower"] .lw-faixa{animation:lwIn .5s cubic-bezier(.2,.9,.25,1) both}
+@keyframes lwIn{from{opacity:0;transform:translateY(46px)}to{opacity:1;transform:none}}
+
+/* ================= ESCALACAO ================= */
+.cena-lineups{display:none}
+.lu-painel{position:absolute;left:56px;top:124px;width:1168px;height:520px;box-sizing:border-box;
+  border-radius:20px;background:rgba(var(--fg),.05);border:1px solid rgba(var(--fg),.13);padding:26px 32px}
+.lu-hdr{display:flex;align-items:center;gap:22px}
+.lu-crest{width:104px;height:104px;flex:0 0 104px}
+.lu-hd{display:flex;flex-direction:column;gap:4px;flex:1;min-width:0}
+.lu-nome{font-size:28px;font-weight:800;color:rgba(var(--fg),.97);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lu-meta{font-size:15px;font-weight:600;color:rgba(var(--ac),.95)}
+.lu-dir{display:flex;flex-direction:column;gap:4px;text-align:right;min-width:0}
+.lu-lbl{font-size:12px;font-weight:800;letter-spacing:2px;color:rgba(var(--fg),.55)}
+.lu-time{font-size:14px;color:rgba(var(--fg),.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:400px}
+.lu-lista{margin-top:20px;columns:2;column-gap:24px}
+.lu-linha{display:grid;grid-template-columns:44px 1fr auto;align-items:center;gap:10px;
+  padding:5px 10px;border-radius:9px;background:rgba(var(--fg),.04);margin-bottom:6px;break-inside:avoid}
+.lu-linha:nth-child(odd){background:rgba(var(--fg),.07)}
+.lu-linha.oculta{display:none}
+.lu-num{font-size:15px;font-weight:800;color:rgba(var(--ac),.95);text-align:center}
+.lu-jog{font-size:15px;font-weight:600;color:rgba(var(--fg),.95);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lu-pos{font-size:11px;font-weight:700;color:rgba(var(--fg),.6)}
+.lu-vazio{display:none;margin:60px 0 0;text-align:center;font-size:18px;color:rgba(var(--fg),.5)}
+.lu-painel.sem-lista .lu-vazio{display:block}
+.lu-painel.sem-lista .lu-lista{display:none}
+#camadaTabela[data-cena="lineups"] .lu-painel{animation:lwIn .5s cubic-bezier(.2,.9,.25,1) both}
