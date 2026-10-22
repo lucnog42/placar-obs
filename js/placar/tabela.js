@@ -333,7 +333,9 @@ Placar.Tabela = {
         // fundos das cenas HTML (tabela/abertura/intervalo/encerramento) — sempre, nao so com a tabela ligada
         if (window.TabelaDados && window.TabelaDados.setFundos) window.TabelaDados.setFundos(e.cenaFundos);
         var cc = e.cenaCancelar;
-        if (cc && cc !== this._cenaCancelarSeq) {
+        if (cc && this._cenaCancelarSeq === undefined) {
+            this._cenaCancelarSeq = cc;      // reload: nao age, so memoriza
+        } else if (cc && cc !== this._cenaCancelarSeq) {
             this._cenaCancelarSeq = cc;
             this.cancelarCena();
         }

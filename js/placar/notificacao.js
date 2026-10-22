@@ -10,6 +10,8 @@ Placar.on('notif:changed', function() {
         id = Placar.estado.notifId;
 
     if (!tipo || !texto || !id || id === Placar.ultimaNotifId) return;
+    // primeira leitura depois de um reload: memoriza sem repetir a notificacao
+    if (Placar.ultimaNotifId === undefined) { Placar.ultimaNotifId = id; return; }
     Placar.ultimaNotifId = id;
 
     // Fase D: notificacao desenhada no motor/canvas da tabela (mesmo tema)

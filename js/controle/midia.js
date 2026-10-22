@@ -171,16 +171,15 @@ Controle._itemNotif=function(){
 };
 
 Controle.salvarNotificacao=function(){Controle.enviarNotificacao(false);};
-Controle._cenaForcada=null;
 Controle._gateOverlay=function(prosseguir){
-    if(Controle._cenaForcada){Controle._overlayPendente=prosseguir;Controle.abrirModal('modalConfirmarOverlay');}
+    // cena manual no ar? confirma antes de trocar o conteudo do overlay
+    if(Controle.cenaManualAtiva && Controle.cenaManualAtiva()){Controle._overlayPendente=prosseguir;Controle.abrirModal('modalConfirmarOverlay');}
     else{prosseguir();}
 };
 Controle._confirmarDesligarOverlay=function(){
     var fn=Controle._overlayPendente;Controle._overlayPendente=null;
     Controle.fecharModal('modalConfirmarOverlay');
     if(Controle.voltarLoop)Controle.voltarLoop();
-    Controle._cenaForcada=null;
     if(fn)fn();
 };
 Controle.enviarNotificacao=function(agora){

@@ -141,7 +141,11 @@ Placar._reativar=function(id){
 /* disparo avulso de uma midia (botao "Enviar" das notificacoes) */
 Placar._checarDisparo=function(){
     var seq=Placar.estado.midiaDisparoSeq;
-    if(!seq||seq===Placar._disparoSeq)return;
+    if(!seq)return;
+    // primeira leitura depois de carregar a pagina (reload do OBS): so memoriza.
+    // sem isso o ultimo disparo salvo no estado toca de novo e religa o overlay.
+    if(Placar._disparoSeq===null){Placar._disparoSeq=seq;return;}
+    if(seq===Placar._disparoSeq)return;
     Placar._disparoSeq=seq;
     var m=Placar.getMidia(Placar.estado.midiaDisparoId);
     if(!m)return;

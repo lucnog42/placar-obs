@@ -336,7 +336,8 @@ Controle.renderMenuRapido = function(){
 
 Controle.intervalo = function(k){
   var nomes = { intro:'Abertura', intervalo:'Intervalo', encerramento:'Encerramento' };
-  if(Controle._cenaForcada === k){ Controle.voltarLoop(); Controle._cenaForcada = null; return; }
+  // clicar de novo na cena que ja esta no ar = sair dela
+  if(Controle.cenaManualAtiva && Controle.cenaManualAtiva() === k){ Controle.voltarLoop(); return; }
   var dur = 0;
   var midias = Controle.getMidiasCtrl();
   var id = 'cena_' + k;
@@ -344,14 +345,18 @@ Controle.intervalo = function(k){
   for(var i = 0; i < midias.length; i++){ if(midias[i].id === id){ m = midias[i]; break; } }
   if(!m){ m = { id:id, tipo:'cena', cena:k, nome:nomes[k]||k, duracao:dur, intervalo:0, transicao:'fade' }; midias.push(m); }
   else { m.duracao = dur; }
-  Controle._cenaForcada = k;
-  Controle.setEstado({ midias: JSON.stringify(midias), midiaDisparoId: id, midiaDisparoSeq: String(Date.now()) });
+  // sequencia sempre maior que o ultimo cancelamento (senao o toggle nao acende)
+  var seq = Math.max(Date.now(), (parseInt(Controle.estado.cenaCancelar||0,10)||0) + 1);
+  Controle.setEstado({ midias: JSON.stringify(midias), midiaDisparoId: id, midiaDisparoSeq: String(seq) });
   Controle.renderMidias();
-  Controle.status('ok', '▶ ' + (nomes[k]||k));
+  if(Controle.renderCenasManuais) Controle.renderCenasManuais();
+  Controle.status('ok', '▶ ' + (nomes[k]||k) + ' no ar');
 };
 Controle.voltarLoop = function(){
-  Controle.setEstado({ cenaCancelar: String(Date.now()) });
-  Controle.status('ok', '⏹ De volta ao loop');
+  var seq = Math.max(Date.now(), (parseInt(Controle.estado.midiaDisparoSeq||0,10)||0) + 1);
+  Controle.setEstado({ cenaCancelar: String(seq) });
+  if(Controle.renderCenasManuais) Controle.renderCenasManuais();
+  Controle.status('ok', '⏹ De volta à automação');
 };
 /* ============================================================
    FUNDOS DAS CENAS — biblioteca própria (PNG / JPG / GIF)

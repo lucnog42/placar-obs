@@ -176,14 +176,49 @@ Controle.todasCenas = function (on) {
 Controle.resetarCenas = function () { Controle.salvarCenas(Controle.cenasPadrao()); };
 
 /* ---------- campos simples ---------- */
+/* Cena manual (abertura/intervalo/encerramento) no ar agora.
+   Lido do estado para sobreviver a um reload do painel: vale o ultimo disparo
+   (midiaDisparoId = cena_x) se ele for mais novo que o ultimo cancelamento. */
+Controle.cenaManualAtiva = function () {
+    var e = Controle.estado || {};
+    var id = String(e.midiaDisparoId || '');
+    if (id.indexOf('cena_') !== 0) return null;
+    var d = parseInt(e.midiaDisparoSeq || 0, 10);
+    var c = parseInt(e.cenaCancelar || 0, 10);
+    if (!d || d <= c) return null;
+    return id.slice(5);
+};
+
+/* pinta os três toggles de cena manual */
+Controle.renderCenasManuais = function () {
+    var ativa = Controle.cenaManualAtiva();
+    ['intro', 'intervalo', 'encerramento'].forEach(function (k) {
+        var b = document.getElementById('cenaBtn-' + k); if (!b) return;
+        var on = (ativa === k);
+        if (b.classList) b.classList.toggle('on', on);
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+        var est = b.querySelector ? b.querySelector('.ct-estado') : null;
+        if (est) est.textContent = on ? 'no ar' : 'off';
+    });
+    var box = document.getElementById('cenasManuais');
+    if (box && box.classList) box.classList.toggle('com-cena', !!ativa);
+};
+
 Controle.alternarTabela = function () {
     var ligando = Controle.estado.tabelaAtivo !== 'true';
     if (ligando && !Controle.temClassificacao()) {
-        Controle.status('erro', '❌ Importe o CSV da classificação para ligar o overlay de tabela '
-            + '(abertura, intervalo e encerramento continuam funcionando na aba Operar).');
+        Controle.status('erro', '❌ Importe o CSV da classificação para ligar as Cenas Automáticas '
+            + '(abertura, intervalo e encerramento continuam funcionando aqui embaixo).');
         return;
     }
-    Controle.setEstado({ tabelaAtivo: ligando ? 'true' : 'false' });
+    if (!ligando) {
+        // desligou tudo: encerra também a cena manual que estiver por cima
+        Controle.setEstado({ tabelaAtivo: 'false', cenaCancelar: String(Date.now()) });
+        Controle.status('ok', '⏹ Cenas Automáticas desligadas');
+        return;
+    }
+    Controle.setEstado({ tabelaAtivo: 'true' });
+    Controle.status('ok', '▶ Cenas Automáticas ligadas');
 };
 Controle.definirCenaTabela = function (v) { Controle.setEstado({ tabelaCena: v }); };
 Controle.definirDestaqueTabela = function (v) { Controle.setEstado({ tabelaDestaque: v }); };
@@ -219,15 +254,23 @@ Controle.definirEscudosTabela = function () {
 Controle.aplicarEstadoTabela = function () {
     var e = Controle.estado || {};
     var ligado = e.tabelaAtivo === 'true';
+    var manual = Controle.cenaManualAtiva();
     var bt = document.getElementById('btnTabela');
     if (bt) {
-        bt.innerText = ligado ? '⏹ Desligar overlay' : '▶ Ligar overlay';
-        bt.className = ligado ? 'btn-tabela ligado' : 'btn-tabela';
+        bt.setAttribute('aria-pressed', ligado ? 'true' : 'false');
+        bt.className = 'sw-cenas' + (ligado ? ' on' : '') + (manual ? ' pausada' : '');
+        var sub = document.getElementById('btnTabelaSub');
+        if (sub) {
+            var nomes = { intro: 'Abertura', intervalo: 'Intervalo', encerramento: 'Encerramento' };
+            sub.textContent = manual ? ('pausadas · ' + (nomes[manual] || manual) + ' no ar')
+                                     : (ligado ? 'ligadas · overlay no ar' : 'desligadas · só o placar');
+        }
     }
     var bd = document.getElementById('tabelaBadge');
     if (bd) {
-        bd.innerText = ligado ? 'NO AR' : 'fora do ar';
-        bd.className = ligado ? 'badge no-ar' : 'badge';
+        var noAr = ligado || !!manual;
+        bd.innerText = noAr ? 'NO AR' : 'fora do ar';
+        bd.className = noAr ? 'badge no-ar' : 'badge';
     }
     /* sem classificacao o overlay de tabela nao liga: só abertura/intervalo/encerramento */
     var temCsv = Controle.temClassificacao();
@@ -262,6 +305,7 @@ Controle.aplicarEstadoTabela = function () {
     if (sig !== Controle._timesSig) { Controle._timesSig = sig; Controle.renderSelectTimes(); Controle.renderSelectCena(); }
     Controle.atualizarResumoTabela();
     if (Controle.renderFundos) Controle.renderFundos();
+    if (Controle.renderCenasManuais) Controle.renderCenasManuais();
     Controle.renderCenas();
     if (Controle.renderTimesCrest) Controle.renderTimesCrest();
 };

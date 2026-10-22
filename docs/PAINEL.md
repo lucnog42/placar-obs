@@ -41,7 +41,7 @@ O coração da integração. Abre já expandida.
 
 | Campo | Chave no estado | O que faz |
 |---|---|---|
-| ▶ Ligar overlay | `tabelaAtivo` | liga a camada; o placar sai e o overlay entra |
+| ⚙ Cenas Automáticas | `tabelaAtivo` | liga a automação; o placar sai e o overlay entra. Desligar também encerra cena manual |
 | Tema | `tabelaTema` | Automático (segue o placar) / Escuro / Claro / Neon / Broadcast / Match Facts / Aço / Noturno |
 | Linha do tempo ↔ Cena fixa | `tabelaModo` | toca a sequência ou só uma cena |
 | ▶ Tocar | `tabelaPlay` | volta para a linha do tempo e reinicia a sequência |

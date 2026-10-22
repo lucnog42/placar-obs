@@ -2,9 +2,12 @@
   <h2 class="titulo">🎯 Operar ao vivo</h2>
   <div class="grid-inner">
     <section class="full">
-      <p>Overlay <span class="hint">ligar/desligar + configuração</span></p>
+      <p>Overlay <span class="hint">liga/desliga a automação + configuração</span></p>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-        <button id="btnTabela" class="btn-tabela" onclick="Controle.alternarTabela()" style="width:auto;min-width:170px">▶ Ligar overlay</button>
+        <button id="btnTabela" class="sw-cenas" onclick="Controle.alternarTabela()" aria-pressed="false" title="Liga ou desliga as cenas automáticas do overlay">
+          <span class="sw-dot" aria-hidden="true"></span>
+          <span class="sw-txt"><b>Cenas Automáticas</b><small id="btnTabelaSub">desligadas · só o placar</small></span>
+        </button>
         <span class="badge" id="tabelaBadge">fora do ar</span>
         <button id="toggleNomesBtn" onclick="Controle.alternarNomes()" style="background:#2a3a55">📝 Nomes</button>
         <button onclick="Controle.toggleOverlayPop()" style="background:#2a3a55">⚙️ Configuração</button>
@@ -39,11 +42,20 @@
           <div id="fundoBiblioteca" class="fundo-lib"></div>
         </div>
       </div>
-      <p style="font-size:11px;color:#93a4c0;margin:12px 0 4px">Cenas manuais <span class="hint">abertura · intervalo · encerramento (clique de novo para desligar)</span></p>
-      <div style="display:flex;gap:6px;flex-wrap:wrap">
-        <button onclick="Controle.intervalo('intro')" style="background:#7c3aed;color:#fff;font-size:13px;padding:10px 14px">🔴 Abertura</button>
-        <button onclick="Controle.intervalo('intervalo')" style="background:#b45309;color:#fff;font-size:13px;padding:10px 14px">⏸ Intervalo</button>
-        <button onclick="Controle.intervalo('encerramento')" style="background:#0f172a;color:#fff;font-size:13px;padding:10px 14px">🏁 Encerramento</button>
+      <p style="font-size:11px;color:#93a4c0;margin:12px 0 4px">Cenas manuais <span class="hint">entram por cima da automação · clique de novo para sair</span></p>
+      <div class="cenas-manuais" id="cenasManuais">
+        <button class="cena-toggle" id="cenaBtn-intro" onclick="Controle.intervalo('intro')" aria-pressed="false">
+          <span class="ct-ico">🎬</span>
+          <span class="ct-txt"><b>Abertura</b><small class="ct-estado">off</small></span>
+        </button>
+        <button class="cena-toggle" id="cenaBtn-intervalo" onclick="Controle.intervalo('intervalo')" aria-pressed="false">
+          <span class="ct-ico">⏸</span>
+          <span class="ct-txt"><b>Intervalo</b><small class="ct-estado">off</small></span>
+        </button>
+        <button class="cena-toggle" id="cenaBtn-encerramento" onclick="Controle.intervalo('encerramento')" aria-pressed="false">
+          <span class="ct-ico">🏁</span>
+          <span class="ct-txt"><b>Encerramento</b><small class="ct-estado">off</small></span>
+        </button>
       </div>
     </section>
     <section class="full">

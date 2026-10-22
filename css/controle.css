@@ -299,3 +299,47 @@ h2.titulo{text-align:left}
 .fundo-item span{display:block;font-size:9px;color:#8aa0bd;padding:2px 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fundo-item button{position:absolute;top:2px;right:2px;font-size:10px;padding:1px 4px;border-radius:4px;border:none;background:rgba(0,0,0,.65);color:#fff;cursor:pointer}
 .fundo-vazio{font-size:11px;color:#888}
+
+/* ---- Cenas Automáticas: switch de liga/desliga ---- */
+button.sw-cenas{
+  display:flex;align-items:center;gap:9px;width:auto;min-width:236px;
+  padding:8px 12px;border-radius:9px;border:1px solid #2a3a55;
+  background:#0f1a27;color:#e8eefc;cursor:pointer;text-align:left;
+}
+button.sw-cenas:hover{border-color:#3b5680}
+button.sw-cenas .sw-dot{
+  width:34px;height:19px;border-radius:999px;background:#33415c;position:relative;flex:0 0 34px;
+  transition:background .18s;
+}
+button.sw-cenas .sw-dot::after{
+  content:"";position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;
+  background:#8fa3bf;transition:left .18s,background .18s;
+}
+button.sw-cenas .sw-txt{display:flex;flex-direction:column;line-height:1.2;min-width:0}
+button.sw-cenas .sw-txt b{font-size:13px;font-weight:700}
+button.sw-cenas .sw-txt small{font-size:10px;color:#93a4c0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+button.sw-cenas.on{background:#0d2a1a;border-color:#2f8f5b}
+button.sw-cenas.on .sw-dot{background:#22c55e}
+button.sw-cenas.on .sw-dot::after{left:17px;background:#fff}
+button.sw-cenas.on .sw-txt small{color:#6ee7a8}
+button.sw-cenas.pausada{background:#2a1f0a;border-color:#a97419}
+button.sw-cenas.pausada .sw-dot{background:#f59e0b}
+button.sw-cenas.pausada .sw-dot::after{left:17px;background:#fff}
+button.sw-cenas.pausada .sw-txt small{color:#fbbf24}
+
+/* ---- cenas manuais: toggles claros ---- */
+.cenas-manuais{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.cena-toggle{
+  display:flex;align-items:center;gap:9px;padding:10px;border-radius:9px;cursor:pointer;
+  border:1px solid #2a3a55;background:#101b28;color:#dfe8f5;text-align:left;
+  transition:border-color .15s,background .15s;
+}
+.cena-toggle:hover{border-color:#3b5680;background:#14202f}
+.cena-toggle .ct-ico{font-size:17px;line-height:1;opacity:.75}
+.cena-toggle .ct-txt{display:flex;flex-direction:column;line-height:1.2;min-width:0}
+.cena-toggle .ct-txt b{font-size:12.5px;font-weight:700}
+.cena-toggle .ct-estado{font-size:10px;color:#7d8ea8;text-transform:uppercase;letter-spacing:.04em}
+.cena-toggle.on{background:#0d2a1a;border-color:#22c55e;box-shadow:0 0 0 1px rgba(34,197,94,.35) inset}
+.cena-toggle.on .ct-ico{opacity:1}
+.cena-toggle.on .ct-estado{color:#6ee7a8;font-weight:700}
+.cenas-manuais.com-cena .cena-toggle:not(.on){opacity:.62}

@@ -1,5 +1,8 @@
 @media(max-width:759px){
   body{zoom:2}
+  /* toggles de cena ocupam a largura toda no celular */
+  .cenas-manuais{grid-template-columns:1fr}
+  button.sw-cenas{min-width:0;width:100%}
   #previewWrapper{position:sticky;top:48px;z-index:40}
   /* menu mobile: fonte e botões em 2x */
   .drawer-head{font-size:24px;padding:18px 22px 8px}

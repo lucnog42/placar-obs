@@ -40,11 +40,11 @@
 
 <div class="modal" id="modalConfirmarOverlay">
   <div class="modal-box" style="max-width:420px">
-    <h3>⚠ Overlay ativo</h3>
-    <p style="font-size:13px;color:#e8eefc;margin:0 0 6px">Há uma cena de abertura/intervalo/encerramento no ar. Desligar o overlay e continuar?</p>
+    <h3>⚠ Cena manual no ar</h3>
+    <p style="font-size:13px;color:#e8eefc;margin:0 0 6px">Há uma cena de abertura/intervalo/encerramento no ar. Sair da cena e continuar?</p>
     <div class="modal-actions" style="justify-content:space-between">
       <button class="cancel" onclick="Controle.fecharModal('modalConfirmarOverlay')">Cancelar</button>
-      <button class="ok" onclick="Controle._confirmarDesligarOverlay()" style="background:#b45309">Desligar e continuar</button>
+      <button class="ok" onclick="Controle._confirmarDesligarOverlay()" style="background:#b45309">Sair da cena e continuar</button>
     </div>
   </div>
 </div>
