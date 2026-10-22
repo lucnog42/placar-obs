@@ -772,7 +772,7 @@ if ($method === 'POST') {
             }
         }
         save_estado_for($id, $seed);
-        respond(array('ok' => true, 'id' => $id, 'url' => 'Placar.html?i=' . $id));
+        respond(array('ok' => true, 'id' => $id, 'url' => 'placar.php?i=' . $id));
     }
 
     if ($acao === 'salvar_cor') {

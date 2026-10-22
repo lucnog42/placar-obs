@@ -43,6 +43,16 @@ var TabelaDados = (function () {
   function num(v) { return (v == null || v === '') ? '-' : v; }
 
   function norm(s) { return String(s == null ? '' : s).toLowerCase().replace(/[^a-z0-9]/g, ''); }
+  function pick(raw, key) {
+    if (key == null || key === '') return null;
+    if (typeof key === 'number' || /^\d+$/.test(String(key))) {
+      var i = parseInt(key, 10);
+      return (i >= 0 && i < raw.length) ? raw[i] : null;
+    }
+    for (var k = 0; k < raw.length; k++) if (matchTeam(raw[k], key)) return raw[k];
+    return null;
+  }
+
   function matchTeam(tm, key) {
     if (!tm) return false;
     var n = norm(key); if (!n) return false;
@@ -51,7 +61,7 @@ var TabelaDados = (function () {
            (f && (f.indexOf(n) === 0 || n.indexOf(f) === 0));
   }
 
-  function fillRow(row, tm, cfg, total, pos) {
+  function fillRow(row, tm, cfg, total, pos, isA, isB) {
     var q = function (s) { return row.querySelector(s); };
     var posEl = q('.th-pos'), nameEl = q('.th-name'), ptsEl = q('.th-pts');
     if (!tm) { row.style.display = 'none'; return; }
@@ -79,10 +89,10 @@ var TabelaDados = (function () {
       else ch.textContent = '';
     }
 
-    row.classList.toggle('foco', matchTeam(tm, cfg.a) || matchTeam(tm, cfg.b));
+    row.classList.toggle('foco', !!(isA || isB));
   }
 
-  function fillTable(cfg, times) {
+  function fillTable(cfg, times, A, B) {
     var total = times.length;
     txt('thTtl', cfg.ttl);
     txt('thSub', cfg.sub);
@@ -91,7 +101,10 @@ var TabelaDados = (function () {
     setLogo('thLogo', cfg.logo);
 
     var rows = document.querySelectorAll('#thBody .th-row');
-    for (var i = 0; i < rows.length; i++) fillRow(rows[i], times[i], cfg, total, i + 1);
+    for (var i = 0; i < rows.length; i++) {
+      var tm = times[i];
+      fillRow(rows[i], tm, cfg, total, i + 1, !!tm && tm === A, !!tm && tm === B);
+    }
   }
 
   function fillIntro(cfg, A, B) {
@@ -114,22 +127,20 @@ var TabelaDados = (function () {
     setCrest(document.querySelector('#' + pfx + 'BdB .th-crestbox'), B);
   }
 
-  function fill(cfg) {
+  function fill(cfg, tema) {
+    cfg = cfg || {};
     var cam = document.getElementById('camadaTabela');
-    if (cfg && cam) {
-      if (cfg.tema) cam.setAttribute('data-tema', cfg.tema);
-      if (cfg.layout) cam.setAttribute('data-layout', cfg.layout);
-    }
+    if (cam && tema) cam.setAttribute('data-tema', tema);
     var T = window.Tabela;
-    var times = (T && T.teams) ? T.teams() : ((window.TABELA_DADOS || {}).teams || []);
-    times = times.slice();
-    if (cfg && cfg.sort !== false) {
+    var raw = (T && T.teams) ? (T.teams() || []) : ((window.TABELA_DADOS || {}).teams || []);
+    // cfg.a / cfg.b sao INDICES na lista original (indice()); aceita nome como fallback
+    var A = pick(raw, cfg.a), B = pick(raw, cfg.b);
+    var times = raw.slice();
+    if (cfg.sort !== false) {
       times.sort(function (x, y) { return (y.pts - x.pts) || ((y.f - y.c) - (x.f - x.c)) || ((x.pos || 0) - (y.pos || 0)); });
     }
-    var A = null, B = null;
-    times.forEach(function (t) { if (matchTeam(t, cfg.a)) A = t; if (matchTeam(t, cfg.b)) B = t; });
 
-    fillTable(cfg, times);
+    fillTable(cfg, times, A, B);
     fillIntro(cfg, A, B);
     fillFull('int', cfg, A, B);
     fillFull('enc', cfg, A, B);

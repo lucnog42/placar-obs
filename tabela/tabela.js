@@ -1,5 +1,5 @@
 /* ==========================================================================
-   tabela/tabela.js — motor de cenas da classificacao (overlay de transmissao)
+   tabela/tabela.js — motor canvas das cenas restantes (duel/feature/lineups/sponsors/lower)
    Extraido do overlay standalone: aqui e so desenho, sem painel e sem GIF.
    Uso:  Tabela.setTheme('noturno'); Tabela.setCfg({...});
          Tabela.render(ctx, t, {g:ctx, c:cfg, w:1920, h:1080});
@@ -33,11 +33,11 @@ const THEMES = {
             css:{bg:'#0a0016',panel:'#170029',line:'#40206b',txt:'#f0eaff',mut:'#a48fd0',card:'#1d0038'} },
   broadcast: { g0:'#f7fafd', g1:'#e9eff7', g2:'#dbe4ef', glow:'18,74,140', grid:'rgba(12,32,58,.06)',
             fg:'12,32,58', dk:'255,255,255', panel:'rgba(255,255,255,.90)', acc:'#124a8c', red:'#d21f2c',
-            lay:{intro:'lados',table:'lista',duel:'pilula',feature:'painel',lineups:'grade'},
+            lay:{duel:'pilula',feature:'painel',lineups:'grade'},
             css:{bg:'#f4f7fb',panel:'#ffffff',line:'#c3d2e4',txt:'#0c203a',mut:'#5a708c',card:'#eaf0f7'} },
   matchfacts:{ g0:'#171c24', g1:'#10141b', g2:'#070a0e', glow:'227,6,19', grid:'rgba(255,255,255,.035)',
             fg:'255,255,255', dk:'9,12,17', panel:'rgba(9,12,17,.82)', acc:'#e30613', red:'#e30613',
-            lay:{intro:'lados',table:'grade',duel:'pilula',feature:'painel',lineups:'painel'},
+            lay:{duel:'pilula',feature:'painel',lineups:'painel'},
             css:{bg:'#090c11',panel:'#131922',line:'#2a323d',txt:'#eef1f6',mut:'#9aa5b4',card:'#0e131a'} },
   aco:      { g0:'#123a63', g1:'#0d2b4b', g2:'#061528', glow:'130,200,255', grid:'rgba(190,225,255,.06)',
             fg:'255,255,255', dk:'4,16,31', panel:'rgba(4,16,31,.78)', acc:'#8fd0ff', red:'#ff5f6d',
@@ -45,7 +45,7 @@ const THEMES = {
             css:{bg:'#061528',panel:'#0b2947',line:'#1d4a75',txt:'#eaf4ff',mut:'#9dbcd8',card:'#08203a'} },
   noturno:  { g0:'#04121f', g1:'#061a2b', g2:'#020a12', glow:'0,214,255', grid:'rgba(120,210,255,.05)',
             fg:'236,246,255', dk:'3,13,23', panel:'rgba(3,13,23,.82)', acc:'#22d3ee', red:'#ff4d6d',
-            lay:{intro:'lados',table:'lista',duel:'pilula',feature:'faixa',lineups:'grade'},
+            lay:{duel:'pilula',feature:'faixa',lineups:'grade'},
             css:{bg:'#020a12',panel:'#061a2b',line:'#12405c',txt:'#eaf6ff',mut:'#8fb2c8',card:'#04141f'} },
 };
 let TH = THEMES.escuro;
@@ -152,7 +152,7 @@ function paintBg(g,c,force){
   for(let x=0;x<W;x+=64){ g.beginPath(); g.moveTo(x,0); g.lineTo(x,H); g.stroke(); }
   for(let y=0;y<H;y+=64){ g.beginPath(); g.moveTo(0,y); g.lineTo(W,y); g.stroke(); }
 }
-/* ---------- fundo (imagem opcional por cena: intro/intervalo/encerramento/table) ---------- */
+/* ---------- fundo (imagem opcional por cena) ---------- */
 var FUNDOS = {};
 function setFundo(o){
   FUNDOS = {};
@@ -200,102 +200,12 @@ function drawHeader(g,t,c){
   g.fillStyle='rgba('+TH.glow+',.85)'; g.fillRect(rx-120,90,120,2.5);
 }
 
-/* ---------- cena 1: abertura ---------- */
-function introCentro(g,l,t,c){
-  const p1=easeOut(seg(l,0,.7)), p2=easeOut(seg(l,.45,.7)), p3=easeOut(seg(l,.9,.7));
-  g.save(); g.globalAlpha=p1; g.translate(0,(1-p1)*-40);
-  if(c.logo) loadLogo(c.logo);
-  logoAt(g,W/2,190,64);
-  txt(g,c.ttl,W/2,268,{f:'800 58px '+FF,c:rw(.97),al:'center',max:1120,shrink:26});
-  g.restore();
-  const sp=easeOut(seg(l,1.05,.8));
-  g.save(); g.globalAlpha=sp;
-  txt(g,'HOJE EM CAMPO',W/2,376,{f:'900 96px '+FF,c:ACC,al:'center',ls:3,max:1180,shrink:44});
-  g.restore();
-  // linha que varre
-  const w=Math.max(0,(W*0.62))*easeIO(seg(l,1.2,.9));
-  g.fillStyle=rw(.85); g.fillRect(W/2-w/2,412,w,4);
-  g.save(); g.globalAlpha=p3;
-  txt(g,c.sub,W/2,462,{f:'600 26px '+FF,c:rw(.8),al:'center',ls:2});
-  g.restore();
-  g.save(); g.globalAlpha=p2;
-  const A=TEAMS[c.a], B=TEAMS[c.b];
-  field(g,W/2-430,510,860,104,{bg:rw(.05),r:18});
-  badge(g,c.a,W/2-330,562,72); badge(g,c.b,W/2+330,562,72);
-  txt(g,A.short,W/2-282,562,{f:'700 18px '+FF,c:rw(.97),bl:'middle',max:250,shrink:12});
-  txt(g,B.short,W/2+282,562,{f:'700 18px '+FF,c:rw(.97),bl:'middle',al:'right',max:250,shrink:12});
-  g.textAlign='center';
-  txt(g,'VS',W/2,556,{f:'900 34px '+FF,c:ACC,al:'center',bl:'middle'});
-  const vinfo=[[c.vName,c.vCity].filter(Boolean).join(' · '), c.vTime, [c.vIcon,c.vW].filter(Boolean).join(' ')]
-    .filter(Boolean).join('   ·   ');
-  txt(g,vinfo||'dados oficiais fcf.cat',W/2,592,{f:'600 13.5px '+FF,c:rw(.72),al:'center',bl:'middle',max:820,shrink:10});
-  g.restore();
-  g.save(); g.globalAlpha=p2; txt(g,'FCF · FEDERACIÓ CATALANA DE FUTBOL',W/2,672,{f:'700 14px '+FF,c:rw(.45),al:'center',ls:3}); g.restore();
-}
-
-/* ---------- cena 2: tabela ---------- */
 /* ---------- layouts por tema ---------- */
-const DEFAULT_LAY={intro:'central',table:'lista',duel:'cards',feature:'painel',lineups:'painel'};
+const DEFAULT_LAY={duel:'cards',feature:'painel',lineups:'painel'};
 function layOf(k){ const L=(TH&&TH.lay)||{}; return L[k]||DEFAULT_LAY[k]; }
-function drawIntro(g,l,t,c){ return layOf('intro')==='lados' ? introLados(g,l,t,c) : introCentro(g,l,t,c); }
-function drawTable(g,l,t,c){ return layOf('table')==='grade' ? tableGrade(g,l,t,c) : tableList(g,l,t,c); }
 function drawDuel(g,l,t,c){ return layOf('duel')==='pilula' ? duelPilula(g,l,t,c) : duelCards(g,l,t,c); }
 function drawFeature(g,l,t,c){ return layOf('feature')==='faixa' ? featFaixa(g,l,t,c) : featPainel(g,l,t,c); }
 function drawLineups(g,l,t,c){ return layOf('lineups')==='grade' ? lineupsGrade(g,l,t,c) : lineupsPainel(g,l,t,c); }
-function tableList(g,l,t,c){
-  const A=c.a, B=c.b;
-  const x0=56, y0=118, tw=1168, hh=42, rowH=27, gap=3;
-  // centros/âncoras de cada coluna
-  const CX = { pos:x0+28, crest:x0+66, name:x0+94, pts:x0+644, j:x0+700, e:x0+740, e2:x0+780, p:x0+820,
-               f:x0+874, cc:x0+918, form:x0+968 };
-  // cabeçalho
-  const hIn=easeOut(seg(l,0,.5));
-  g.save(); g.globalAlpha=hIn; field(g,x0,y0,tw,hh,{bg:'rgba('+TH.glow+',.14)',bd:'rgba('+TH.glow+',.38)',r:12});
-  const hl=(s,x,al='left')=>txt(g,s,x,y0+hh/2+1,{f:'800 13px '+FF,c:rw(.82),al,bl:'middle',ls:1});
-  hl('EQUIPE',CX.name, 'center'); hl('PTS',CX.pts,'center'); hl('J',CX.j,'center'); hl('V',CX.e,'center');
-  hl('E',CX.e2,'center'); hl('D',CX.p,'center'); hl('F',CX.f,'center'); hl('C',CX.cc,'center');
-  hl('ÚLTIMOS',CX.form);
-  g.restore();
-
-  const stagger=0.075, dur=0.5;
-  TEAMS.forEach((tm,i)=>{
-    const y=y0+hh+8+i*(rowH+gap);
-    const p=seg(l, 0.25+i*stagger, dur);
-    if(p<=0) return;
-    const e=easeOut(p), focus=(i===A||i===B);
-    const acc = i===A?A_COL : i===B?B_COL : null;
-    const al = focus ? 1 : (c.dim ? 0.42 : 0.92);
-    g.save(); g.globalAlpha=al*e; g.translate((1-e)*-46,0);
-    field(g,x0,y+(1-e)*4,tw,rowH,{bg: focus? rw(.11) : (i%2?rw(.028):rw(.055)),
-      bd: focus? rw(.22) : rw(.05), r:8});
-
-    const zoneCol = c.zone ? ((c.zUp && tm.pos<=c.zUp) ? c.zcUp : ((c.zDn && tm.pos>=c.zDn) ? c.zcDn : null)) : null;
-    txt(g,String(tm.pos),CX.pos,y+rowH/2+1,{f:'800 15px '+FF,c: zoneCol || rw(.8),al:'center',bl:'middle'});
-    badge(g,i,CX.crest,y+rowH/2,22);
-    txt(g,tm.short,CX.name,y+rowH/2+1,{f:(focus?'800':'600')+' 14.5px '+FF,c:focus?rw(.99):rw(.86),bl:'middle',max:470});
-    // PTS com contagem
-    const cp=seg(l, 0.45+i*stagger, .55), val=Math.round(tm.pts*easeOut(cp));
-    txt(g,String(val),CX.pts,y+rowH/2+1,{f:'900 17px '+FF,c:focus?ACC:rw(.95),al:'center',bl:'middle'});
-    const mute=rw(.7);
-    txt(g,String(tm.j),CX.j,y+rowH/2+1,{f:'600 14px '+FF,c:mute,al:'center',bl:'middle'});
-    txt(g,String(tm.g),CX.e,y+rowH/2+1,{f:'600 14px '+FF,c:mute,al:'center',bl:'middle'});
-    txt(g,String(tm.e),CX.e2,y+rowH/2+1,{f:'600 14px '+FF,c:mute,al:'center',bl:'middle'});
-    txt(g,String(tm.p),CX.p,y+rowH/2+1,{f:'600 14px '+FF,c:mute,al:'center',bl:'middle'});
-    txt(g,String(tm.f),CX.f,y+rowH/2+1,{f:'600 14px '+FF,c:mute,al:'center',bl:'middle'});
-    txt(g,String(tm.c),CX.cc,y+rowH/2+1,{f:'600 14px '+FF,c:mute,al:'center',bl:'middle'});
-    const fp=seg(l, 0.5+i*stagger, .5);
-    if(c.form) chips(g,tm.form,CX.form-4,y+rowH/2-9,{s:18,gap:4,alpha:focus?1:.8*easeOut(fp)});
-    g.restore();
-  });
-  // rodapé
-  const fIn=easeOut(seg(l,1.6,.6));
-  g.save(); g.globalAlpha=fIn;
-  txt(g,'Fonte: fcf.cat · PTS=pontos, J=jogos, V/E/D=vitórias/empates/derrotas, F/C=gols pró/contra · cor da posição = zona · ordem por pontos e saldo de gols',
-      x0, 664,{f:'600 11.5px '+FF,c:rw(.5)});
-
-  g.restore();
-}
-
 /* ---------- cena 3: duelo ---------- */
 function duelCards(g,l,t,c){
   const A=TEAMS[c.a], B=TEAMS[c.b];
@@ -525,77 +435,6 @@ function lineupsPainel(g,l,t,c){
   g.restore();
 }
 
-/* ---------- variante: abertura com times lado a lado ---------- */
-function introLados(g,l,t,c){
-  const A=TEAMS[c.a], B=TEAMS[c.b];
-  const p1=easeOut(seg(l,0,.6)), p2=easeOut(seg(l,.35,.8)), p3=easeOut(seg(l,.9,.7));
-  g.save(); g.globalAlpha=p1;
-  txt(g,c.ttl,W/2,142,{f:'800 40px '+FF,c:rw(.97),al:'center',max:1120,shrink:20});
-  txt(g,'HOJE EM CAMPO',W/2,192,{f:'900 26px '+FF,c:ACC,al:'center',ls:7,max:1120,shrink:14});
-  g.fillStyle=rw(.20); g.fillRect(W/2-260,216,520,2);
-  txt(g,c.sub,W/2,244,{f:'600 16px '+FF,c:rw(.72),al:'center',ls:2,max:1120,shrink:10});
-  g.restore();
-  const PY=280, PH=318, PW=440, PL=90, PR=W-90-PW;
-  g.save(); g.globalAlpha=p2;
-  field(g,PL,PY,PW,PH,{bg:rw(.05),bd:rw(.12),r:20});
-  field(g,PR,PY,PW,PH,{bg:rw(.05),bd:rw(.12),r:20});
-  [[A,c.a,PL+PW/2,ink(A_COL),A_COL],[B,c.b,PR+PW/2,ink(B_COL),B_COL]].forEach(([tm,idx,cx,col,raw])=>{
-    badge(g,idx,cx,PY+84,132);
-    const fn=tm.short.toUpperCase(), fs=fn.length>18?22:26;
-    g.font='800 '+fs+'px '+FF;
-    wrap(g,fn,PW-80,2).forEach((ln,k)=>txt(g,ln,cx,PY+186+k*(fs+6),{f:'800 '+fs+'px '+FF,c:rw(.97),al:'center'}));
-    rr(g,cx-96,PY+250,192,38,19); g.fillStyle=rw(.11); g.fill();
-    txt(g,tm.pos+'º · '+tm.pts+' pts',cx,PY+269,{f:'800 16px '+FF,c:col,al:'center',bl:'middle'});
-    g.fillStyle='rgba('+hexToRgb(raw)+',.85)'; g.fillRect(cx-PW/2+18,PY+PH-12,PW-36,4);
-  });
-  g.restore();
-  g.save(); g.globalAlpha=p3;
-  g.fillStyle=rw(.14); g.fillRect(639,312,2,266);
-  const cy=444, r=46+4*Math.sin(t*3);
-  g.beginPath(); g.arc(640,cy,r+14,0,7); g.strokeStyle='rgba('+hexToRgb(ACC)+',.25)'; g.lineWidth=2; g.stroke();
-  g.beginPath(); g.arc(640,cy,r,0,7); g.fillStyle=rd(.92); g.fill(); g.strokeStyle=ACC; g.lineWidth=3; g.stroke();
-  txt(g,'VS',640,cy+1,{f:'900 32px '+FF,c:ACC,al:'center',bl:'middle'});
-  g.restore();
-  g.save(); g.globalAlpha=p2;
-  const vinfo=[[c.vName,c.vCity].filter(Boolean).join(' · '), c.vTime, [c.vIcon,c.vW].filter(Boolean).join(' ')]
-    .filter(Boolean).join('   ·   ');
-  txt(g,vinfo||'dados oficiais fcf.cat',W/2,646,{f:'600 15px '+FF,c:rw(.78),al:'center',max:1000,shrink:11});
-  g.restore();
-  g.save(); g.globalAlpha=p3; txt(g,'FCF · FEDERACIÓ CATALANA DE FUTBOL',W/2,690,{f:'700 13px '+FF,c:rw(.45),al:'center',ls:3}); g.restore();
-}
-
-/* ---------- variante: tabela em 2 colunas ---------- */
-function tableGrade(g,l,t,c){
-  const A=c.a, B=c.b, gap=24, x0=56, y0=118, hh=36, cw=(1168-gap)/2;
-  const hIn=easeOut(seg(l,0,.5));
-  g.save(); g.globalAlpha=hIn;
-  for(let col=0; col<2; col++){
-    const x=x0+col*(cw+gap);
-    field(g,x,y0,cw,hh,{bg:'rgba('+TH.glow+',.14)',bd:'rgba('+TH.glow+',.38)',r:12});
-    txt(g,'EQUIPE',x+26,y0+hh/2+1,{f:'800 12px '+FF,c:rw(.82),bl:'middle',ls:1});
-    txt(g,'ÚLTIMOS',x+cw-150,y0+hh/2+1,{f:'800 12px '+FF,c:rw(.82),al:'center',bl:'middle',ls:1});
-    txt(g,'PTS',x+cw-22,y0+hh/2+1,{f:'800 12px '+FF,c:rw(.82),al:'right',bl:'middle',ls:1});
-  }
-  g.restore();
-  const rowH=44, rgap=6, st=0.05;
-  TEAMS.forEach((tm,i)=>{
-    const col=Math.floor(i/8), row=i%8, x=x0+col*(cw+gap), y=y0+hh+8+row*(rowH+rgap);
-    const p=seg(l,.2+i*st,.45); if(p<=0) return;
-    const e=easeOut(p), focus=(i===A||i===B);
-    g.save(); g.globalAlpha=(focus?1:(c.dim?0.42:0.92))*e; g.translate((1-e)*-40,0);
-    field(g,x,y,cw,rowH,{bg:focus?rw(.11):(row%2?rw(.028):rw(.055)),bd:focus?rw(.22):rw(.05),r:9});
-    txt(g,String(tm.pos),x+24,y+rowH/2+1,{f:'800 15px '+FF,c:zoneOf(tm,c)||rw(.8),al:'center',bl:'middle'});
-    badge(g,i,x+56,y+rowH/2,28);
-    txt(g,tm.short,x+80,y+rowH/2+1,{f:(focus?'800':'600')+' 14px '+FF,c:focus?rw(.99):rw(.86),bl:'middle',max:250,shrink:9});
-    if(c.form) chips(g,tm.form,x+cw-138,y+rowH/2-9,{s:18,gap:4,alpha:focus?1:.8*easeOut(seg(l,.45+i*st,.5))});
-    txt(g,String(Math.round(tm.pts*easeOut(seg(l,.4+i*st,.5)))),x+cw-22,y+rowH/2+1,{f:'900 17px '+FF,c:focus?ACC:rw(.95),al:'right',bl:'middle'});
-    g.restore();
-  });
-  g.save(); g.globalAlpha=easeOut(seg(l,1.4,.6));
-  txt(g,'Fonte: fcf.cat · cor da posição = zona · ordem por pontos e saldo de gols',x0,676,{f:'600 11.5px '+FF,c:rw(.5)});
-  g.restore();
-}
-
 /* ---------- variante: duelo em pílula + comparativo 3 colunas ---------- */
 function duelPilula(g,l,t,c){
   const A=TEAMS[c.a], B=TEAMS[c.b];
@@ -752,33 +591,6 @@ function drawSponsors(g,l,t,c){
   }
 }
 
-/* ---------- cenas manuais: intervalo / encerramento (tela cheia + placar) ---------- */
-function drawPlacarFull(g,l,t,c,titulo,rodape){
-  const A=TEAMS[c.a], B=TEAMS[c.b];
-  const p=easeOut(seg(l,0,.6));
-  g.save(); g.globalAlpha=p; g.translate(0,(1-p)*-40);
-  txt(g,titulo,W/2,290,{f:'900 96px '+FF,c:ACC,al:'center',ls:5,max:1180,shrink:46});
-  g.restore();
-  const sp=easeOut(seg(l,.3,.7));
-  g.save(); g.globalAlpha=sp;
-  field(g,W/2-430,400,860,160,{bg:rw(.05),r:20});
-  badge(g,c.a,W/2-300,480,80); badge(g,c.b,W/2+300,480,80);
-  txt(g,String(c.golsA||'0'),W/2-120,480,{f:'900 88px '+FF,c:A_COL,al:'center',bl:'middle'});
-  txt(g,'-',W/2,480,{f:'900 56px '+FF,c:rw(.4),al:'center',bl:'middle'});
-  txt(g,String(c.golsB||'0'),W/2+120,480,{f:'900 88px '+FF,c:B_COL,al:'center',bl:'middle'});
-  txt(g,A.short,W/2-300,576,{f:'700 18px '+FF,c:rw(.9),al:'center',max:240,shrink:11});
-  txt(g,B.short,W/2+300,576,{f:'700 18px '+FF,c:rw(.9),al:'center',max:240,shrink:11});
-  g.restore();
-  if(rodape){
-    const f=easeOut(seg(l,.8,.7));
-    g.save(); g.globalAlpha=f;
-    txt(g,rodape,W/2,668,{f:'700 16px '+FF,c:rw(.5),al:'center',ls:4});
-    g.restore();
-  }
-}
-function drawIntervalo(g,l,t,c){ drawPlacarFull(g,l,t,c,'INTERVALO',''); }
-function drawEncerramento(g,l,t,c){ drawPlacarFull(g,l,t,c,'FIM DE JOGO','OBRIGADO POR ASSISTIR'); }
-
 /* ---------- cena 4: faixa inferior (3 estilos) ---------- */
 function lowerCompact(g,l,t,c){
   const A=TEAMS[c.a], B=TEAMS[c.b];
@@ -865,17 +677,13 @@ function lowerFull(g,l,t,c){
 function drawScene(g,t,c,kForca){
   const {segs}=timeline(c);
   const s=kForca?{k:kForca,local:t,p:0,t0:0,d:8}:sceneAt(segs,t);
-  if(s.k!=='intro' && s.k!=='intervalo' && s.k!=='encerramento') drawHeader(g,t,c);
-  if(s.k==='intro') drawIntro(g,s.local,t,c);
-  else if(s.k==='table') drawTable(g,s.local,t,c);
-  else if(s.k==='duel') drawDuel(g,s.local,t,c);
+  drawHeader(g,t,c);
+  if(s.k==='duel') drawDuel(g,s.local,t,c);
   else if(s.k==='feature') drawFeature(g,s.local,t,c);
   else if(s.k==='form2') drawForm2(g,s.local,t,c);
   else if(s.k==='lineups') drawLineups(g,s.local,t,c);
   else if(s.k==='sponsors') drawSponsors(g,s.local,t,c);
   else if(s.k==='lower') drawLower(g,s.local,t,c);
-  else if(s.k==='intervalo') drawIntervalo(g,s.local,t,c);
-  else if(s.k==='encerramento') drawEncerramento(g,s.local,t,c);
   return s;
 }
 

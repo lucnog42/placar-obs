@@ -30,8 +30,7 @@ js/placar/tabela-dados.js
 ## Como testar
 
 - OBS / browser: **`placar.php?i=<instancia>`** (a URL do overlay mudou de `Placar.html` para `placar.php`; o preview do Controle já aponta pra lá).
-- Comparar com o motor antigo: `placar.php?i=<id>&tabelaCanvas=1`.
-- `Placar.html` continua existindo como versão canvas (legado).
+- `Placar.html` foi removido nesta branch: o overlay agora é só `placar.php`.
 
 ## Notas
 
@@ -39,6 +38,7 @@ js/placar/tabela-dados.js
 - **Dados FCF**: `j`=jogos, `g`=vitórias, `e`=empates, `p`=derrotas, `f`/`c`=gols; `form` vem `G/P/E` (catalão) e é exibido como V/D/E.
 - **Animações**: CSS puro (entrada escalonada). Não há count-up de pontos (era JS por frame); o número aparece direto.
 - **Tema**: `#camadaTabela[data-tema]` (8 temas em CSS vars), definido pelo estado.
+- **Motor canvas**: agora desenha só as 6 cenas restantes; o código das 4 cenas migradas foi removido de `tabela/tabela.js`.
 - **Playlist**: posição persistida por instância no `localStorage` (commit `d60bdea`), retomada no reload; desligar zera.
 
 ## Validação (neste ambiente, sem PHP/browser reais)

@@ -348,7 +348,7 @@ Placar.Tabela = {
             window.Tabela.setCfg(cfg);
             window.Tabela.loadLogo(cfg.logo, function () { if (Placar.Tabela.ativo) Placar.Tabela.desenhar(); });
             this.cfg = cfg;
-            if (window.TabelaDados) { try { window.TabelaDados.fill(cfg); } catch (e) {} }
+            if (window.TabelaDados) { try { window.TabelaDados.fill(cfg, this.tema()); } catch (e) {} }
             var c = this.chaveDe(cfg);
             if (!this.ativo) {
                 this._chave = c;
@@ -446,9 +446,8 @@ Placar.Tabela = {
         this.aplicarLayout(cena);                      // tamanho + posicao da cena
         this.publicarCena(cena);
         // cenas HTML/CSS: o PHP montou o HTML; aqui so trocamos data-cena (CSS mostra/anima).
-        // ?tabelaCanvas=1 forca o motor canvas (util para comparar/reverter)
-        var forcarCanvas = /[?&]tabelaCanvas=1/.test(location.search);
-        var cenaEl = forcarCanvas ? null : document.querySelector('.cena[data-scene="' + cena + '"]');
+        // as demais cenas seguem no motor canvas.
+        var cenaEl = document.querySelector('.cena[data-scene="' + cena + '"]');
         var cam = this.camada();
         if (cenaEl) {
             if (cam && cam.getAttribute('data-cena') !== cena) cam.setAttribute('data-cena', cena);
