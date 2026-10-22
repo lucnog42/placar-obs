@@ -25,10 +25,6 @@ Controle.aplicarEstado=function(){
     else { if(ltp)ltp.style.display='none'; if(ltn)ltn.textContent=''; }
     document.documentElement.style.setProperty('--corA',e.timeACor||'#ff0000');
     document.documentElement.style.setProperty('--corB',e.timeBCor||'#0000ff');
-    document.querySelectorAll('.tema-btn').forEach(function(b){b.classList.remove('tema-ativo');});
-    var tb=document.querySelector('.tema-btn[data-tema="'+(e.tema||'laliga')+'"]');if(tb)tb.classList.add('tema-ativo');
-    document.querySelectorAll('.anim-btn').forEach(function(b){b.classList.remove('tema-ativo');});
-    var ab=document.querySelector('.anim-btn[data-anim="'+(e.notifAnimacao||'esquerda')+'"]');if(ab)ab.classList.add('tema-ativo');
     document.querySelectorAll('.fonte-btn').forEach(function(b){b.classList.remove('tema-ativo');});
     var fb=document.querySelector('.fonte-btn[data-fonte="'+(e.fonte||'arial')+'"]');if(fb)fb.classList.add('tema-ativo');
     var exp=e.nomesExpandidos==='true';var tgb=document.getElementById('toggleNomesBtn');if(tgb)tgb.innerText=exp?'📝 Siglas':'📝 Expandir Nomes';

@@ -312,41 +312,6 @@ Controle.novoGrupo = function (tipo) {
     .catch(function () {});
 };
 
-Controle.removerGrupo = function (tipo, nome) {
-  if (!confirm('Remover o grupo "' + nome + '"? (os itens não são apagados)')) return;
-  fetch(API + API_AND + 'acao=remover_grupo', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ tipo: tipo, nome: nome })
-  }).then(function (r) { return r.json(); })
-    .then(function () { Controle.carregarGrupos(tipo); })
-    .catch(function () {});
-};
-
-Controle.agruparItem = function (tipo, item) {
-  var g = Controle._gruposCache[tipo] || {};
-  var nomes = Object.keys(g).sort();
-  var msg = 'Grupo para "' + item + '":\n';
-  if (nomes.length) msg += 'Existentes: ' + nomes.join(', ') + '\n';
-  msg += '\nDigite o nome (novo ou existente).';
-  var nome = prompt(msg);
-  if (!nome || !nome.trim()) return;
-  fetch(API + API_AND + 'acao=agrupar_item', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ tipo: tipo, grupo: nome.trim(), item: item })
-  }).then(function (r) { return r.json(); })
-    .then(function () { Controle.carregarGrupos(tipo); })
-    .catch(function () {});
-};
-
-Controle.desagruparItem = function (tipo, item) {
-  fetch(API + API_AND + 'acao=desagrupar_item', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ tipo: tipo, item: item })
-  }).then(function (r) { return r.json(); })
-    .then(function () { Controle.carregarGrupos(tipo); })
-    .catch(function () {});
-};
-
 /* ---------- agrupamento por checkbox (um botão por biblioteca) ---------- */
 Controle.toggleTodosLib = function (tipo) {
   var on = document.getElementById('selTodos-' + tipo); if (!on) return;

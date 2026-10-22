@@ -22,8 +22,6 @@ node test_app2.mjs     # temas do placar, mídias, notificações
 node test_app3.mjs     # painel: campos, presets, uploads
 node test_escudo.mjs   # escudo do banco entra no lugar do monograma
 node test_app4.mjs     # o suite principal do overlay (19 seções)
-node harness.mjs       # ambiente base (usado pelos outros)
-node sheet.mjs         # gera folhas de contato (PNG) das cenas
 ```
 
 `npm test` roda o conjunto todo. Os PNGs saem em `tests/frames/`.

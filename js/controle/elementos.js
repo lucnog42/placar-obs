@@ -83,24 +83,6 @@ Controle._derivarLogoTorneio=function(competicao){
     return slug;
 };
 
-Controle.definirEscudo=function(idImg){
-    var inp=document.createElement('input');inp.type='file';inp.accept='.png';inp.style.display='none';
-    inp.onchange=function(e){
-        var f=e.target.files[0];if(!f)return;
-        var r=new FileReader();
-        r.onload=async function(){
-            var resp=await fetch(API+API_AND+'acao=upload_escudo',{method:'POST',
-                headers:{'Content-Type':'application/json'},
-                body:JSON.stringify({time:(idImg==='escudoA'?'A':'B'),src:r.result})});
-            var data=await resp.json();
-            if(data.ok){var d={};d[idImg]=data.src;Controle.setEstado(d);}
-        };
-        r.readAsDataURL(f);
-    };
-    document.body.appendChild(inp);inp.click();
-    setTimeout(function(){if(inp.parentNode)inp.remove();},1000);
-};
-
 Controle._escudos=[];
 
 Controle.listarEscudos=async function(){

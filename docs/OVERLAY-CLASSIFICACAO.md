@@ -34,25 +34,13 @@ Internamente o motor monta os segmentos (`timeline` / `sceneAt`) e cada cena se
 desenha com progresso local `l` (segundos dentro da cena), com `seg()`/`easeOut`
 para as animações de entrada (linhas que sobem, painéis que abrem etc.).
 
-## Temas
+## Tema
 
-`THEMES` no motor, com paleta (`g0/g1/g2` fundo, `glow`, `panel`, `acc`, `red`),
-`lay` (variante de layout por cena) e `css` (cores para o painel):
-
-| chave | nome no painel |
-|---|---|
-| `escuro` | Escuro |
-| `claro` | Claro |
-| `neon` | Neon |
-| `broadcast` | Broadcast (claro/azul) |
-| `matchfacts` | Match Facts (vermelho) |
-| `aco` | Aço (azul metálico) |
-| `noturno` | Noturno (ciano) |
-
-Além do esquema de cores, **o tema muda o LAYOUT das cenas** via `lay`
-(`table: lista|grade`, `duel: cards|faixa`, `feature: painel|…`,
-`lineups: painel|grade`). Em `tabelaTema: "auto"` o tema do overlay **espelha o
-do placar** (`laliga → escuro`, `colorido → neon`, `simples → matchfacts`).
+Hoje existe **um tema só: La Liga** (`escuro` no motor), unificado entre o placar
+e o overlay. A paleta fica em `css/tabela.css` (`#camadaTabela{--bg/--fg/--ac/--ac2}`)
+e o motor usa `escuro` em `THEMES` (`g0/g1/g2` fundo quase preto, `acc` dourado).
+`lay` (variante de layout por cena) continua existindo no motor, mas o painel não
+expõe mais escolha de tema. Cor de time não entra no design.
 
 ## Layout por cena (arrastar/soltar)
 
@@ -71,9 +59,7 @@ do time nunca é colorido**.
 ## Espelhamento do placar
 
 | placar | overlay |
-|---|---|
-| tema (`laliga`/`colorido`/`simples`) | tema do overlay em modo Automático |
-| `timeACor`, `timeBCor` | cores das laterais, do duelo e da faixa inferior |
+| --- | --- |
 | `escudoA`, `escudoB` | escudo dos times do confronto (só quando a classificação não traz escudo para aquele time) |
 | `competicao`, `grupo`, `categoria`, `fase` | título e subtítulo do cabeçalho |
 | `local`/`hora` (ou `tabelaLocal`/`tabelaHora`) | campo e horário do cabeçalho |

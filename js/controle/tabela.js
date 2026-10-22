@@ -156,20 +156,9 @@ Controle.resetarCenas = function () { Controle.salvarCenas(Controle.cenasPadrao(
 Controle.alternarTabela = function () {
     Controle.setEstado({ tabelaAtivo: Controle.estado.tabelaAtivo === 'true' ? 'false' : 'true' });
 };
-Controle.definirModoTabela = function (v) { Controle.setEstado({ tabelaModo: v }); };
 Controle.definirCenaTabela = function (v) { Controle.setEstado({ tabelaCena: v }); };
-Controle.definirTemaTabela = function (v) { Controle.setEstado({ tabelaTema: 'laliga' }); };
 Controle.definirDestaqueTabela = function (v) { Controle.setEstado({ tabelaDestaque: v }); };
-Controle.definirTimeTabela = function (chave, v) { var o = {}; o[chave] = v; Controle.setEstado(o); };
-Controle.definirTexto = function (chave, v) { var o = {}; o[chave] = v; Controle.setEstado(o); };
 
-/* logo do torneio escolhido dentro do painel do overlay (mesma chave do placar) */
-Controle.selecionarLogoTabela = function () {
-    var sel = document.getElementById('tabelaLogo');
-    var v = sel ? sel.value : '';
-    Controle.setEstado({ logoTorneio: v });
-    Controle.sincronizarLogoTabela();
-};
 /* mantem o seletor do overlay igual ao estado (chamado ao recarregar a lista) */
 Controle.sincronizarLogoTabela = function () {
     var sel = document.getElementById('tabelaLogo'); if (!sel) return;

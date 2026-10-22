@@ -75,9 +75,9 @@ competição/hora/local, importar/exportar JSON em lote).
 
 ### 🎨 Estilo & Posição
 
-Tema do placar (`laliga`, `colorido`, `simples`), fonte, nomes expandidos,
-animação da notificação, escala (tamanho) e posição X/Y do placar na tela,
-mostrar/ocultar a barra de status.
+Tema único (`laliga`, o mesmo usado no overlay), fonte, nomes expandidos,
+escala (tamanho) e posição X/Y do placar na tela, mostrar/ocultar a barra de
+status.
 
 ### ⚽ Jogo
 

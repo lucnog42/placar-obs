@@ -616,47 +616,6 @@ if ($method === 'GET') {
         respond(array('ok' => true));
     }
 
-    if ($acao === 'remover_grupo') {
-        $input = get_post_data();
-        $tipo = isset($input['tipo']) ? $input['tipo'] : '';
-        $nome = isset($input['nome']) ? trim($input['nome']) : '';
-        $g = load_grupos();
-        if (isset($g[$tipo][$nome])) { unset($g[$tipo][$nome]); }
-        save_grupos($g);
-        respond(array('ok' => true));
-    }
-
-    if ($acao === 'agrupar_item') {
-        $input = get_post_data();
-        $tipo = isset($input['tipo']) ? $input['tipo'] : '';
-        $grupo = isset($input['grupo']) ? trim($input['grupo']) : '';
-        $item = isset($input['item']) ? $input['item'] : '';
-        if ($tipo === '' || $grupo === '' || $item === '') { respond_error('Parametros "tipo", "grupo" e "item" obrigatorios.'); }
-        $g = load_grupos();
-        if (!isset($g[$tipo])) { $g[$tipo] = array(); }
-        if (!isset($g[$tipo][$grupo])) { $g[$tipo][$grupo] = array(); }
-        foreach ($g[$tipo] as $k => $itens) {   // remove o item de qualquer outro grupo deste tipo
-            $g[$tipo][$k] = array_values(array_diff($itens, array($item)));
-        }
-        if (!in_array($item, $g[$tipo][$grupo])) { $g[$tipo][$grupo][] = $item; }
-        save_grupos($g);
-        respond(array('ok' => true));
-    }
-
-    if ($acao === 'desagrupar_item') {
-        $input = get_post_data();
-        $tipo = isset($input['tipo']) ? $input['tipo'] : '';
-        $item = isset($input['item']) ? $input['item'] : '';
-        $g = load_grupos();
-        if (isset($g[$tipo])) {
-            foreach ($g[$tipo] as $k => $itens) {
-                $g[$tipo][$k] = array_values(array_diff($itens, array($item)));
-            }
-        }
-        save_grupos($g);
-        respond(array('ok' => true));
-    }
-
     if ($acao === 'listar_perfis') {
         $perfis = array();
         if (is_dir(PERFIS_DIR)) {
@@ -927,41 +886,6 @@ if ($method === 'POST') {
             unlink($path);
         }
         respond(array('ok' => true));
-    }
-
-    if ($acao === 'upload_escudo') {
-        $input = get_post_data();
-        $time = isset($input['time']) ? $input['time'] : '';
-        $src = isset($input['src']) ? $input['src'] : '';
-
-        if (!$time) {
-            respond_error('Parametro "time" obrigatorio.');
-        }
-        if ($time !== 'A' && $time !== 'B' && $time !== 'timeA' && $time !== 'timeB') {
-            respond_error('Parametro "time" deve ser "A" ou "B".');
-        }
-        if (!$src) {
-            respond_error('Parametro "src" obrigatorio (base64 data-uri).');
-        }
-
-        if (!is_dir(ESCUDOS_DIR)) {
-            mkdir(ESCUDOS_DIR, 0755, true);
-        }
-
-        $path = ESCUDOS_DIR . '/' . $time . '.png';
-        $result = save_data_uri($src, $path);
-        if ($result === false) {
-            respond_error('Falha ao decodificar ou salvar imagem.', 500);
-        }
-
-        // Update estado with escudo path
-        $estado = load_estado();
-        $field = ($time === 'timeA') ? 'escudoA' : 'escudoB';
-        $estado['times'][$field] = 'escudos/' . $time . '.png?v=' . time();
-        $estado['estadoVersao'] = intval($estado['estadoVersao']) + 1;
-        save_estado($estado);
-
-        respond(array('ok' => true, 'src' => 'escudos/' . $time . '.png?v=' . time()));
     }
 
     if ($acao === 'upload_escudos_batch') {

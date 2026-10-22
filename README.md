@@ -48,7 +48,7 @@ http://SEU-SERVIDOR/placar/controle.php   → painel
 **Placar (o que a câmera vê)**
 
 - Times A/B com nome, sigla, cor e escudo; gols, cronômetro e período.
-- Três temas de placar: **La Liga**, **Colorido**, **Simples** (`css/*.css`).
+- Tema único **La Liga** (`css/laliga.css`), o mesmo usado no overlay.
 - Pênaltis, contador de gols, notificação de gol/cartão (curta e longa).
 - **Repertório de mídias**: imagem, **GIF animado** e vídeo em ciclo, com
   duração/intervalo e transição; notificações de texto com disparo avulso.
@@ -60,7 +60,7 @@ http://SEU-SERVIDOR/placar/controle.php   → painel
   patrocinadores e faixa inferior.
 - Linha do tempo com visibilidade, **duração por cena (slider com knob)** e
   ordem; ou **cena fixa** (que entra já na cena que estava no ar).
-- 7 temas de overlay; o **tema espelha o do placar** em modo automático.
+- Tema único (La Liga) também no overlay; cor de time não entra no design.
 - Times A/B, cores, escudos, competição, local/hora/clima e **logo do torneio**
   espelhados do placar.
 - **Classificação por CSV** do `fcf.cat` — baixa todos os escudos para a
@@ -101,7 +101,7 @@ js/comum.js            constantes, mapa de chaves (MS) e helpers comuns
 js/eventbus.js         barramento de eventos interno
 js/placar/*.js         lado da transmissão (core, times, tema, gols, mídia…)
 js/controle/*.js       lado do painel (core, elementos, tabela, mídia…)
-css/*.css              temas do placar + CSS do painel
+css/*.css              CSS do placar, do overlay e do painel
 escudos/               banco de escudos (upload; clubes fora do repositório)
 torneios/              banco de logos de torneio (upload)
 midias/                imagens/GIFs/vídeos do repertório (upload)

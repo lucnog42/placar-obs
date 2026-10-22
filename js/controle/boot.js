@@ -1,4 +1,6 @@
 Controle.init();
+/* popula os seletores de cena/times do painel do overlay (antes nunca era chamada: o select "cena fixa" ficava vazio) */
+Controle.initTabela();
 Controle.placarUrl = function(){ return 'placar.php' + ((typeof INSTANCIA !== 'undefined' && INSTANCIA) ? ('?i=' + encodeURIComponent(INSTANCIA)) : ''); };
 var _pf = document.getElementById('previewFrame'); if (_pf) _pf.src = Controle.placarUrl();
 setTimeout(function(){ Controle.listarInstancias(); }, 600);
