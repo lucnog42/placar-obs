@@ -1,121 +1,87 @@
+/* ========================================
+   midia-anim.css — Animações de mídia
+   Entrada + Saída + Estados
+   ======================================== */
+
+/* --- Camada de mídia --- */
 #camadaMidia {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  overflow: hidden;
-  pointer-events: none;
+    position: absolute; inset: 0; z-index: 2;
+    overflow: hidden; pointer-events: none;
 }
 #camadaMidia img, #camadaMidia video {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+    position: absolute; width: 100%; height: 100%;
+    object-fit: cover; opacity: 0;
+    transition: opacity 0.3s ease;
 }
-#camadaMidia img.ativo, #camadaMidia video.ativo {
-  opacity: 1;
+#camadaMidia img.ativo, #camadaMidia video.ativo { opacity: 1; }
+
+/* ===========================
+   ENTRADA — 5 transições
+   =========================== */
+
+/* Fade in */
+#camadaMidia[data-transicao="fade"] img.entrando,
+#camadaMidia[data-transicao="fade"] video.entrando {
+    animation: midiaFadeIn 0.3s ease forwards;
 }
-#camadaMidia[data-transicao=fade] img.entrando, #camadaMidia[data-transicao=fade] video.entrando {
-  animation: midiaFadeIn 0.3s ease forwards;
+/* Slide left (vem da direita) */
+#camadaMidia[data-transicao="slide-left"] img.entrando,
+#camadaMidia[data-transicao="slide-left"] video.entrando {
+    animation: midiaSlideInLeft 0.35s ease forwards;
 }
-#camadaMidia[data-transicao=slide-left] img.entrando, #camadaMidia[data-transicao=slide-left] video.entrando {
-  animation: midiaSlideInLeft 0.35s ease forwards;
+/* Slide right (vem da esquerda) */
+#camadaMidia[data-transicao="slide-right"] img.entrando,
+#camadaMidia[data-transicao="slide-right"] video.entrando {
+    animation: midiaSlideInRight 0.35s ease forwards;
 }
-#camadaMidia[data-transicao=slide-right] img.entrando, #camadaMidia[data-transicao=slide-right] video.entrando {
-  animation: midiaSlideInRight 0.35s ease forwards;
+/* Zoom in */
+#camadaMidia[data-transicao="zoom"] img.entrando,
+#camadaMidia[data-transicao="zoom"] video.entrando {
+    animation: midiaZoomIn 0.35s ease forwards;
 }
-#camadaMidia[data-transicao=zoom] img.entrando, #camadaMidia[data-transicao=zoom] video.entrando {
-  animation: midiaZoomIn 0.35s ease forwards;
+/* None — instantâneo */
+#camadaMidia[data-transicao="none"] img,
+#camadaMidia[data-transicao="none"] video { transition: none; }
+#camadaMidia[data-transicao="none"] img.ativo,
+#camadaMidia[data-transicao="none"] video.ativo { opacity: 1; }
+
+/* ===========================
+   SAÍDA — 5 transições
+   =========================== */
+
+/* Fade out */
+#camadaMidia[data-transicao="fade"] .saindo {
+    animation: midiaFadeOut 0.3s ease forwards;
 }
-#camadaMidia[data-transicao=none] img, #camadaMidia[data-transicao=none] video {
-  transition: none;
+/* Slide out left (vai pra esquerda) */
+#camadaMidia[data-transicao="slide-left"] .saindo {
+    animation: midiaSlideOutRight 0.3s ease forwards;
 }
-#camadaMidia[data-transicao=none] img.ativo, #camadaMidia[data-transicao=none] video.ativo {
-  opacity: 1;
+/* Slide out right (vai pra direita) */
+#camadaMidia[data-transicao="slide-right"] .saindo {
+    animation: midiaSlideOutLeft 0.3s ease forwards;
 }
-#camadaMidia[data-transicao=fade] .saindo {
-  animation: midiaFadeOut 0.3s ease forwards;
+/* Zoom out */
+#camadaMidia[data-transicao="zoom"] .saindo {
+    animation: midiaZoomOut 0.3s ease forwards;
 }
-#camadaMidia[data-transicao=slide-left] .saindo {
-  animation: midiaSlideOutRight 0.3s ease forwards;
-}
-#camadaMidia[data-transicao=slide-right] .saindo {
-  animation: midiaSlideOutLeft 0.3s ease forwards;
-}
-#camadaMidia[data-transicao=zoom] .saindo {
-  animation: midiaZoomOut 0.3s ease forwards;
-}
-#camadaMidia[data-transicao=none] .saindo {
-  opacity: 0;
-  transition: none;
+/* None — corte instantâneo */
+#camadaMidia[data-transicao="none"] .saindo {
+    opacity: 0; transition: none;
 }
 
-@keyframes midiaFadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-@keyframes midiaSlideInLeft {
-  from {
-    transform: translateX(100%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-@keyframes midiaSlideInRight {
-  from {
-    transform: translateX(-100%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-@keyframes midiaZoomIn {
-  from {
-    transform: scale(1.08);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-@keyframes midiaFadeOut {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
-}
-@keyframes midiaSlideOutLeft {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-100%);
-  }
-}
-@keyframes midiaSlideOutRight {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(100%);
-  }
-}
-@keyframes midiaZoomOut {
-  from {
-    transform: scale(1);
-    opacity: 1;
-  }
-  to {
-    transform: scale(1.08);
-    opacity: 0;
-  }
-}
+/* ===========================
+   KEYFRAMES
+   =========================== */
+
+/* Entrada */
+@keyframes midiaFadeIn       { from{opacity:0} to{opacity:1} }
+@keyframes midiaSlideInLeft  { from{transform:translateX(100%)} to{transform:translateX(0)} }
+@keyframes midiaSlideInRight { from{transform:translateX(-100%)} to{transform:translateX(0)} }
+@keyframes midiaZoomIn       { from{transform:scale(1.08);opacity:0} to{transform:scale(1);opacity:1} }
+
+/* Saída */
+@keyframes midiaFadeOut       { from{opacity:1} to{opacity:0} }
+@keyframes midiaSlideOutLeft  { from{transform:translateX(0)} to{transform:translateX(-100%)} }
+@keyframes midiaSlideOutRight { from{transform:translateX(0)} to{transform:translateX(100%)} }
+@keyframes midiaZoomOut       { from{transform:scale(1);opacity:1} to{transform:scale(1.08);opacity:0} }

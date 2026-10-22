@@ -15,9 +15,9 @@ $v = '20261021a';          // cache-busting
 <head>
 <meta charset="UTF-8">
 <title>Placar OBS</title>
-<link rel="stylesheet" href="css/base.css?v=20261022a">
-<link id="tema" rel="stylesheet" href="css/laliga.css?v=20261022a">
-<link rel="stylesheet" href="css/midia-anim.css?v=20261022a">
+<link rel="stylesheet" href="css/base.css?v=20260616b">
+<link id="tema" rel="stylesheet" href="css/laliga.css?v=20260616b">
+<link rel="stylesheet" href="css/midia-anim.css?v=20260616b">
 <link rel="stylesheet" href="css/tabela.css?v=<?= $v ?>">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
