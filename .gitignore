@@ -1,6 +1,9 @@
 # estado em execução — cada instalação tem o seu, criado pelo api.php
 estado.json
 estado.json.bak
+estado-*.json
+estado-*.json.bak
+estado*.lock
 
 # bancos de arquivos: conteúdo enviado pelo operador (não versionar)
 midias/*

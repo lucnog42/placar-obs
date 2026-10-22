@@ -41,6 +41,34 @@ function ensure_dirs() {
         }
     }
 }
+
+/**
+ * Pasta de presets da instancia atual.
+ * Cada instancia tem a sua propria biblioteca: presets/<instancia>/<nome>.json
+ * Sem instancia (chamada generica), mantem a raiz presets/.
+ */
+function presets_dir() {
+    global $INSTANCIA;
+    if ($INSTANCIA === '') { return PRESETS_DIR; }
+    $slug = preg_replace('/[^A-Za-z0-9_-]+/', '_', $INSTANCIA);
+    if ($slug === '') { $slug = 'instancia'; }
+    return PRESETS_DIR . '/' . $slug;
+}
+
+/**
+ * Migracao unica: a biblioteca antiga era compartilhada (presets na raiz).
+ * Na primeira vez que uma instancia usa presets, copia os arquivos da raiz
+ * para a pasta dela (sem apagar os originais).
+ */
+function presets_migrar_raiz($dir) {
+    if ($dir === PRESETS_DIR || is_dir($dir) || !is_dir(PRESETS_DIR)) { return; }
+    @mkdir($dir, 0755, true);
+    $raiz = @glob(PRESETS_DIR . '/*.json');
+    if (!is_array($raiz)) { return; }
+    foreach ($raiz as $f) {
+        @copy($f, $dir . '/' . basename($f));
+    }
+}
 ensure_dirs();
 
 // ---------- instancias (multi-placar) ----------
@@ -324,14 +352,16 @@ if ($method === 'GET') {
 
     if ($acao === 'listar_presets') {
         $presets = array();
-        if (is_dir(PRESETS_DIR)) {
-            $dh = opendir(PRESETS_DIR);
+        $pdir = presets_dir();
+        presets_migrar_raiz($pdir);
+        if (is_dir($pdir)) {
+            $dh = opendir($pdir);
             if ($dh) {
                 while (($entry = readdir($dh)) !== false) {
                     if ($entry === '.' || $entry === '..') continue;
                     if (strtolower(pathinfo($entry, PATHINFO_EXTENSION)) !== 'json') continue;
                     $name = pathinfo($entry, PATHINFO_FILENAME);
-                    $raw = file_get_contents(PRESETS_DIR . '/' . $entry);
+                    $raw = file_get_contents($pdir . '/' . $entry);
                     $data = json_decode($raw, true);
                     if ($data) {
                         $item = array(
@@ -445,13 +475,15 @@ if ($method === 'GET') {
     if ($acao === 'listar_filtros') {
         // Retorna valores unicos de competicao, categoria e fase para os dropdowns
         $comps = array(); $cats = array(); $grupos = array(); $fases = array(); $datas = array(); $horas = array(); $locais = array();
-        if (is_dir(PRESETS_DIR)) {
-            $dh = opendir(PRESETS_DIR);
+        $pdir = presets_dir();
+        presets_migrar_raiz($pdir);
+        if (is_dir($pdir)) {
+            $dh = opendir($pdir);
             if ($dh) {
                 while (($entry = readdir($dh)) !== false) {
                     if ($entry === '.' || $entry === '..') continue;
                     if (strtolower(pathinfo($entry, PATHINFO_EXTENSION)) !== 'json') continue;
-                    $raw = file_get_contents(PRESETS_DIR . '/' . $entry);
+                    $raw = file_get_contents($pdir . '/' . $entry);
                     $data = json_decode($raw, true);
                     if ($data) {
                         if (!empty($data['competicao']) && !in_array($data['competicao'], $comps)) $comps[] = $data['competicao'];
@@ -590,7 +622,7 @@ if ($method === 'GET') {
         if (strpos($nome, '/') !== false || strpos($nome, '\\') !== false || $nome === '.' || $nome === '..') {
             respond_error('Nome invalido.');
         }
-        $path = PRESETS_DIR . '/' . $nome . '.json';
+        $path = presets_dir() . '/' . $nome . '.json';
         if (!file_exists($path)) {
             respond_error('Preset nao encontrado.', 404);
         }
@@ -724,11 +756,12 @@ if ($method === 'POST') {
             respond_error('Nome invalido.');
         }
 
-        if (!is_dir(PRESETS_DIR)) {
-            mkdir(PRESETS_DIR, 0755, true);
+        $pdir = presets_dir();
+        if (!is_dir($pdir)) {
+            mkdir($pdir, 0755, true);
         }
 
-        $path = PRESETS_DIR . '/' . $nome . '.json';
+        $path = $pdir . '/' . $nome . '.json';
         $json = json_encode($dados);
         file_put_contents($path, $json, LOCK_EX);
 
@@ -746,7 +779,7 @@ if ($method === 'POST') {
             respond_error('Nome invalido.');
         }
 
-        $path = PRESETS_DIR . '/' . $nome . '.json';
+        $path = presets_dir() . '/' . $nome . '.json';
         if (file_exists($path)) {
             unlink($path);
         }

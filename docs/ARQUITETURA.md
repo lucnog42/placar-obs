@@ -12,7 +12,7 @@ controle.php ───────────────► api.php ◄──�
                                   ├── escudos/     (banco de escudos)
                                   ├── torneios/    (banco de logos)
                                   ├── midias/      (repertório: img/gif/vídeo)
-                                  └── presets/     (um JSON por preset)
+                                  └── presets/     (uma pasta por instância; um JSON por preset)
 ```
 
 ## O estado
@@ -93,7 +93,7 @@ espelha tema/cores/escudos/times e chama `Tabela.setCfg(cfg)`.
 
 ## Presets
 
-`salvar_preset` grava um JSON em `presets/` com os campos relevantes
+`salvar_preset` grava um JSON em `presets/<instancia>/` com os campos relevantes
 (times, estilo, posição, clima, overlay completo, repertório). O payload é
 escrito **à mão** em `js/controle/elementos.js` (`Controle.salvarPreset`) — ao
 criar um campo novo que deva ir no preset, adicione lá também.
@@ -105,7 +105,7 @@ criar um campo novo que deva ir no preset, adicione lá também.
 | `escudos/` | escudos de time | `upload_escudo`, `upload_escudos_batch`, `importar_escudos`, `atribuir_escudo`, `listar_escudos`, `remover_escudos` |
 | `torneios/` | logos de competição | `upload_logo`, `listar_logos` |
 | `midias/` | repertório (png/gif/webp/svg/mp4) | `upload_midia`, `editar_midia`, `remover_midia` |
-| `presets/` | um JSON por preset | `salvar_preset`, `carregar_preset`, `listar_presets`, `remover_preset` |
+| `presets/<instancia>/` | um JSON por preset (biblioteca isolada por instância) | `salvar_preset`, `carregar_preset`, `listar_presets`, `remover_preset` |
 
 `proxy_imagem?url=…` baixa uma imagem externa pelo servidor (contorna CORS/HTTPS
 mistos) e é o que o import de CSV usa para trazer os escudos da FCF.

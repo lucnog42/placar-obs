@@ -36,7 +36,7 @@ POST api.php
 
 | `?acao=` | Corpo | Resposta |
 |---|---|---|
-| `salvar_preset` | `{nome, dados}` | `{ok:true,nome}` (cria/sobrescreve `presets/<nome>.json`) |
+| `salvar_preset` | `{nome, dados}` | `{ok:true,nome}` (cria/sobrescreve `presets/<instancia>/<nome>.json`) |
 | `remover_preset` | `{nome}` | `{ok:true}` |
 
 ### Escudos (`escudos/`)

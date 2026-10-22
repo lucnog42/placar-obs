@@ -105,7 +105,7 @@ css/*.css              CSS do placar, do overlay e do painel
 escudos/               banco de escudos (upload; clubes fora do repositório)
 torneios/              banco de logos de torneio (upload)
 midias/                imagens/GIFs/vídeos do repertório (upload)
-presets/               presets salvos pelo painel
+presets/<instancia>/   presets salvos pelo painel (uma biblioteca por instância)
 img/                   ícones do próprio app
 dados/                 CSV de exemplo da classificação
 ```
