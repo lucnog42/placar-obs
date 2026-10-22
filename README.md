@@ -101,7 +101,9 @@ js/comum.js            constantes, mapa de chaves (MS) e helpers comuns
 js/eventbus.js         barramento de eventos interno
 js/placar/*.js         lado da transmissão (core, times, tema, gols, mídia…)
 js/controle/*.js       lado do painel (core, elementos, tabela, mídia…)
-css/*.css              temas do placar + CSS do painel
+css/*.css              CSS compilado (temas do placar + painel)
+scss/*.scss            fonte SCSS (tokens em _vars/_mixins; temas em scss/themes/)
+build-css.sh           compila scss/ → css/ (dart-sass via npx)
 escudos/               banco de escudos (upload; clubes fora do repositório)
 torneios/              banco de logos de torneio (upload)
 midias/                imagens/GIFs/vídeos do repertório (upload)
@@ -120,6 +122,20 @@ cd tests && node test_app4.mjs     # overlay: temas, cenas, CSV, escudos, painel
 ```
 
 Veja [`docs/DESENVOLVIMENTO.md`](docs/DESENVOLVIMENTO.md).
+
+### CSS (SCSS)
+
+O CSS é escrito em SCSS e **compilado** para `css/*.css` — o servidor serve os
+`.css` prontos e **não precisa de sass**. Os nomes de saída não mudam.
+
+```bash
+./build-css.sh            # compila tudo (dart-sass via npx)
+./build-css.sh --watch    # recompila ao salvar
+```
+
+Tokens (cores, raios, sombras) em `scss/_vars.scss`; mixins (botões, campos,
+itens de lista, scrollbar) em `scss/_mixins.scss`; os 3 temas compartilham
+`scss/themes/_theme-base.scss`. Commite sempre `.scss` **e** o `.css` gerado.
 
 ## Escudos e logos
 

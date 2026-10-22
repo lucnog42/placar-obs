@@ -5,7 +5,7 @@
  * PHP só monta o HTML (includes por organização). CSS separado desktop/mobile;
  * JS separado em js/controle/*.js (app.js = UI, boot.js = init).
  */
-$v = '20261021a';
+$v = '20261022a';
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">

@@ -5,7 +5,7 @@ Placar.on('estilo:changed', function() {
     // Tema CSS
     var t = Placar.estado.tema || 'laliga',
         link = document.getElementById('tema'),
-        href = 'css/' + t + '.css';
+        href = 'css/' + t + '.css?v=20261022a';
     if (link && link.getAttribute('href') !== href) link.setAttribute('href', href);
 
     // Animação da notificação

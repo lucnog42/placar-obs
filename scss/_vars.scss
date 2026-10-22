@@ -1,0 +1,76 @@
+// ============================================================
+// _vars.scss — tokens compartilhados (cores, raios, sombras)
+// Importado por todos os entrypoints: @use 'vars' as *;
+// ============================================================
+
+// --- Painel legado (tela de configuração) ---
+$bg:            #1e1e1e;
+$panel:         #2c2c2c;
+$panel-2:       #333;
+$panel-3:       #3a3a3a;
+$panel-4:       #444;
+$input-bg:      #3c3c3c;
+$line:          #3a3a3a;
+$line-2:        #444;
+$line-3:        #555;
+$txt:           #eee;
+$txt-dim:       #aaa;
+$txt-mute:      #888;
+$txt-mute-2:    #666;
+
+// --- Shell / wizard (painel novo) ---
+$shell-bg:      #0b0f17;
+$shell-bg-2:    #0b1420;
+$shell-panel:   #0e1624;
+$shell-panel-2: #101a29;
+$shell-panel-3: #14202f;
+$shell-panel-4: #141d2e;
+$shell-panel-5: #16243a;
+$shell-panel-6: #16223a;
+$shell-panel-7: #1d2b45;
+$shell-line:    #22304a;
+$shell-line-2:  #2a3a55;
+$shell-line-3:  #3a4d6b;
+$shell-line-4:  #3c4652;
+$shell-txt:     #e8eefc;
+$shell-txt-2:   #dfe9f3;
+$shell-txt-3:   #cfe6ff;
+$shell-dim:     #93a4c0;
+$shell-mute:    #5b6f88;
+
+// --- Destaque / estado ---
+$gold:      #ffd700;
+$gold-2:    #ffd54f;
+$green:     #4CAF50;
+$green-2:   #2e7d32;
+$green-3:   #4ade80;
+$red:       #f44336;
+$red-2:     #c62828;
+$red-3:     #dc2626;
+$red-4:     #7f1d1d;
+$red-5:     #b3121f;
+$red-6:     #f87171;
+$orange:    #ff9800;
+$blue:      #2196f3;
+$blue-2:    #1565c0;
+$blue-3:    #4ea1ff;
+$blue-4:    #9fd0ff;
+$indigo:    #4338ca;
+$neon:      #22c55e;
+
+// --- Neutros ---
+$white: #fff;
+$black: #000;
+
+// --- Raios ---
+$r-2: 2px;
+$r-3: 3px;
+$r-4: 4px;
+$r-6: 6px;
+$r-8: 8px;
+$r-10: 10px;
+$r-12: 12px;
+$r-pill: 999px;
+
+// --- Sombras ---
+$shadow-card: 0 1px 2px rgba(0, 0, 0, .3);

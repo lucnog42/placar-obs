@@ -1,0 +1,183 @@
+@use 'vars' as *;
+
+// ============================================================
+// base.css — estrutura comum do Placar OBS (os 3 temas herdam)
+// ============================================================
+
+// --- Container do placar ---
+.Placar {
+  display: flex;
+  align-items: center;
+  justify-content: var(--placar-justify, center);
+  gap: var(--placar-gap, 6px);
+  padding: var(--placar-padding, 12px 20px);
+  width: fit-content;
+  min-width: var(--placar-min-width, 500px);
+  background: var(--placar-bg, linear-gradient(135deg, rgba(10,10,10,0.92), rgba(25,25,25,0.88)));
+  color: var(--placar-cor, $white);
+  font-family: 'Arial', sans-serif;
+  border-radius: var(--placar-radius, 10px);
+  border: var(--placar-border, 1px solid rgba(255,215,0,0.15));
+  box-shadow: var(--placar-shadow, 0 4px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05));
+  flex-wrap: wrap;
+  position: relative;
+}
+
+// --- Separador " - " (oculto — timer substitui) ---
+#linha { display: none; }
+
+// --- Timer ---
+.timer {
+  background: var(--timer-bg, rgba(0,0,0,0.5));
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 22px;
+  color: var(--timer-cor, $gold);
+  letter-spacing: 2px;
+}
+
+// --- Escudos ---
+#escudoA, #escudoB {
+  width: var(--escudo-size, 40px);
+  height: var(--escudo-size, 40px);
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+// --- Nomes dos times (animação sigla → completo) ---
+.time {
+  display: inline-flex;
+  align-items: center;
+  overflow: hidden;
+  white-space: nowrap;
+  background: var(--time-bg, rgba(0,0,0,0.3));
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 24px;
+  font-weight: bold;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  gap: 0;
+  position: relative;
+
+  &.expandido {
+    .sigla-text { opacity: 0; transform: translateX(-12px); max-width: 0; overflow: hidden; transition: opacity 0.3s ease, transform 0.3s ease, max-width 0.4s ease; }
+    .full-text  { opacity: 1; max-width: 400px; } // suficiente para qualquer nome
+  }
+}
+
+// Abreviação (sigla) — visível por padrão
+.sigla-text { display: inline-block; opacity: 1; transform: translateX(0); transition: opacity 0.35s ease, transform 0.35s ease; }
+
+// Nome completo — oculto por padrão
+.full-text {
+  display: inline-block; opacity: 0; max-width: 0; overflow: hidden; white-space: nowrap;
+  transition: opacity 0.35s ease 0.15s, max-width 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.1s;
+  vertical-align: top;
+}
+
+// --- Gols ---
+#golsA, #golsB {
+  width: fit-content;
+  background: var(--gols-bg, rgba(255,215,0,0.12));
+  font-size: 28px;
+  font-weight: bold;
+  padding: 4px 14px;
+  border-radius: 6px;
+  min-width: 36px;
+  text-align: center;
+  color: var(--gols-cor, $gold);
+  transition: all 0.3s ease;
+}
+.gol-num { font-size: 30px; color: var(--golnum-cor, $gold); text-shadow: var(--golnum-shadow, 0 0 8px rgba(255,215,0,0.5)); }
+
+// --- Pênaltis ---
+#Penalte { width: 100%; align-items: center; justify-content: space-between; display: flex; margin: 4px auto 0; max-height: 60px; overflow: hidden; transition: opacity 0.5s ease, max-height 0.5s ease; }
+.escondido.escondido { opacity: 0; max-height: 0; margin: 0; }
+
+.Penaltes {
+  width: var(--pen-size, 24px);
+  height: var(--pen-size, 24px);
+  background-color: transparent;
+  border: var(--pen-border, 1px solid rgba(255,255,255,0.15));
+  transform: rotate(45deg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  border-radius: 50%;
+
+  &.gol  { background-color: $green; }
+  &.erro { background-color: $red; }
+}
+#PenaltesA, #PenaltesB { gap: var(--penaltes-gap, 5px); display: flex; }
+
+// --- Notificações: overlay + 4 animações ---
+.notificacao {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  pointer-events: none;
+  overflow: hidden;
+  background: var(--notif-bg, linear-gradient(135deg, rgba(0,0,0,0.88), rgba(15,15,15,0.92)));
+  border-radius: var(--notif-radius, 10px);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+
+  &.show   { opacity: 1; }
+  &.hidden { pointer-events: none; }
+
+  // cores por tipo
+  &.gol      .notif-text { color: var(--notif-gol-cor, $gold); }
+  &.amarelo  .notif-text { color: #f9a825; }
+  &.vermelho .notif-text { color: #ef5350; }
+}
+
+// Texto — aparece com delay após overlay
+.notif-text-wrapper { display: flex; align-items: center; flex: 1; overflow: hidden; padding: 0 15px; }
+// Track com 4 cópias — scroll contínuo
+.notif-track {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: scrollTrack 7.5s linear infinite;
+  animation-play-state: paused;
+  .bola-spin { width: var(--bola-size, 36px); height: var(--bola-size, 36px); object-fit: contain; animation: spinBall var(--bola-duration, 1.8s) linear infinite; flex-shrink: 0; align-self: center; margin-right: 4px; }
+}
+.notificacao.show .notif-track { animation-play-state: running; }
+
+.notif-text { font-family: 'Arial', sans-serif; font-weight: 700; font-size: 36px; white-space: nowrap; padding: 0 15px; color: var(--notif-text-cor, $white); text-shadow: var(--notif-text-shadow, 0 0 20px rgba(255,215,0,0.4)); }
+
+// 4 animações de entrada (clip-path)
+@mixin notif-anim($from, $dur: 0.5s) {
+  clip-path: inset(#{$from});
+  opacity: 1;
+  transition: clip-path $dur cubic-bezier(0.4, 0, 0.2, 1);
+  &.show { clip-path: inset(0 0 0 0); }
+}
+.notificacao {
+  &[data-anim="esquerda"] { @include notif-anim(0 100% 0 0); }
+  &[data-anim="direita"]  { @include notif-anim(0 0 0 100%); }
+  &[data-anim="centro"]   { @include notif-anim(0 50% 0 50%); }
+  &[data-anim="topo"]     { @include notif-anim(0 0 100% 0, 0.45s); }
+}
+
+// ========================================
+// OVERLAY DE TABELAS
+// ========================================
+#camadaTabela { position: absolute; inset: 0; z-index: 20; opacity: 0; pointer-events: none; transition: opacity .45s ease;
+  &.ativa { opacity: 1; }
+}
+#tabelaCanvas { width: 1920px; height: 1080px; display: block; }
+#placarWrapper { transition: opacity .35s ease, filter .35s ease;
+  &.saindo { opacity: 0; filter: blur(3px); }
+}
+
+// ========================================
+// KEYFRAMES compartilhadas
+// ========================================
+@keyframes scrollTrack { 0% { transform: translateX(0); } 100% { transform: translateX(-75%); } }
+@keyframes spinBall { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }

@@ -1,0 +1,74 @@
+@use '../vars' as *;
+@use 'theme-base' as *;
+
+// ============================================================
+// TEMA: COLORIDO — Gradiente dos Times
+// ============================================================
+:root {
+  // Placar
+  --placar-justify: space-between;
+  --placar-gap: 8px;
+  --placar-padding: 10px 16px;
+  --placar-min-width: 500px;
+  --placar-bg: linear-gradient(90deg,
+    var(--corA, #ff0000) 0%,
+    color-mix(in srgb, var(--corA, #ff0000) 40%, var(--corB, #0000ff) 60%) 50%,
+    var(--corB, #0000ff) 100%);
+  --placar-cor: #fff;
+  --placar-radius: 10px;
+  --placar-border: none;
+  --placar-shadow: 0 4px 20px rgba(0,0,0,0.3);
+
+  // Timer
+  --timer-bg: rgba(0,0,0,0.35);
+  --timer-cor: #fff;
+
+  // Escudos
+  --escudo-size: 40px;
+
+  // Times
+  --time-bg: rgba(0,0,0,0.3);
+
+  // Gols
+  --gols-bg: rgba(0,0,0,0.3);
+  --gols-cor: #fff;
+  --golnum-cor: #fff;
+  --golnum-shadow: 0 0 8px rgba(255,215,0,0.6);
+
+  // Pênaltis
+  --pen-size: 24px;
+  --pen-border: 1px solid rgba(255,255,255,0.15);
+  --penaltes-gap: 5px;
+
+  // Notificação
+  --notif-bg: linear-gradient(90deg,
+    var(--corA, #ff0000) 0%,
+    rgba(0,0,0,0.88) 50%,
+    var(--corB, #0000ff) 100%);
+  --notif-radius: 10px;
+  --notif-text-cor: #fff;
+  --notif-text-shadow: 0 0 12px rgba(0,0,0,0.6);
+  --notif-gol-cor: #ffd700;
+
+  // Bola
+  --bola-size: 36px;
+  --bola-duration: 1.8s;
+}
+
+// --- Vidro fosco ---
+.timer { backdrop-filter: blur(4px); }
+.time  { backdrop-filter: blur(2px); }
+#golsA, #golsB { backdrop-filter: blur(2px); }
+
+// --- Pênaltis / bola: glow dourado ---
+@include glow-gold;
+
+// --- Ordem visual ---
+@include order((
+  '#golsA': 1, '#timeA': 2, '#escudoA': 3, '.timer': 4,
+  '#escudoB': 5, '#timeB': 6, '#golsB': 7,
+));
+
+// --- Keyframes específicos ---
+@include kf-pulse;
+@include kf-leader(rgba(255,255,255,0.3), rgba(255,255,255,0.6));
