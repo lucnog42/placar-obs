@@ -21,7 +21,7 @@ Controle.aplicarEstado=function(){
     var _ci=document.getElementById('climaIcone');if(_ci&&e.climaIcone)_ci.value=e.climaIcone;
     // Logo do torneio
     var ltp=document.getElementById('logoTorneioPreview'),ltn=document.getElementById('logoTorneioNome');
-    if(e.logoTorneio){ if(ltp){ltp.src='torneios/'+e.logoTorneio;ltp.style.display='';} if(ltn)ltn.textContent=e.logoTorneio; }
+    if(e.logoTorneio){ if(ltp){ltp.src=DADOS+'torneios/'+e.logoTorneio;ltp.style.display='';} if(ltn)ltn.textContent=e.logoTorneio; }
     else { if(ltp)ltp.style.display='none'; if(ltn)ltn.textContent=''; }
     document.documentElement.style.setProperty('--corA',e.timeACor||'#ff0000');
     document.documentElement.style.setProperty('--corB',e.timeBCor||'#0000ff');

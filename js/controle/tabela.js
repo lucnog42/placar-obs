@@ -170,7 +170,7 @@ Controle.sincronizarLogoTabela = function () {
     }
     sel.value = v;
     var prev = document.getElementById('tabelaLogoPrev');
-    if (prev) { if (v) { prev.src = 'torneios/' + v; prev.style.display = ''; } else { prev.style.display = 'none'; } }
+    if (prev) { if (v) { prev.src = DADOS+'torneios/' + v; prev.style.display = ''; } else { prev.style.display = 'none'; } }
 };
 
 Controle.definirZonasTabela = function () {
@@ -366,7 +366,7 @@ Controle.escudosFaltando = function (itens, biblioteca) {
         var base = Controle.arquivoEscudo(it.nome);
         if (vistos[base]) return;                       // time repetido no CSV
         vistos[base] = true;
-        if (na[base.toLowerCase()]) jaTinha.push({ nome: it.nome, arquivo: 'escudos/' + base + '.png' });
+        if (na[base.toLowerCase()]) jaTinha.push({ nome: it.nome, arquivo: DADOS+'escudos/' + base + '.png' });
         else fila.push(it);
     });
     return { novos: fila, jaTinha: jaTinha };

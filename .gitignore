@@ -1,35 +1,10 @@
-# estado em execução — cada instalação tem o seu, criado pelo api.php
-estado.json
-estado.json.bak
-estado-*.json
-estado-*.json.bak
-estado*.lock
-
-# bancos de arquivos: conteúdo enviado pelo operador (não versionar)
-midias/*
-!midias/.gitkeep
-torneios/*
-!torneios/.gitkeep
-presets/*
-!presets/.gitkeep
-fundos/*
-!fundos/.gitkeep
-
-# escudos: só as cores genéricas do app entram no repositório.
-# Escudos de clubes são marcas de terceiros — baixe pelo import de CSV ou
-# coloque os seus em escudos/ (o git vai ignorar).
-escudos/*
-!escudos/.gitkeep
-!escudos/Amarelo.png
-!escudos/Azul.png
-!escudos/Branco.png
-!escudos/Laranja.png
-!escudos/Preto.png
-!escudos/Roxo.png
-!escudos/Verde.png
-!escudos/Vermelho.png
-!escudos/timeA.png
-!escudos/timeB.png
+# ===== DADOS DO USUÁRIO =====
+# Tudo que o operador cria em runtime (estado, presets, escudos, fundos,
+# mídias, torneios, CSVs) mora em dados/ — ver config.php.
+# O repositório é só código: uma atualização (git pull, rsync) nunca toca aqui.
+# A única exceção é o .htaccess, que protege os JSONs e fica versionado.
+dados/*
+!dados/.htaccess
 
 # testes
 tests/node_modules/

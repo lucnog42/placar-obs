@@ -1,0 +1,15 @@
+# Dados do usuário — nada aqui deve ser acessível por URL, exceto as imagens.
+# (nginx: negar location ~ /dados/.*\.(json|php|lock|bak|tmp|ini)$)
+Options -Indexes
+
+<IfModule mod_authz_core.c>
+    <FilesMatch "(^\.)|\.(json|php|lock|bak|tmp|ini|md)$">
+        Require all denied
+    </FilesMatch>
+</IfModule>
+<IfModule !mod_authz_core.c>
+    <FilesMatch "(^\.)|\.(json|php|lock|bak|tmp|ini|md)$">
+        Order allow,deny
+        Deny from all
+    </FilesMatch>
+</IfModule>

@@ -159,7 +159,7 @@ Placar.Tabela = {
             zDn: parseInt(e.tabelaZonaDn, 10) || d.zDn || 14,
             zcUp: e.tabelaZonaCorUp || d.zcUp || '#22c55e',
             zcDn: e.tabelaZonaCorDn || d.zcDn || '#ef4444',
-            logo: lt ? ('torneios/' + lt) : '',
+            logo: lt ? (DADOS + 'torneios/' + lt) : '',
             vName: e.tabelaLocal || e.local || '',
             vCity: '',
             vTime: e.tabelaHora || e.hora || '',
@@ -262,7 +262,7 @@ Placar.Tabela = {
             var im = new Image();
             im.onload = function () { imgs[i] = im; if (--pend === 0) fim(); };
             im.onerror = function () { imgs[i] = null; if (--pend === 0) fim(); };
-            im.src = 'torneios/' + nome;
+            im.src = DADOS + 'torneios/' + nome;
         });
         function fim() { window.Tabela.setPatrocinadores(imgs); if (self.ativo) self.desenhar(performance.now()); }
     },

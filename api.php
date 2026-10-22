@@ -22,22 +22,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 // ---------- helpers ----------
 
 define('BASE_DIR', dirname(__FILE__));
-define('ESTADO_FILE', BASE_DIR . '/estado.json');
-define('PRESETS_DIR', BASE_DIR . '/presets');
-define('ESCUDOS_DIR', BASE_DIR . '/escudos');
-define('MIDIAS_DIR', BASE_DIR . '/midias');
-define('CORES_FILE', BASE_DIR . '/cores.json');
-define('GRUPOS_FILE', BASE_DIR . '/grupos.json');
-define('CSVS_DIR', BASE_DIR . '/csvs');
-define('FUNDOS_DIR', BASE_DIR . '/fundos');
-define('LOCK_FILE', BASE_DIR . '/estado.lock');
-define('ESTADO_BAK', BASE_DIR . '/estado.json.bak');
+require_once BASE_DIR . '/config.php';          // DATA_DIR (dados do usuario)
+
+define('DADOS_URL', 'dados');                   // prefixo publico das midias do usuario
+define('DADOS_PADRAO_DIR', BASE_DIR . '/img/escudos');   // escudos que sao codigo
+
+define('ESTADO_FILE', DATA_DIR . '/estado.json');
+define('ESTADO_BAK', DATA_DIR . '/estado.json.bak');
+define('LOCK_FILE', DATA_DIR . '/estado.lock');
+define('INSTANCIAS_FILE', DATA_DIR . '/instancias.json');
+define('PRESETS_DIR', DATA_DIR . '/presets');
+define('ESCUDOS_DIR', DATA_DIR . '/escudos');
+define('MIDIAS_DIR', DATA_DIR . '/midias');
+define('TORNEIOS_DIR', DATA_DIR . '/torneios');
+define('FUNDOS_DIR', DATA_DIR . '/fundos');
+define('CSVS_DIR', DATA_DIR . '/csvs');
+define('CORES_FILE', DATA_DIR . '/cores.json');
+define('GRUPOS_FILE', DATA_DIR . '/grupos.json');
 
 function ensure_dirs() {
-    $dirs = array(PRESETS_DIR, ESCUDOS_DIR, MIDIAS_DIR, CSVS_DIR, FUNDOS_DIR);
+    $novo_escudos = !is_dir(ESCUDOS_DIR);
+    $dirs = array(DATA_DIR, PRESETS_DIR, ESCUDOS_DIR, MIDIAS_DIR, TORNEIOS_DIR, CSVS_DIR, FUNDOS_DIR);
     foreach ($dirs as $d) {
         if (!is_dir($d)) {
             mkdir($d, 0755, true);
+        }
+    }
+    // escudos padrao (que sao codigo, em img/escudos) entram na primeira execucao
+    if ($novo_escudos && is_dir(DADOS_PADRAO_DIR)) {
+        $pad = @glob(DADOS_PADRAO_DIR . '/*.png');
+        if (is_array($pad)) {
+            foreach ($pad as $f) {
+                $dst = ESCUDOS_DIR . '/' . basename($f);
+                if (!file_exists($dst)) { @copy($f, $dst); }
+            }
         }
     }
 }
@@ -83,21 +101,21 @@ if ($INSTANCIA === '.' || $INSTANCIA === '..') { $INSTANCIA = ''; }
 
 function estado_path() {
     global $INSTANCIA;
-    return ($INSTANCIA === '') ? (BASE_DIR . '/estado.json') : (BASE_DIR . '/estado-' . $INSTANCIA . '.json');
+    return ($INSTANCIA === '') ? (DATA_DIR . '/estado.json') : (DATA_DIR . '/estado-' . $INSTANCIA . '.json');
 }
 
 function estado_bak_path() {
     global $INSTANCIA;
-    return ($INSTANCIA === '') ? (BASE_DIR . '/estado.json.bak') : (BASE_DIR . '/estado-' . $INSTANCIA . '.json.bak');
+    return ($INSTANCIA === '') ? (DATA_DIR . '/estado.json.bak') : (DATA_DIR . '/estado-' . $INSTANCIA . '.json.bak');
 }
 
 function estado_lock_path() {
     global $INSTANCIA;
-    return ($INSTANCIA === '') ? (BASE_DIR . '/estado.lock') : (BASE_DIR . '/estado-' . $INSTANCIA . '.lock');
+    return ($INSTANCIA === '') ? (DATA_DIR . '/estado.lock') : (DATA_DIR . '/estado-' . $INSTANCIA . '.lock');
 }
 
 function instancias_path() {
-    return BASE_DIR . '/instancias.json';
+    return INSTANCIAS_FILE;
 }
 
 function cores_path() {
@@ -717,7 +735,7 @@ if ($method === 'POST') {
         }
         save_instancias($novas);
         foreach (array('estado-' . $id . '.json', 'estado-' . $id . '.json.bak', 'estado-' . $id . '.lock') as $f) {
-            $p = BASE_DIR . '/' . $f;
+            $p = DATA_DIR . '/' . $f;
             if (file_exists($p)) { @unlink($p); }
         }
         respond(array('ok' => true));
@@ -842,7 +860,7 @@ if ($method === 'POST') {
         }
         $time_short = ($time === 'timeA' || $time === 'A') ? 'A' : 'B';
 
-        $src = 'escudos/' . $nome . '.png?v=' . time();
+        $src = DADOS_URL . '/escudos/' . $nome . '.png?v=' . time();
 
         $estado = load_estado();
         $field = ($time_short === 'A') ? 'escudoA' : 'escudoB';
@@ -958,7 +976,7 @@ if ($method === 'POST') {
                 $m['transicao'] = $transicao;
                 $m['duracao'] = $duracao;
                 $m['intervalo'] = $intervalo;
-                $m['src'] = ($tipo === 'texto') ? '' : ('midias/' . $id . '.' . $ext);
+                $m['src'] = ($tipo === 'texto') ? '' : (DADOS_URL . '/midias/' . $id . '.' . $ext);
                 if ($tipo === 'texto') {
                     $m['texto'] = isset($input['texto']) ? $input['texto'] : '';
                     $m['notif'] = isset($input['notif']) ? $input['notif'] : '';
@@ -977,7 +995,7 @@ if ($method === 'POST') {
                 'transicao' => $transicao,
                 'duracao' => $duracao,
                 'intervalo' => $intervalo,
-                'src' => ($tipo === 'texto') ? '' : ('midias/' . $id . '.' . $ext)
+                'src' => ($tipo === 'texto') ? '' : (DADOS_URL . '/midias/' . $id . '.' . $ext)
             );
             if ($tipo === 'texto') {
                 $ultimo = count($midiasList) - 1;
@@ -1089,8 +1107,8 @@ if ($method === 'POST') {
         if (!$src) {
             respond_error('Parametro "src" obrigatorio (base64 data-uri).');
         }
-        if (!is_dir(BASE_DIR . '/torneios')) {
-            mkdir(BASE_DIR . '/torneios', 0755, true);
+        if (!is_dir(TORNEIOS_DIR)) {
+            mkdir(TORNEIOS_DIR, 0755, true);
         }
         $ext = 'png';
         if (strpos($src, 'data:image/jpeg') === 0 || strpos($src, 'data:image/jpg') === 0) $ext = 'jpg';
@@ -1102,7 +1120,7 @@ if ($method === 'POST') {
         $base = preg_replace('/[^A-Za-z0-9_\-]/', '_', pathinfo($base, PATHINFO_FILENAME));
         if ($base === '' || $base === '.' || $base === '..') $base = 'logo_' . time();
         $arquivo = $base . '.' . $ext;
-        if (save_data_uri($src, BASE_DIR . '/torneios/' . $arquivo) === false) {
+        if (save_data_uri($src, TORNEIOS_DIR . '/' . $arquivo) === false) {
             respond_error('Falha ao salvar logo.', 500);
         }
         respond(array('ok' => true, 'arquivo' => $arquivo));
@@ -1135,7 +1153,7 @@ if ($method === 'POST') {
         if (save_data_uri($src, FUNDOS_DIR . '/' . $arquivo) === false) {
             respond_error('Falha ao salvar fundo.', 500);
         }
-        respond(array('ok' => true, 'arquivo' => 'fundos/' . $arquivo));
+        respond(array('ok' => true, 'arquivo' => DADOS_URL . '/fundos/' . $arquivo));
     }
 
     if ($acao === 'remover_logo') {
@@ -1144,7 +1162,7 @@ if ($method === 'POST') {
         if ($nome === '' || strpos($nome, '/') !== false || strpos($nome, '\\') !== false || $nome === '.' || $nome === '..') {
             respond_error('Nome invalido.');
         }
-        $path = BASE_DIR . '/torneios/' . $nome;
+        $path = TORNEIOS_DIR . '/' . $nome;
         if (file_exists($path)) { @unlink($path); }
         respond(array('ok' => true));
     }
@@ -1171,7 +1189,7 @@ if ($method === 'POST') {
             elseif (strpos($src, 'data:image/webp') === 0) $ext = 'webp';
             $arquivo = $base . '.' . $ext;
             if (save_data_uri($src, ESCUDOS_DIR . '/' . $arquivo) === false) continue;
-            $salvos[] = array('nome' => $nome, 'arquivo' => 'escudos/' . $arquivo);
+            $salvos[] = array('nome' => $nome, 'arquivo' => DADOS_URL . '/escudos/' . $arquivo);
         }
         respond(array('ok' => true, 'salvos' => $salvos));
     }

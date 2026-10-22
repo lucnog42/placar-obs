@@ -92,7 +92,7 @@ e redesenha a cada imagem que chega; sem imagem, o motor cai no monograma do tim
 3. Chama `listar_escudos` e confere o que já existe no banco.
 4. Baixa o que falta (`proxy_imagem` para URLs, data URI direto), envia em lotes
    para `importar_escudos` e **troca o `crest` de cada time pelo caminho local**
-   (`escudos/<time>.png`).
+   (`dados/escudos/<time>.png`).
 5. Publica a lista atualizada: como o escudo entrou na assinatura dos times
    (`chaveTimes`), o placar reconhece a mudança e o motor recarrega.
 

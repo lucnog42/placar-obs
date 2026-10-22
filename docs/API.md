@@ -17,7 +17,7 @@ resposta é JSON. `Content-Type: application/json`, CORS liberado e
 | *(nenhum)* | `v` (opcional) | estado completo, ou `{_same:true,v:N}` |
 | `listar_presets` | `competicao`, `categoria`, `grupo`, `fase`, `data`, `hora`, `local`, `busca` (filtros opcionais) | `{presets:[{nome,competicao,…}]}` |
 | `listar_filtros` | — | valores distintos para os seletores: `{competicao:[…],categoria:[…],grupo:[…],fase:[…],data:[…],hora:[…],local:[…]}` |
-| `listar_logos` | — | `{logos:["pirineos.png", …]}` (banco `torneios/`) |
+| `listar_logos` | — | `{logos:["pirineos.png", …]}` (banco `dados/torneios/`) |
 | `listar_escudos` | — | `{escudos:["POMAR__C_D__A", …]}` (nomes **sem** extensão; só `.png`) |
 | `carregar_preset` | `nome` | o JSON do preset (`{nome,timeA,…,tabelaCenas,…}`) |
 | `proxy_imagem` | `url` (http/https, codificada) | a imagem baixada, com CORS liberado |
@@ -36,14 +36,14 @@ POST api.php
 
 | `?acao=` | Corpo | Resposta |
 |---|---|---|
-| `salvar_preset` | `{nome, dados}` | `{ok:true,nome}` (cria/sobrescreve `presets/<instancia>/<nome>.json`) |
+| `salvar_preset` | `{nome, dados}` | `{ok:true,nome}` (cria/sobrescreve `dados/presets/<instancia>/<nome>.json`) |
 | `remover_preset` | `{nome}` | `{ok:true}` |
 
-### Escudos (`escudos/`)
+### Escudos (`dados/escudos/`)
 
 | `?acao=` | Corpo | Resposta |
 |---|---|---|
-| `upload_escudo` | `{time:"A"\|"B", src}` (data URI base64) | `{ok:true, src:"escudos/A.png?v=…"}` |
+| `upload_escudo` | `{time:"A"\|"B", src}` (data URI base64) | `{ok:true, src:"dados/escudos/A.png?v=…"}` |
 | `upload_escudos_batch` | `{arquivos:[{nome,src}, …]}` | `{ok:true, count, resultados:[…]}` |
 | `atribuir_escudo` | `{nome, time:"A"\|"B"}` | `{ok:true, src}` (usa um escudo já do banco) |
 | `remover_escudos` | `{nomes:[…]}` | `{ok:true, removidos, resultados:[…]}` |
@@ -54,7 +54,7 @@ O nome do arquivo é o nome do time sem acento/espaço/pon­tuação
 `importar_escudos` é o que o import de CSV usa: recebe os times e devolve o
 caminho local de cada um para o painel gravar em `tabelaTimes`.
 
-### Mídias (`midias/`)
+### Mídias (`dados/midias/`)
 
 | `?acao=` | Corpo | Resposta |
 |---|---|---|
@@ -65,7 +65,7 @@ caminho local de cada um para o painel gravar em `tabelaTimes`.
 O item de mídia vive no estado (`midia.midias`), com `arquivo`, `nome`, `tipo`,
 `dur`, `intervalo`, `ativo` e o texto quando é notificação.
 
-### Logo do torneio (`torneios/`)
+### Logo do torneio (`dados/torneios/`)
 
 | `?acao=` | Corpo | Resposta |
 |---|---|---|

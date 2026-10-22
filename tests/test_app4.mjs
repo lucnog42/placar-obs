@@ -12,7 +12,7 @@ class SafeImage extends Image {
     set src(v) {
         try {
             let p = String(v);
-            if (p.indexOf('escudos/') === 0 || p.indexOf('midias/') === 0 || p.indexOf('torneios/') === 0) p = B + p;
+            if (p.indexOf('dados/') === 0 || p.indexOf('escudos/') === 0 || p.indexOf('midias/') === 0 || p.indexOf('torneios/') === 0) p = B + p;
             if (p.indexOf('?') > 0) p = p.split('?')[0];
             if (p.indexOf('data:') !== 0 && !fs.existsSync(p)) return;   // 404 silencioso, como no browser
             super.src = (p.indexOf('data:') === 0) ? Buffer.from(p.split(',')[1], 'base64') : fs.readFileSync(p);
@@ -323,7 +323,7 @@ const bib = rel15.urls.slice(0, 3).map(u => C.arquivoEscudo(u.nome));   // 3 esc
 r15 = C.escudosFaltando(rel15.urls, bib);
 ok(r15.novos.length === rel15.urls.length - bib.length && r15.jaTinha.length === bib.length,
    'com ' + bib.length + ' na biblioteca -> ' + r15.novos.length + ' novos / ' + r15.jaTinha.length + ' ja estavam');
-ok(r15.jaTinha.every(x => x.arquivo.indexOf('escudos/') === 0), 'os que ja estavam apontam para escudos/ sem baixar');
+ok(r15.jaTinha.every(x => x.arquivo.indexOf('escudos/') >= 0), 'os que ja estavam apontam para escudos/ sem baixar');
 r15 = C.escudosFaltando([{ nome: 'POMAR, C.D. A', url: 'x' }, { nome: 'POMAR, C.D. A', url: 'y' }], []);
 ok(r15.novos.length === 1, 'time repetido no CSV nao entra duas vezes');
 const origBaixar = C.baixarEscudos;

@@ -32,8 +32,8 @@ Não há banco de dados nem sessão. Tudo vive num **arquivo JSON único**
 Requisitos: **PHP 5.3+** com escrita na pasta do app. Nada além disso.
 
 1. Copie os arquivos para uma pasta do seu servidor (a mesma do `api.php`).
-2. Garanta permissão de escrita na pasta (o app cria/atualiza `estado.json`,
-   `escudos/`, `midias/`, `torneios/`, `presets/`).
+2. Garanta permissão de escrita na pasta **`dados/`** (é lá que o app cria o
+   estado, os presets e os arquivos enviados: escudos, mídias, torneios, fundos).
 3. Abra **`controle.php`** no navegador de quem opera.
 4. No OBS, adicione **`placar.php`** como *Fonte de Navegador*, 1920×1080,
    fundo transparente ligado.
@@ -94,7 +94,7 @@ http://SEU-SERVIDOR/placar/controle.php   → painel
 placar.php            página da fonte do OBS
 controle.php          painel (HTML + JS de UI específico)
 api.php                API/estado em arquivo
-estado.json            estado compartilhado (criado em execução, fora do git)
+config.php             define DATA_DIR (onde ficam os dados do usuário)
 tabela/tabela.js       MOTOR do overlay: canvas 1920×1080, temas e cenas
 tabela/dados.js        classificação padrão do grupo (16 times)
 js/comum.js            constantes, mapa de chaves (MS) e helpers comuns
@@ -102,13 +102,32 @@ js/eventbus.js         barramento de eventos interno
 js/placar/*.js         lado da transmissão (core, times, tema, gols, mídia…)
 js/controle/*.js       lado do painel (core, elementos, tabela, mídia…)
 css/*.css              CSS do placar, do overlay e do painel
-escudos/               banco de escudos (upload; clubes fora do repositório)
-torneios/              banco de logos de torneio (upload)
-midias/                imagens/GIFs/vídeos do repertório (upload)
-presets/<instancia>/   presets salvos pelo painel (uma biblioteca por instância)
-img/                   ícones do próprio app
-dados/                 CSV de exemplo da classificação
+img/                   ícones do app
+img/escudos/           escudos padrão (código; copiados para dados/ na 1ª execução)
+exemplos/              CSV de exemplo da classificação
+dados/                 DADOS DO USUÁRIO (fora do git — ver abaixo)
 ```
+
+### Código × dados
+
+O repositório é **só código**: um `git pull` (ou um rsync) pode sobrescrever
+qualquer arquivo daqui. Tudo o que o operador cria em runtime mora em `dados/`,
+que é ignorado pelo git e nunca é tocado por uma atualização:
+
+```
+dados/
+├── estado.json, estado-<instancia>.json (+ .bak / .lock)
+├── instancias.json, cores.json, grupos.json
+├── presets/<instancia>/*.json
+└── escudos/   fundos/   midias/   torneios/   csvs/
+```
+
+- **backup** = copiar a pasta `dados/`;
+- **recomeçar do zero** = apagar `dados/` (o app recria a estrutura no próximo acesso);
+- para levar os dados **para fora da webroot**, defina a variável de ambiente
+  `PLACAR_DATA_DIR` — nenhuma linha de código muda (ver `config.php`);
+- `dados/.htaccess` bloqueia o acesso por URL aos JSONs (config do app) e libera
+  as imagens. Em nginx, negue `location ~ /dados/.*\.(json|php|lock|bak)$`.
 
 ## Desenvolvimento
 
@@ -124,8 +143,9 @@ Veja [`docs/DESENVOLVIMENTO.md`](docs/DESENVOLVIMENTO.md).
 ## Escudos e logos
 
 Este repositório **não inclui** escudos de clubes nem logos de competições —
-são marcas de terceiros (clubes e FCF). A pasta `escudos/` traz apenas as
-**cores genéricas** do app (`Vermelho.png`, `Roxo.png`, `Azul.png`…). Ao importar
+são marcas de terceiros (clubes e FCF). A pasta `img/escudos/` traz apenas as
+**cores genéricas** do app (`Vermelho.png`, `Roxo.png`, `Azul.png`…); elas são
+copiadas para `dados/escudos/` na primeira execução. Ao importar
 o CSV da classificação, o painel baixa os escudos do `fcf.cat` para o **seu**
 servidor; a partir daí o overlay serve as imagens localmente.
 

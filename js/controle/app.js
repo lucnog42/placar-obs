@@ -236,7 +236,7 @@ Controle.renderSponsors = function() {
   var h = '';
   for(var i = 1; i <= N; i++){
     var nome = e['sp'+i] || '';
-    var img = nome ? ('<img src="torneios/'+nome+'" style="max-width:76px;max-height:76px;object-fit:contain" onerror="this.style.display=\'none\'">') : ('logo '+i);
+    var img = nome ? ('<img src="'+DADOS+'torneios/'+nome+'" style="max-width:76px;max-height:76px;object-fit:contain" onerror="this.style.display=\'none\'">') : ('logo '+i);
     h += '<div style="text-align:center">';
     h += '<div id="spPrev'+i+'" style="width:80px;height:80px;border:1px dashed #2a3a55;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#5b6f88">'+img+'</div>';
     h += '<div style="margin-top:4px;display:flex;gap:4px;justify-content:center">';

@@ -3,6 +3,7 @@ var INSTANCIA='';
 try{var _mi=location.search.match(/[?&]i=([^&]+)/);if(_mi)INSTANCIA=decodeURIComponent(_mi[1].replace(/\+/g,' '));}catch(e){}
 var API='api.php'+(INSTANCIA?('?i='+encodeURIComponent(INSTANCIA)):'');
 var API_AND=(API.indexOf('?')>=0)?'&':'?';
+var DADOS='dados/';   // pasta publica dos dados do usuario (ver config.php)
 var CORES_DEFAULT={timeA:'#ff0000',timeB:'#0000ff'};
 var MS={golsA:'placar',golsB:'placar',tempo:'placar',tempoInicio:'placar',rodando:'placar',esporte:'placar',periodo:'placar',
 timeA:'times',timeB:'times',siglaA:'times',siglaB:'times',escudoA:'times',escudoB:'times',timeACor:'times',timeBCor:'times',

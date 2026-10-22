@@ -295,7 +295,7 @@ Controle._renderItens=function(lista,ativas,pfx){
         }else if(Controle.thumbCache[m.id]){
             thumbH='<img src="'+Controle.thumbCache[m.id]+'">';
         }else if(m.ext){
-            thumbH='<img src="midias/'+m.id+'.'+m.ext+'" onerror="this.style.display=\'none\'">';
+            thumbH='<img src="'+DADOS+'midias/'+m.id+'.'+m.ext+'" onerror="this.style.display=\'none\'">';
         }else{
             thumbH='<span style="display:inline-block;width:48px;height:27px;background:#555;border-radius:3px;flex-shrink:0"></span>';
         }

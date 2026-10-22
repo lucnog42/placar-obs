@@ -4,7 +4,7 @@
 
 O painel aceita o CSV exportado do site da FCF
 (`...&tab=classificacio`). Exemplo em
-[`dados/classificacio_quarta_catalana_grup18.csv`](../dados/classificacio_quarta_catalana_grup18.csv).
+[`exemplos/classificacio_quarta_catalana_grup18.csv`](../exemplos/classificacio_quarta_catalana_grup18.csv).
 
 ```
 Pos;Equip;Punts;J;G;E;P;GF;GC;DG;Ultims;Sancio;PosSite;Escut
@@ -43,17 +43,17 @@ Pos;Equip;Punts;J;G;E;P;GF;GC;DG;Ultims;Sancio;PosSite;Escut
 
 ## Escudos
 
-Ao importar, **todos** os escudos referenciados vão para `escudos/`:
+Ao importar, **todos** os escudos referenciados vão para `dados/escudos/`:
 
 1. o painel chama `listar_escudos` e descobre o que já existe;
 2. o que falta é baixado (`proxy_imagem` para URL; data URI é usado direto) e
    enviado em lotes para `importar_escudos`;
-3. a API grava `escudos/<nome do time normalizado>.<ext>` e devolve o caminho;
+3. a API grava `dados/escudos/<nome do time normalizado>.<ext>` e devolve o caminho;
 4. o painel troca o `crest` do time pelo caminho local.
 
 Normalização do nome (`Controle.arquivoEscudo` = mesma regra do PHP):
 `[^A-Za-z0-9_-] → _`, ou seja `POMAR, C.D. A` → `POMAR__C_D__A.png`.
-Copiar um escudo na mão para `escudos/` com esse nome faz o app reconhecê-lo como
+Copiar um escudo na mão para `dados/escudos/` com esse nome faz o app reconhecê-lo como
 "já na biblioteca".
 
 Os botões **📥 Sincronizar escudos** (baixa o que falta) e **🔎 Conferir

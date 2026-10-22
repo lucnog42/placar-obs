@@ -107,7 +107,7 @@ Controle.listarLogos = function () {
       var h = '';
       for (var i = 0; i < lista.length; i++) {
         var nome = lista[i];
-        var url = 'torneios/' + nome + '?v=' + ts;
+        var url = DADOS+'torneios/' + nome + '?v=' + ts;
         var nm = String(nome).replace(/'/g, "\\'");
         h += '<div class="escudo-item" data-item="' + nome + '">';
         h += '<input type="checkbox" class="cb-lib" data-tipo="logos" data-item="' + nome + '" style="flex-shrink:0">';

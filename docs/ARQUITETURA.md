@@ -6,13 +6,13 @@ mesma configuração.
 
 ```
                  POST (merge)                 GET ?v=N (poll)
-controle.php ───────────────► api.php ◄─────────────────── Placar.html
-   painel                      estado.json                    OBS / transmissão
+controle.php ───────────────► api.php ◄─────────────────── placar.php
+   painel                dados/estado.json                 OBS / transmissão
                                   │
-                                  ├── escudos/     (banco de escudos)
-                                  ├── torneios/    (banco de logos)
-                                  ├── midias/      (repertório: img/gif/vídeo)
-                                  └── presets/     (uma pasta por instância; um JSON por preset)
+                                  └── dados/       (tudo o que o operador cria)
+                                      ├── estado*.json, instancias.json, cores.json, grupos.json
+                                      ├── escudos/  fundos/  midias/  torneios/  csvs/
+                                      └── presets/<instância>/*.json
 ```
 
 ## O estado
@@ -93,19 +93,23 @@ espelha tema/cores/escudos/times e chama `Tabela.setCfg(cfg)`.
 
 ## Presets
 
-`salvar_preset` grava um JSON em `presets/<instancia>/` com os campos relevantes
+`salvar_preset` grava um JSON em `dados/presets/<instancia>/` com os campos relevantes
 (times, estilo, posição, clima, overlay completo, repertório). O payload é
 escrito **à mão** em `js/controle/elementos.js` (`Controle.salvarPreset`) — ao
 criar um campo novo que deva ir no preset, adicione lá também.
 
 ## Bancos de arquivos
 
+Tudo abaixo vive dentro de `dados/` (ver `config.php`), fora do controle de versão.
+
 | pasta | conteúdo | ações da API |
 |---|---|---|
-| `escudos/` | escudos de time | `upload_escudo`, `upload_escudos_batch`, `importar_escudos`, `atribuir_escudo`, `listar_escudos`, `remover_escudos` |
-| `torneios/` | logos de competição | `upload_logo`, `listar_logos` |
-| `midias/` | repertório (png/gif/webp/svg/mp4) | `upload_midia`, `editar_midia`, `remover_midia` |
-| `presets/<instancia>/` | um JSON por preset (biblioteca isolada por instância) | `salvar_preset`, `carregar_preset`, `listar_presets`, `remover_preset` |
+| `dados/escudos/` | escudos de time | `upload_escudo`, `upload_escudos_batch`, `importar_escudos`, `atribuir_escudo`, `listar_escudos`, `remover_escudos` |
+| `dados/torneios/` | logos de competição | `upload_logo`, `listar_logos` |
+| `dados/midias/` | repertório (png/gif/webp/svg/mp4) | `upload_midia`, `editar_midia`, `remover_midia` |
+| `dados/fundos/` | fundos das cenas | `upload_fundo` |
+| `dados/csvs/` | CSVs enviados | `salvar_csv`, `carregar_csv` |
+| `dados/presets/<instancia>/` | um JSON por preset (biblioteca isolada por instância) | `salvar_preset`, `carregar_preset`, `listar_presets`, `remover_preset` |
 
 `proxy_imagem?url=…` baixa uma imagem externa pelo servidor (contorna CORS/HTTPS
 mistos) e é o que o import de CSV usa para trazer os escudos da FCF.

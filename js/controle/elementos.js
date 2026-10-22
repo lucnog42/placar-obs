@@ -30,7 +30,7 @@ Controle.selecionarLogoTorneio=function(){
     var prev=document.getElementById('logoTorneioPreview');
     var nm=document.getElementById('logoTorneioNome');
     if(nome){
-        if(prev){prev.src='torneios/'+nome;prev.style.display='';}
+        if(prev){prev.src=DADOS+'torneios/'+nome;prev.style.display='';}
         if(nm)nm.textContent=nome;
     }else{
         if(prev)prev.style.display='none';
@@ -104,7 +104,7 @@ Controle.renderEscudos=function(){
     var h='',ts=Date.now();
     Controle._escudos.forEach(function(n){
         h+='<div class="escudo-item" data-item="'+n+'">';
-        h+='<img src="escudos/'+n+'.png?v='+ts+'" alt="" onerror="this.style.display=\'none\'">';
+        h+='<img src="'+DADOS+'escudos/'+n+'.png?v='+ts+'" alt="" onerror="this.style.display=\'none\'">';
         h+='<input type="checkbox" class="cb-lib" data-tipo="escudos" data-item="'+n+'" style="flex-shrink:0">';
         h+='<span class="escudo-nome" title="'+n+'">'+n+'</span>';
         h+='<button class="btn-A" onclick="Controle.atribuirEscudo(\''+n+'\',\'A\')">Time A</button>';
@@ -561,7 +561,7 @@ Controle.adicionarThumbnailMidia = function(nome) {
                     transicao: 'fade',
                     duracao: 0,
                     intervalo: 0,
-                    src: 'midias/' + id + '.jpg'
+                    src: DADOS+'midias/' + id + '.jpg'
                 });
                 Controle.estado.midias = JSON.stringify(midias);
                 Controle.setEstado({midias: JSON.stringify(midias)});
@@ -892,7 +892,7 @@ Controle.gerarThumbnail = function(p, callback) {
             drawAll();
         };
         logoImg.onerror = function() { drawPlaceholderLogo(); drawAll(); };
-        logoImg.src = 'torneios/' + logoTorneio;
+        logoImg.src = DADOS+'torneios/' + logoTorneio;
     } else {
         drawPlaceholderLogo();
         drawAll();

@@ -49,11 +49,11 @@ O coração da integração. Abre já expandida.
 | Cenas · linha do tempo | `tabelaCenas` | visibilidade + **duração** (slider com knob) + ordem (↑ ↓) |
 | Cabeçalho: Título, Subtítulo | `tabelaTitulo`, `tabelaSub` | texto do cabeçalho do overlay |
 | Cabeçalho: Local / campo, Hora | `tabelaLocal`, `tabelaHora` | campo e horário (vazio = usa o do placar) |
-| Logo do torneio | `logoTorneio` | escolhe do banco `torneios/` (📤 sobe, 🔄 recarrega) |
+| Logo do torneio | `logoTorneio` | escolhe do banco `dados/torneios/` (📤 sobe, 🔄 recarrega) |
 | Zonas + cores | `tabelaZonas`, `tabelaZonaUp`, `tabelaZonaDn`, `tabelaZonaCorUp`, `tabelaZonaCorDn` | faixas de acesso/queda |
 | Escudos na tabela | `tabelaEscudos` | liga/desliga os escudos |
 | ✥ (por cena) | `tabelaLayout` | arma a caixa no preview para **arrastar/soltar** a cena |
-| 📄 Importar CSV da classificação | `tabelaTimes` | lê o CSV, **baixa os escudos** para `escudos/` e usa os times |
+| 📄 Importar CSV da classificação | `tabelaTimes` | lê o CSV, **baixa os escudos** para `dados/escudos/` e usa os times |
 | 📥 Sincronizar escudos | — | confere o banco e baixa só o que falta |
 | 🔎 Conferir biblioteca | — | diz quais times estão **sem** escudo no banco (sem baixar nada) |
 | 📄 Importar CSV (escalações) | `tabelaEscalacoes` | `Equipe;Jogador;Numero;Posicao` |
