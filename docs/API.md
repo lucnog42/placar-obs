@@ -43,7 +43,6 @@ POST api.php
 
 | `?acao=` | Corpo | Resposta |
 |---|---|---|
-| `upload_escudo` | `{time:"A"\|"B", src}` (data URI base64) | `{ok:true, src:"dados/escudos/A.png?v=…"}` |
 | `upload_escudos_batch` | `{arquivos:[{nome,src}, …]}` | `{ok:true, count, resultados:[…]}` |
 | `atribuir_escudo` | `{nome, time:"A"\|"B"}` | `{ok:true, src}` (usa um escudo já do banco) |
 | `remover_escudos` | `{nomes:[…]}` | `{ok:true, removidos, resultados:[…]}` |

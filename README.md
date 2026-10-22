@@ -102,9 +102,7 @@ js/eventbus.js         barramento de eventos interno
 js/placar/*.js         lado da transmissão (core, times, tema, gols, mídia…)
 js/controle/*.js       lado do painel (core, elementos, tabela, mídia…)
 css/*.css              CSS do placar, do overlay e do painel
-img/                   ícones do app
-img/escudos/           escudos padrão (código; copiados para dados/ na 1ª execução)
-exemplos/              CSV de exemplo da classificação
+img/                   ícone do app (bola da notificação)
 dados/                 DADOS DO USUÁRIO (fora do git — ver abaixo)
 ```
 
@@ -142,12 +140,15 @@ Veja [`docs/DESENVOLVIMENTO.md`](docs/DESENVOLVIMENTO.md).
 
 ## Escudos e logos
 
-Este repositório **não inclui** escudos de clubes nem logos de competições —
-são marcas de terceiros (clubes e FCF). A pasta `img/escudos/` traz apenas as
-**cores genéricas** do app (`Vermelho.png`, `Roxo.png`, `Azul.png`…); elas são
-copiadas para `dados/escudos/` na primeira execução. Ao importar
-o CSV da classificação, o painel baixa os escudos do `fcf.cat` para o **seu**
-servidor; a partir daí o overlay serve as imagens localmente.
+Este repositório **não inclui nenhuma imagem de conteúdo**: nem escudos de
+clubes, nem logos de competições (são marcas de terceiros — clubes e FCF), nem
+o CSV da classificação. Tudo isso mora em `dados/` (ver acima), que não é
+versionado. A única imagem do código é `img/bola.png`, o ícone da notificação.
+
+Os escudos genéricos de cor (`Vermelho.png`, `Roxo.png`, `Azul.png`…) também
+são dados: ficam em `dados/escudos/`. Ao importar o CSV da classificação, o
+painel baixa os escudos do `fcf.cat` para o **seu** servidor; a partir daí o
+overlay serve as imagens localmente.
 
 ## Limitações conhecidas
 

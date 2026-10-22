@@ -3,8 +3,8 @@
 ## CSV da classificação (fcf.cat)
 
 O painel aceita o CSV exportado do site da FCF
-(`...&tab=classificacio`). Exemplo em
-[`exemplos/classificacio_quarta_catalana_grup18.csv`](../exemplos/classificacio_quarta_catalana_grup18.csv).
+(`...&tab=classificacio`). O arquivo entra pelo painel e fica em
+`dados/csvs/` — o repositório não traz nenhum CSV.
 
 ```
 Pos;Equip;Punts;J;G;E;P;GF;GC;DG;Ultims;Sancio;PosSite;Escut

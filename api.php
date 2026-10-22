@@ -25,7 +25,6 @@ define('BASE_DIR', dirname(__FILE__));
 require_once BASE_DIR . '/config.php';          // DATA_DIR (dados do usuario)
 
 define('DADOS_URL', 'dados');                   // prefixo publico das midias do usuario
-define('DADOS_PADRAO_DIR', BASE_DIR . '/img/escudos');   // escudos que sao codigo
 
 define('ESTADO_FILE', DATA_DIR . '/estado.json');
 define('ESTADO_BAK', DATA_DIR . '/estado.json.bak');
@@ -41,21 +40,10 @@ define('CORES_FILE', DATA_DIR . '/cores.json');
 define('GRUPOS_FILE', DATA_DIR . '/grupos.json');
 
 function ensure_dirs() {
-    $novo_escudos = !is_dir(ESCUDOS_DIR);
     $dirs = array(DATA_DIR, PRESETS_DIR, ESCUDOS_DIR, MIDIAS_DIR, TORNEIOS_DIR, CSVS_DIR, FUNDOS_DIR);
     foreach ($dirs as $d) {
         if (!is_dir($d)) {
             mkdir($d, 0755, true);
-        }
-    }
-    // escudos padrao (que sao codigo, em img/escudos) entram na primeira execucao
-    if ($novo_escudos && is_dir(DADOS_PADRAO_DIR)) {
-        $pad = @glob(DADOS_PADRAO_DIR . '/*.png');
-        if (is_array($pad)) {
-            foreach ($pad as $f) {
-                $dst = ESCUDOS_DIR . '/' . basename($f);
-                if (!file_exists($dst)) { @copy($f, $dst); }
-            }
         }
     }
 }
