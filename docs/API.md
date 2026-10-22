@@ -19,6 +19,7 @@ resposta é JSON. `Content-Type: application/json`, CORS liberado e
 | `listar_filtros` | — | valores distintos para os seletores: `{competicao:[…],categoria:[…],grupo:[…],fase:[…],data:[…],hora:[…],local:[…]}` |
 | `listar_logos` | — | `{logos:["pirineos.png", …]}` (banco `dados/torneios/`) |
 | `listar_escudos` | — | `{escudos:["POMAR__C_D__A", …]}` (nomes **sem** extensão; só `.png`) |
+| `listar_fundos` | — | `{fundos:["estadio.png","grade.gif", …]}` (biblioteca de fundos das cenas em `dados/fundos/`) |
 | `carregar_preset` | `nome` | o JSON do preset (`{nome,timeA,…,tabelaCenas,…}`) |
 | `proxy_imagem` | `url` (http/https, codificada) | a imagem baixada, com CORS liberado |
 
@@ -60,6 +61,8 @@ caminho local de cada um para o painel gravar em `tabelaTimes`.
 | `upload_midia` | `{id, src}` (data URI; PNG, **GIF**, WEBP, SVG, MP4) | `{ok:true, id}` |
 | `editar_midia` | `{id}` — atualiza o item no estado | `{ok:true}` |
 | `remover_midia` | `{id}` | `{ok:true}` |
+| `upload_fundo` | `{src (data-uri base64), nome}` | `{ok:true, arquivo:"dados/fundos/estadio.png", nome:"estadio.png"}` — só **png/jpg/gif**; nome repetido ganha `_2`, `_3`… |
+| `remover_fundo` | `{nome}` | `{ok:true}` — apaga da biblioteca de fundos |
 
 O item de mídia vive no estado (`midia.midias`), com `arquivo`, `nome`, `tipo`,
 `dur`, `intervalo`, `ativo` e o texto quando é notificação.

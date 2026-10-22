@@ -353,37 +353,147 @@ Controle.voltarLoop = function(){
   Controle.setEstado({ cenaCancelar: String(Date.now()) });
   Controle.status('ok', '⏹ De volta ao loop');
 };
-/* fundo de cena: reduz para no máximo 1920x1080 e reencoda em JPEG.
-   Foto de celular em base64 passa dos 8 MB de post_max_size e o PHP descarta o corpo (400). */
+/* ============================================================
+   FUNDOS DAS CENAS — biblioteca própria (PNG / JPG / GIF)
+   O arquivo mora em dados/fundos/; a cena guarda só o caminho.
+   ============================================================ */
+Controle.FUNDO_CENAS = [['intro','Abertura'],['intervalo','Intervalo'],['encerramento','Encerramento'],['table','Tabela']];
+Controle._fundoAlvo = 'intro';
+
+Controle._fundoMapa = function(){
+  var f = {};
+  try { f = JSON.parse(Controle.estado.cenaFundos || '{}') || {}; } catch(e){ f = {}; }
+  return f;
+};
+Controle._fundoNomeCena = function(k){
+  for (var i = 0; i < Controle.FUNDO_CENAS.length; i++) if (Controle.FUNDO_CENAS[i][0] === k) return Controle.FUNDO_CENAS[i][1];
+  return k;
+};
+
+/* os 4 cartões, cada um com a miniatura do que está aplicado na cena */
+Controle.renderFundos = function(){
+  var el = document.getElementById('fundoCenas'); if (!el) return;
+  var f = Controle._fundoMapa(), h = '';
+  Controle.FUNDO_CENAS.forEach(function(c){
+    var k = c[0], src = f[k] || '';
+    var arq = src ? src.split('/').pop().split('?')[0] : '';
+    h += '<div class="fundo-card' + (src ? ' on' : '') + (Controle._fundoAlvo === k ? ' alvo' : '') + '">'
+      + '<div class="fundo-thumb" onclick="Controle.abrirBibliotecaFundo(\'' + k + '\')" title="Escolher da biblioteca">'
+      +   (src ? '<img src="' + src + '" alt="">' : '<span>sem fundo</span>')
+      + '</div>'
+      + '<div class="fundo-info"><b>' + c[1] + '</b><small title="' + arq + '">' + (arq || '—') + '</small></div>'
+      + '<div class="fundo-acoes">'
+      +   '<button onclick="Controle.abrirBibliotecaFundo(\'' + k + '\')" title="Escolher da biblioteca">📚</button>'
+      +   '<button onclick="Controle.enviarFundo(\'' + k + '\')" title="Enviar imagem (PNG, JPG ou GIF)">⬆</button>'
+      +   (src ? '<button onclick="Controle.removerFundoCena(\'' + k + '\')" title="Tirar o fundo desta cena">✕</button>' : '')
+      + '</div></div>';
+  });
+  el.innerHTML = h;
+};
+
+Controle.abrirBibliotecaFundo = function(k){
+  Controle._fundoAlvo = k || 'intro';
+  var box = document.getElementById('fundoPick');
+  if (box) box.classList.remove('escondido');
+  var lb = document.getElementById('fundoPickAlvo');
+  if (lb) lb.textContent = '→ clique numa imagem para aplicar em ' + Controle._fundoNomeCena(Controle._fundoAlvo);
+  Controle.renderFundos();
+  Controle.listarFundos();
+};
+
+Controle.listarFundos = function(){
+  var el = document.getElementById('fundoBiblioteca'); if (!el) return;
+  el.innerHTML = '<span class="fundo-vazio">carregando…</span>';
+  fetch(API + API_AND + 'acao=listar_fundos').then(function(r){ return r.json(); }).then(function(d){
+    var lista = (d && d.fundos) || [];
+    if (!lista.length) { el.innerHTML = '<span class="fundo-vazio">Biblioteca vazia — envie uma imagem (PNG, JPG ou GIF).</span>'; return; }
+    var h = '';
+    lista.forEach(function(n){
+      var js = String(n).replace(/\\/g, '').replace(/'/g, "\\'");
+      h += '<div class="fundo-item">'
+        + '<img src="' + DADOS + 'fundos/' + encodeURIComponent(n) + '" alt="" title="Aplicar em '
+        +   Controle._fundoNomeCena(Controle._fundoAlvo) + '" onclick="Controle.aplicarFundo(\'' + js + '\')">'
+        + '<span title="' + n + '">' + n + '</span>'
+        + '<button onclick="Controle.apagarFundo(\'' + js + '\')" title="Apagar da biblioteca">✕</button>'
+        + '</div>';
+    });
+    el.innerHTML = h;
+  }).catch(function(){ el.innerHTML = '<span class="fundo-vazio">não deu para ler a biblioteca</span>'; });
+};
+
+Controle.aplicarFundo = function(nome){
+  var k = Controle._fundoAlvo || 'intro', f = Controle._fundoMapa();
+  f[k] = DADOS + 'fundos/' + nome + '?v=' + Date.now();
+  Controle.setEstado({ cenaFundos: JSON.stringify(f) });
+  Controle.renderFundos();
+  Controle.status('ok', '✅ ' + Controle._fundoNomeCena(k) + ' ← ' + nome);
+};
+
+Controle.removerFundoCena = function(k){
+  var f = Controle._fundoMapa();
+  delete f[k];
+  Controle.setEstado({ cenaFundos: JSON.stringify(f) });
+  Controle.renderFundos();
+  Controle.status('ok', 'Fundo de ' + Controle._fundoNomeCena(k) + ' removido');
+};
+
+Controle.apagarFundo = function(nome){
+  if (!confirm('Apagar "' + nome + '" da biblioteca de fundos?')) return;
+  fetch(API + API_AND + 'acao=remover_fundo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome: nome }) })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (d && d.erro) { Controle.status('erro', '❌ ' + d.erro); return; }
+      Controle.listarFundos();
+      Controle.status('ok', '🗑 ' + nome + ' apagado');
+    })
+    .catch(function(e){ Controle.status('erro', '❌ ' + e.message); });
+};
+
+/* reduz a imagem antes de enviar (foto grande estoura o post_max_size).
+   GIF vai original para não perder a animação; PNG continua PNG (transparência). */
 Controle._fundoDataUri = function(f, cb){
   var tipo = (f.type || '').toLowerCase();
   var ler = function(){ var r = new FileReader(); r.onload = function(){ cb(String(r.result)); }; r.readAsDataURL(f); };
-  if (tipo.indexOf('gif') >= 0 || tipo.indexOf('svg') >= 0) return ler();   // animação/vetor: manda original
+  if (tipo.indexOf('gif') >= 0) return ler();
+  var png = tipo.indexOf('png') >= 0;
   var url = URL.createObjectURL(f), img = new Image();
   img.onload = function(){
     var w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
     var esc = Math.min(1, 1920 / w, 1080 / h);
+    if (esc >= 1 && f.size < 4 * 1024 * 1024) { URL.revokeObjectURL(url); return ler(); }   // já cabe
     var cv = document.createElement('canvas');
     cv.width  = Math.max(1, Math.round(w * esc));
     cv.height = Math.max(1, Math.round(h * esc));
     cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
     URL.revokeObjectURL(url);
-    var out = cv.toDataURL('image/jpeg', 0.9);
-    if (out.length > 6 * 1024 * 1024) out = cv.toDataURL('image/jpeg', 0.72);
+    var out = png ? cv.toDataURL('image/png') : cv.toDataURL('image/jpeg', 0.9);
+    if (!png && out.length > 6 * 1024 * 1024) out = cv.toDataURL('image/jpeg', 0.72);
     cb(out);
   };
   img.onerror = function(){ URL.revokeObjectURL(url); ler(); };
   img.src = url;
 };
-Controle.uploadFundoCena = function(chave){
+
+/* seletor restrito: só PNG, JPG e GIF aparecem */
+Controle.enviarFundo = function(k){
   var input = document.createElement('input');
-  input.type = 'file'; input.accept = 'image/*,.png,.jpg,.jpeg,.webp,.gif,.svg'; input.style.display = 'none';
+  input.type = 'file';
+  input.accept = 'image/png,image/jpeg,image/gif';
+  input.style.display = 'none';
   input.onchange = function(){
-    var f = input.files && input.files[0]; if(!f) return;
+    var f = input.files && input.files[0];
+    if (!f) { input.remove(); return; }
+    if (!/^image\/(png|jpeg|gif)$/i.test(f.type)) {
+      alert('Formato não permitido.\nUse PNG, JPG ou GIF.');
+      input.remove(); return;
+    }
     Controle.status('sync', 'Preparando fundo...');
     Controle._fundoDataUri(f, function(src){
       Controle.status('sync', 'Enviando fundo (' + Math.round(src.length / 1024) + ' KB)...');
-      fetch(API + API_AND + 'acao=upload_fundo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chave: chave, src: src }) })
+      fetch(API + API_AND + 'acao=upload_fundo', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ src: src, nome: f.name })
+      })
       .then(function(resp){
         // erro do servidor pode vir como HTML: lê texto e tenta JSON
         return resp.text().then(function(t){
@@ -392,21 +502,21 @@ Controle.uploadFundoCena = function(chave){
         });
       })
       .then(function(d){
-        if(d && d.arquivo){
-          var fundos = {}; try { fundos = JSON.parse(Controle.estado.cenaFundos || '{}'); } catch(e){ fundos = {}; }
-          fundos[chave] = d.arquivo + '?v=' + Date.now();
-          Controle.setEstado({ cenaFundos: JSON.stringify(fundos) });
-          Controle.status('ok', '✅ Fundo (' + chave + ') salvo');
-        } else { Controle.status('erro', '❌ ' + (d && d.erro ? d.erro : 'erro ao subir fundo')); }
+        if (d && d.arquivo) {
+          var map = Controle._fundoMapa();
+          map[k] = d.arquivo + '?v=' + Date.now();
+          Controle.setEstado({ cenaFundos: JSON.stringify(map) });
+          Controle.renderFundos();
+          Controle.listarFundos();
+          Controle.status('ok', '✅ ' + Controle._fundoNomeCena(k) + ' ← ' + (d.nome || 'imagem'));
+        } else {
+          Controle.status('erro', '❌ ' + (d && d.erro ? d.erro : 'erro ao subir o fundo'));
+        }
       }).catch(function(e){ Controle.status('erro', '❌ ' + e.message); });
       input.remove();
     });
   };
   document.body.appendChild(input); input.click();
-};
-Controle.limparFundoCena = function(){
-  Controle.setEstado({ cenaFundos: '{}' });
-  Controle.status('ok', 'Fundos removidos');
 };
 Controle.novaSubstituicao = function(){ Controle.notifRapida('substituicao'); };
 

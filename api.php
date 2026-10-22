@@ -541,6 +541,23 @@ if ($method === 'GET') {
         respond(array('escudos' => list_escudo_files()));
     }
 
+    if ($acao === 'listar_fundos') {
+        $out = array();
+        if (is_dir(FUNDOS_DIR)) {
+            $dh = opendir(FUNDOS_DIR);
+            if ($dh) {
+                while (($f = readdir($dh)) !== false) {
+                    if ($f === '.' || $f === '..') continue;
+                    if (!preg_match('/\.(png|jpe?g|gif)$/i', $f)) continue;
+                    $out[] = $f;
+                }
+                closedir($dh);
+            }
+        }
+        sort($out);
+        respond(array('fundos' => $out));
+    }
+
     if ($acao === 'listar_csvs') {
         $tipo = isset($_GET['tipo']) ? $_GET['tipo'] : 'tabela';
         $tipo = ($tipo === 'jogadores') ? 'jogadores' : 'tabela';
@@ -1128,8 +1145,8 @@ if ($method === 'POST') {
 
     if ($acao === 'upload_fundo') {
         $input = get_post_data();
-        $chave = isset($input['chave']) ? $input['chave'] : '';
         $src = isset($input['src']) ? $input['src'] : '';
+        $nome = isset($input['nome']) ? $input['nome'] : '';
         if (!$src) {
             // corpo grande demais (post_max_size) => o PHP descarta o POST e o src chega vazio
             $len = isset($_SERVER['CONTENT_LENGTH']) ? intval($_SERVER['CONTENT_LENGTH']) : 0;
@@ -1138,22 +1155,42 @@ if ($method === 'POST') {
             }
             respond_error('Parametro "src" obrigatorio (base64 data-uri).');
         }
-        if (!is_dir(FUNDOS_DIR)) {
-            mkdir(FUNDOS_DIR, 0755, true);
-        }
-        $ext = 'png';
-        if (strpos($src, 'data:image/jpeg') === 0 || strpos($src, 'data:image/jpg') === 0) $ext = 'jpg';
-        elseif (strpos($src, 'data:image/gif') === 0) $ext = 'gif';
-        elseif (strpos($src, 'data:image/webp') === 0) $ext = 'webp';
-        elseif (strpos($src, 'data:image/svg') === 0) $ext = 'svg';
-        $base = $chave !== '' ? $chave : ('fundo_' . time());
-        $base = preg_replace('/[^A-Za-z0-9_\-]/', '_', $base);
-        if ($base === '' || $base === '.' || $base === '..') $base = 'fundo_' . time();
+        // so PNG, JPG e GIF (o seletor do painel tambem restringe)
+        $ext = '';
+        if (strpos($src, 'data:image/png') === 0) { $ext = 'png'; }
+        elseif (strpos($src, 'data:image/jpeg') === 0 || strpos($src, 'data:image/jpg') === 0) { $ext = 'jpg'; }
+        elseif (strpos($src, 'data:image/gif') === 0) { $ext = 'gif'; }
+        if ($ext === '') { respond_error('Formato nao suportado: envie PNG, JPG ou GIF.'); }
+
+        if (!is_dir(FUNDOS_DIR)) { mkdir(FUNDOS_DIR, 0755, true); }
+
+        // nome legivel, tirado do arquivo original; nao sobrescreve o que ja existe
+        $base = preg_replace('/\.[A-Za-z0-9]{1,5}$/', '', $nome);
+        $base = preg_replace('/[^A-Za-z0-9_\- ]/', '_', $base);
+        $base = trim(preg_replace('/\s+/', '_', $base), '_');
+        if ($base === '' || $base === '.' || $base === '..') { $base = 'fundo_' . date('Ymd_His'); }
         $arquivo = $base . '.' . $ext;
-        if (save_data_uri($src, FUNDOS_DIR . '/' . $arquivo) === false) {
-            respond_error('Falha ao salvar fundo.', 500);
+        $n = 2;
+        while (file_exists(FUNDOS_DIR . '/' . $arquivo)) {
+            $arquivo = $base . '_' . $n . '.' . $ext;
+            $n++;
         }
-        respond(array('ok' => true, 'arquivo' => DADOS_URL . '/fundos/' . $arquivo));
+        if (save_data_uri($src, FUNDOS_DIR . '/' . $arquivo) === false) {
+            respond_error('Falha ao salvar o fundo.', 500);
+        }
+        respond(array('ok' => true, 'arquivo' => DADOS_URL . '/fundos/' . $arquivo, 'nome' => $arquivo));
+    }
+
+    if ($acao === 'remover_fundo') {
+        $input = get_post_data();
+        $nome = isset($input['nome']) ? basename(trim($input['nome'])) : '';
+        if ($nome === '' || $nome === '.' || $nome === '..' || !preg_match('/\.(png|jpe?g|gif)$/i', $nome)) {
+            respond_error('Nome de arquivo invalido.');
+        }
+        $p = FUNDOS_DIR . '/' . $nome;
+        if (!file_exists($p)) { respond_error('Fundo nao encontrado.', 404); }
+        if (!@unlink($p)) { respond_error('Nao foi possivel apagar o fundo.', 500); }
+        respond(array('ok' => true));
     }
 
     if ($acao === 'remover_logo') {

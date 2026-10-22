@@ -107,7 +107,7 @@ Tudo abaixo vive dentro de `dados/` (ver `config.php`), fora do controle de vers
 | `dados/escudos/` | escudos de time | `upload_escudos_batch`, `importar_escudos`, `atribuir_escudo`, `listar_escudos`, `remover_escudos` |
 | `dados/torneios/` | logos de competição | `upload_logo`, `listar_logos` |
 | `dados/midias/` | repertório (png/gif/webp/svg/mp4) | `upload_midia`, `editar_midia`, `remover_midia` |
-| `dados/fundos/` | fundos das cenas | `upload_fundo` |
+| `dados/fundos/` | fundos das cenas (biblioteca: png/jpg/gif) | `upload_fundo`, `listar_fundos`, `remover_fundo` |
 | `dados/csvs/` | CSVs enviados | `salvar_csv`, `carregar_csv` |
 | `dados/presets/<instancia>/` | um JSON por preset (biblioteca isolada por instância) | `salvar_preset`, `carregar_preset`, `listar_presets`, `remover_preset` |
 

@@ -32,20 +32,18 @@
           <select id="tabelaCena" onchange="Controle.definirCenaTabela(this.value)" style="width:100%"></select>
         </div>
         <div class="overlay-cat" onclick="Controle.abrirCenas()" style="margin-top:8px"><span>🎬 Ajustar cenas…</span><span style="color:#93a4c0;font-size:10px">linha do tempo</span></div>
+        <p style="font-size:11px;color:#93a4c0;margin:12px 0 4px">🖼 Fundos das cenas <span class="hint">PNG · JPG · GIF</span></p>
+        <div id="fundoCenas" class="fundo-cenas"></div>
+        <div id="fundoPick" class="escondido">
+          <p id="fundoPickAlvo" style="font-size:11px;color:#93a4c0;margin:8px 0 4px">Biblioteca de fundos</p>
+          <div id="fundoBiblioteca" class="fundo-lib"></div>
+        </div>
       </div>
       <p style="font-size:11px;color:#93a4c0;margin:12px 0 4px">Cenas manuais <span class="hint">abertura · intervalo · encerramento (clique de novo para desligar)</span></p>
       <div style="display:flex;gap:6px;flex-wrap:wrap">
         <button onclick="Controle.intervalo('intro')" style="background:#7c3aed;color:#fff;font-size:13px;padding:10px 14px">🔴 Abertura</button>
         <button onclick="Controle.intervalo('intervalo')" style="background:#b45309;color:#fff;font-size:13px;padding:10px 14px">⏸ Intervalo</button>
         <button onclick="Controle.intervalo('encerramento')" style="background:#0f172a;color:#fff;font-size:13px;padding:10px 14px">🏁 Encerramento</button>
-      </div>
-      <p style="font-size:11px;color:#93a4c0;margin:12px 0 4px">🖼 Fundos das cenas <span class="hint">imagem de fundo opcional (cobre a cena)</span></p>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
-        <button onclick="Controle.uploadFundoCena('intro')" style="font-size:11px;padding:4px 8px">🖼 Abertura</button>
-        <button onclick="Controle.uploadFundoCena('intervalo')" style="font-size:11px;padding:4px 8px">🖼 Intervalo</button>
-        <button onclick="Controle.uploadFundoCena('encerramento')" style="font-size:11px;padding:4px 8px">🖼 Encerramento</button>
-        <button onclick="Controle.uploadFundoCena('table')" style="font-size:11px;padding:4px 8px">🖼 Tabela</button>
-        <button onclick="Controle.limparFundoCena()" style="font-size:11px;padding:4px 8px" title="Remove todos os fundos">✕ Limpar</button>
       </div>
     </section>
     <section class="full">

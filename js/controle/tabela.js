@@ -261,6 +261,7 @@ Controle.aplicarEstadoTabela = function () {
     var sig = lt.length + '|' + ((lt[0] || {}).name || '') + '|' + ((lt[lt.length - 1] || {}).name || '');
     if (sig !== Controle._timesSig) { Controle._timesSig = sig; Controle.renderSelectTimes(); Controle.renderSelectCena(); }
     Controle.atualizarResumoTabela();
+    if (Controle.renderFundos) Controle.renderFundos();
     Controle.renderCenas();
     if (Controle.renderTimesCrest) Controle.renderTimesCrest();
 };
