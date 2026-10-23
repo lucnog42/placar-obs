@@ -23,7 +23,8 @@
   #status{top:56px;font-size:13px;padding:6px 10px}
 
   /* ---------- preview: compacto, logo abaixo da topbar+status ---------- */
-  #previewWrapper{position:sticky;top:92px;z-index:40;max-width:none;margin:0 0 10px;padding:0 8px}
+  /* mesma margem lateral do #telas (12px) para o preview alinhar com o menu */
+  #previewWrapper{position:sticky;top:92px;z-index:40;max-width:none;margin:0 0 10px;padding:0 12px}
   #previewBar{font-size:15px;padding:8px 10px}
   #previewBar button{font-size:15px;padding:8px 12px;min-height:40px}
 

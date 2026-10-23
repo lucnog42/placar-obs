@@ -26,7 +26,15 @@ Controle.resizePreview = function() {
   var bar = document.getElementById('previewBar');
   var zoom = Controle._zoom || 1;
   var deitado = !!(window.matchMedia && window.matchMedia('(min-width:1100px)').matches);
-  var largura = Math.max(160, (wrapper ? wrapper.clientWidth : c.parentElement.clientWidth) - 2);
+  // clientWidth inclui o padding do wrapper: sem descontar os dois lados o
+  // preview ficava ~14px mais largo que a coluna e estourava pela direita no
+  // celular (o menu tem margem dos dois lados, o preview não tinha)
+  var caixaEl = wrapper || c.parentElement;
+  var cs = window.getComputedStyle(caixaEl);
+  var padL = parseFloat(cs.paddingLeft) || 0, padR = parseFloat(cs.paddingRight) || 0;
+  var disp = caixaEl.clientWidth - padL - padR;
+  if (!(disp > 0)) disp = c.parentElement.clientWidth;
+  var largura = Math.max(160, Math.floor(disp - 2));
   var altura = 0;
   if (deitado) {
     var caixa = (wrapper ? wrapper.clientHeight : 0) - (bar ? (bar.offsetHeight || 30) : 30) - 6;
