@@ -153,7 +153,7 @@ Placar.Tabela = {
         var sub = [e.grupo, e.categoria, e.fase].filter(Boolean).join(' · ');
         var lt = e.tabelaLogo || e.logoTorneio || '';      // logo do torneio (sub-banco torneios/)
         return {
-            ttl: e.tabelaTitulo || e.competicao || d.ttl || 'QUARTA CATALANA',
+            ttl: e.tabelaTitulo || e.competicao || d.ttl || '',   // sem texto fixo: vazio = vazio
             sub: e.tabelaSub || sub || d.sub || '',
             a: this.indice('tabelaA', e.timeA || e.siglaA, d.a || 0),
             b: this.indice('tabelaB', e.timeB || e.siglaB, d.b || 1),
