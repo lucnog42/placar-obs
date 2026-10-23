@@ -402,10 +402,16 @@ Placar.Tabela = {
         this.publicarCena(cena);
         var cam = this.camada();
         if (cam && cena && cam.getAttribute('data-cena') !== cena) {
+            // TRANSIÇÃO SEQUENCIADA — quem sai, sai primeiro.
+            // Antes as duas cenas ficavam no ar ao mesmo tempo; como o fundo das
+            // cenas é semi-transparente (.92) o conteúdo da antiga vazava por cima
+            // da nova e a troca parecia "sobreposta"/dura. Agora:
+            //   t=0     a cena antiga desbota (600ms) e o display dela é congelado
+            //           (display:block numa cena montada com flex colapsava o
+            //           conteúdo no canto superior esquerdo)
+            //   t=1s    a cena nova entra (480ms)
             var _velha = cam.getAttribute('data-cena');
-            // dissolve: a cena que sai fica como fundo (sem desbotar e SEM trocar
-            // o display — cena montada com flex virava um bloco no canto) e a nova
-            // aparece por cima em 480ms.
+            var _espera = _velha ? 1000 : 0;      // 1s entre a saída e a entrada
             if (_velha) {
                 var _velhaEl = cam.querySelector('.cena[data-scene="' + _velha + '"]');
                 if (_velhaEl && _velhaEl.classList) {
@@ -418,17 +424,26 @@ Placar.Tabela = {
                         setTimeout(function () {
                             el.classList.remove('saindo');
                             el.style.display = '';
-                        }, 540);
+                        }, 640);                             // 600ms de fade + folga
                     })(_velhaEl);
                 }
             }
             cam.setAttribute('data-cena', cena);
-            cam.classList.add('trocando');           // conteúdo entra junto, sem escalonar
-            setTimeout(function () { cam.classList.remove('trocando'); }, 560);
+            // conteúdo interno entra junto com a cena (sem escalonar linha a linha)
+            cam.classList.add('trocando');
+            (function (camEl, ms) {
+                setTimeout(function () { camEl.classList.remove('trocando'); }, ms);
+            })(cam, _espera + 560);
             var _novaEl = cam.querySelector('.cena[data-scene="' + cena + '"]');
             if (_novaEl && _novaEl.classList) {
+                if (_espera) _novaEl.classList.add('esperando');   // só entra no t=1s
                 _novaEl.classList.add('entrando');
-                (function (el) { setTimeout(function () { el.classList.remove('entrando'); }, 520); })(_novaEl);
+                (function (el, ms) {
+                    setTimeout(function () {
+                        el.classList.remove('entrando');
+                        el.classList.remove('esperando');
+                    }, ms + 520);
+                })(_novaEl, _espera);
             }
             this._armarScroll();                 // cena acabou de ganhar altura
         }    },

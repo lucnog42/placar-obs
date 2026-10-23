@@ -41,7 +41,6 @@
 .cena.com-fundo .cena-bg::after{content:"";position:absolute;inset:0;
   background:linear-gradient(180deg,rgba(var(--bg),.90),rgba(var(--bg),.93))}
 #camadaTabela[data-cena="table"]       .cena-table,
-#camadaTabela[data-cena="intro"]       .cena-intro,
 #camadaTabela[data-cena="intervalo"]   .cena-intervalo,
 #camadaTabela[data-cena="encerramento"] .cena-encerramento{display:block}
 #camadaTabela[data-cena="lower"] .cena-lower{display:block}
@@ -123,33 +122,14 @@
 /* abertura: o bloco de times (VS) fica no centro EXATO da cena; logo/título
    ficam como cabeçalho acima, então o conjunto não "escorrega" para baixo quando
    o título está preenchido. */
-.cena-intro{display:none;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;
-  padding:104px 80px 0;text-align:center;background:rgba(var(--bg),.90)}
+/* abertura usa a MESMA pele de intervalo/encerramento (.cena-full + .fl-*);
+   só o centro é o VS. Assim o alinhamento vertical fica idêntico. */
+.cena-full.cena-intro{display:none}
 #camadaTabela[data-cena="intro"] .cena-intro{display:flex}
-.in-logo{width:96px;height:96px;object-fit:contain;margin-bottom:8px;
-  animation:fadeUp .6s both}
-.in-titulo{font-size:66px;font-weight:900;line-height:1.02;letter-spacing:.01em;animation:fadeUp .6s .1s both}
-.in-hoje{margin-top:14px;font-size:20px;font-weight:800;letter-spacing:.4em;color:rgba(var(--ac),1);animation:fadeUp .6s .2s both}
-.in-linha{width:220px;height:3px;background:rgba(var(--fg),.25);margin:10px 0 14px;animation:fadeUp .6s .25s both}
-.in-sub{font-size:22px;font-weight:700;opacity:.85;animation:fadeUp .6s .3s both}
-.in-vs{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);width:100%;max-width:1280px;height:220px;margin:0 auto}
-.in-vs .bd{position:absolute;top:50%;transform:translateY(-50%);width:132px;height:132px;animation:bdIn .6s .45s both}
-.in-vs #inBdA{left:40px}
-.in-vs #inBdB{right:40px}
-.in-vs .na,.in-vs .nb{position:absolute;top:50%;transform:translateY(-50%);font-size:30px;font-weight:900;max-width:500px;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;animation:nomeIn .6s .55s both}
-.in-vs .na{left:190px;text-align:left}
-.in-vs .nb{right:190px;text-align:right}
-.in-vs .vsx{position:absolute;inset:0;margin:auto;width:max-content;height:max-content;font-size:56px;font-weight:900;
-  color:rgba(var(--ac),1);animation:vsIn .6s .4s both}
-.in-vs .vsub{position:absolute;left:50%;top:calc(50% + 46px);transform:translateX(-50%);font-size:16px;font-weight:700;
-  opacity:.8;letter-spacing:.2em;text-transform:uppercase;animation:vsubIn .6s .65s both}
-/* local do jogo fecha a composição na base (a abertura ficava com a metade
-   de baixo vazia: cabeçalho em cima, times no centro, nada embaixo) */
-.in-local{position:absolute;left:0;right:0;bottom:104px;text-align:center;
-  font-size:26px;font-weight:800;letter-spacing:.26em;text-transform:uppercase;
-  color:rgba(var(--fg),.72);animation:fadeUp .6s .7s both}
-.in-local:empty{display:none}
+.in-hoje{font-size:20px;font-weight:800;letter-spacing:.4em;color:rgba(var(--ac),1);
+  text-transform:uppercase;animation:fadeUp .55s .12s both}
+.fl-vs{font-size:64px;font-weight:900;letter-spacing:.04em;color:rgba(var(--fg),.92);
+  padding:0 8px;animation:fadeUp .55s .2s both}
 
 /* ================= INTERVALO / ENCERRAMENTO ================= */
 .cena-full{display:none;flex-direction:column;align-items:center;justify-content:center;gap:30px;
@@ -457,9 +437,15 @@
    Se a que sai desbotasse junto, a tela "abria" no meio da troca (buraco);
    e forçar display:block numa cena montada com flex jogava o conteúdo no canto
    superior esquerdo — era o flash que aparecia antes da cena nova entrar. */
-.cena.saindo{position:absolute;inset:0;z-index:0;pointer-events:none}
+.cena.saindo{position:absolute;inset:0;z-index:0;pointer-events:none;
+  animation:saiCena .6s ease forwards}
 .cena.entrando{animation:entraCena .48s cubic-bezier(.2,.7,.3,1) both}
+/* sequência: a cena antiga sai primeiro (600ms) e a nova só entra 1s depois de a
+   saída começar. Antes as duas ficavam no ar ao mesmo tempo e, como o fundo das
+   cenas é semi-transparente (.92), o conteúdo das duas aparecia junto. */
+.cena.entrando.esperando{animation-delay:1s}
 @keyframes entraCena{from{opacity:0}to{opacity:1}}
+@keyframes saiCena{from{opacity:1}to{opacity:0}}
 /* enquanto a cena troca, o conteúdo interno (linhas, cabeçalho, escudos) entra
    junto com o dissolve em vez de escalonar linha por linha. Era isso que deixava
    a troca automática "dura": a cena já estava visível e as linhas ainda chegavam

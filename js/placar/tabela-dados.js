@@ -7,6 +7,16 @@ var TabelaDados = (function () {
 
   function setLogo(id, src) {
     var e = $(id); if (!e) return;
+    // logo quebrado (arquivo apagado / caminho errado) não pode aparecer como
+    // ícone de imagem quebrada na transmissão: no erro, esconde o slot
+    if (!e._logoErr) {
+      e._logoErr = true;
+      if (e.addEventListener) {
+        e.addEventListener('error', function () {
+          e.removeAttribute('src'); e.style.visibility = 'hidden';
+        });
+      }
+    }
     if (src) { if (e.getAttribute('src') !== src) e.setAttribute('src', src); e.style.visibility = ''; }
     else { e.removeAttribute('src'); e.style.visibility = 'hidden'; }
   }
@@ -185,16 +195,17 @@ var TabelaDados = (function () {
   }
 
   function fillIntro(cfg, A, B) {
-    txt('inTitulo', cfg.ttl);
-    txt('inSub', cfg.sub);
+    // abertura usa a mesma pele de intervalo/encerramento: título = competição,
+    // meta = categoria/grupo/fase, meta2 = local/data/hora/clima
     setLogo('inLogo', cfg.logo);
+    txt('inTitulo', cfg.ttl);
     txt('inNa', A ? (A.short || A.name) : '');
     txt('inNb', B ? (B.short || B.name) : '');
-    // clima com ícone (☀️ 18°C) + local do jogo, que antes não aparecia
-    txt('inVsub', [cfg.vDate, cfg.vTime, [cfg.vIcon, cfg.vW].filter(Boolean).join(' ')].filter(Boolean).join(' · '));
-    txt('inLocal', cfg.vName || '');
     setCrest(document.querySelector('#inBdA .th-crestbox'), A);
     setCrest(document.querySelector('#inBdB .th-crestbox'), B);
+    txt('inMeta', cfg.sub);
+    txt('inMeta2', [cfg.vName, cfg.vDate, cfg.vTime,
+      [cfg.vIcon, cfg.vW].filter(Boolean).join(' ')].filter(Boolean).join(' · '));
   }
 
   function fillFull(pfx, cfg, A, B) {
