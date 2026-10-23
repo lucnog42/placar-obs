@@ -97,7 +97,7 @@ var TabelaDados = (function () {
     txt('thTtl', cfg.ttl);
     txt('thSub', cfg.sub);
     txt('thVname', cfg.vName);
-    txt('thVmeta', [cfg.vTime, cfg.vW].filter(Boolean).join(' · '));
+    txt('thVmeta', [cfg.vDate, cfg.vTime, cfg.vW].filter(Boolean).join(' · '));
     setLogo('thLogo', cfg.logo);
 
     var rows = document.querySelectorAll('#thBody .th-row');
@@ -113,7 +113,7 @@ var TabelaDados = (function () {
     setLogo('inLogo', cfg.logo);
     txt('inNa', A ? (A.short || A.name) : '');
     txt('inNb', B ? (B.short || B.name) : '');
-    txt('inVsub', [cfg.vTime, cfg.vW].filter(Boolean).join(' · '));
+    txt('inVsub', [cfg.vDate, cfg.vTime, cfg.vW].filter(Boolean).join(' · '));
     setCrest(document.querySelector('#inBdA .th-crestbox'), A);
     setCrest(document.querySelector('#inBdB .th-crestbox'), B);
   }

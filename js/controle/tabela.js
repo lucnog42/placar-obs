@@ -365,6 +365,62 @@ Controle._linhaCSV = function (linha, d) {
     return out;
 };
 
+/* ---------- metadados de competição vindos do CSV ----------
+   Três origens, nesta ordem de prioridade: colunas do cabeçalho, linhas
+   "Chave: valor" acima do cabeçalho e o nome do arquivo. Só devolve o que
+   encontrou — campo vazio nunca sobrescreve o que o operador digitou. */
+Controle._META_CHAVES = {
+    competicao: ['competicio', 'competicion', 'competicao', 'comp', 'torneo', 'torneio', 'liga', 'prova'],
+    categoria: ['categoria', 'cat'],
+    grupo: ['grup', 'grupo', 'group'],
+    fase: ['fase', 'phase', 'jornada', 'ronda', 'eliminatoria'],
+    data: ['data', 'fecha', 'date', 'dia'],
+    hora: ['hora', 'horari', 'horario', 'hora inicio', 'inicio'],
+    local: ['camp', 'campo', 'local', 'estadi', 'estadio', 'sede', 'instalacion']
+};
+Controle._metaChave = function (k) {
+    k = Controle._norm(k);
+    var out = null;
+    Object.keys(Controle._META_CHAVES).forEach(function (campo) {
+        if (Controle._META_CHAVES[campo].indexOf(k) >= 0) out = campo;
+    });
+    return out;
+};
+/* "Competició: QUARTA CATALANA" | "Competició=..." */
+Controle._metaLinha = function (s) {
+    var m = String(s || '').match(/^\s*"?([^:="]{2,26})"?\s*[:=]\s*"?(.+?)"?\s*$/);
+    if (!m) return null;
+    var campo = Controle._metaChave(m[1]);
+    if (!campo || !m[2].trim()) return null;
+    return { campo: campo, valor: m[2].trim() };
+};
+/* aceita tambem "Competició;QUARTA CATALANA" (duas celulas) */
+Controle._metaDaRow = function (r) {
+    if (!r || !r.length) return null;
+    var m = Controle._metaLinha(r[0]);
+    if (m) return m;
+    if (r.length === 2) {
+        var c = Controle._metaChave(r[0]);
+        if (c && (r[1] || '').trim()) return { campo: c, valor: r[1].trim() };
+    }
+    return null;
+};
+/* nome do arquivo: ..._U16_Grupo18_... -> {categoria:'U16', grupo:'Grupo 18'} */
+Controle._metaDoNome = function (nome) {
+    var meta = {}, base = String(nome || '').replace(/\.[a-z0-9]+$/i, '');
+    /* junta "grup-18"/"grupo 18"/"u 16" para o split nao separar numero e nome */
+    base = base.replace(/(grup|grupo|group)[ _\-]+0*(\d{1,3})/ig, '$1$2')
+               .replace(/\bu[ _\-]+(\d{1,2})\b/ig, 'u$1');
+    base.split(/[_\-]+/).forEach(function (tk) {
+        tk = tk.trim();
+        var u = tk.match(/^u\s?(\d{1,2})$/i);
+        if (u) { meta.categoria = meta.categoria || ('U' + u[1]); return; }
+        var g = tk.match(/^(?:grup|grupo|group)\s?0*(\d{1,3})$/i);
+        if (g) { meta.grupo = meta.grupo || ('Grupo ' + g[1]); }
+    });
+    return meta;
+};
+
 /* aceita o CSV do fcf.cat (Pos;Equip;Punts;J;G;E;P;GF;GC;DG;Ultims;Sancio;PosSite;Escut) */
 Controle.parseClassificacao = function (texto) {
     texto = (texto || '').replace(/^\ufeff/, '');
@@ -373,6 +429,16 @@ Controle.parseClassificacao = function (texto) {
     var pri = linhas[0];
     var d = (pri.split(';').length >= pri.split(',').length) ? ';' : ',';
     var rows = linhas.map(function (l) { return Controle._linhaCSV(l, d); });
+    /* linhas "Chave: valor" antes do cabecalho — sem descartar isso o cabecalho
+       seria lido como um time e a tabela inteira sairia errada. */
+    var meta = {};
+    while (rows.length) {
+        var mr = Controle._metaDaRow(rows[0]);
+        if (!mr) break;
+        meta[mr.campo] = mr.valor;
+        rows.shift();
+    }
+    if (!rows.length) throw new Error('arquivo vazio');
     var H = rows[0].map(Controle._norm);
     var temCab = H.some(function (h) { return ['equip', 'punts', 'pts', 'equipe', 'time', 'nome'].indexOf(h) >= 0; });
     var idx = function (ks) { for (var i = 0; i < H.length; i++) if (ks.indexOf(H[i]) >= 0) return i; return -1; };
@@ -386,6 +452,17 @@ Controle.parseClassificacao = function (texto) {
     Controle.timesTabela().forEach(function (t) { antigos[Controle._norm(t.name)] = t; });
 
     var corpo = temCab ? rows.slice(1) : rows;
+    /* colunas com metadado (Competicio;Categoria;Grup;Fase;Data;Hora;Camp) */
+    Object.keys(Controle._META_CHAVES).forEach(function (campo) {
+        if (meta[campo]) return;
+        var jm = -1;
+        for (var im = 0; im < H.length; im++) if (Controle._META_CHAVES[campo].indexOf(H[im]) >= 0) { jm = im; break; }
+        if (jm < 0) return;
+        for (var km = 0; km < corpo.length; km++) {
+            var vm = (corpo[km][jm] || '').replace(/^"|"$/g, '').trim();
+            if (vm) { meta[campo] = vm; return; }
+        }
+    });
     var lista = [], urls = [];
     var PALETA = ['#f472b6', '#38bdf8', '#22c55e', '#facc15', '#a78bfa', '#fb923c', '#2dd4bf', '#f87171',
         '#60a5fa', '#34d399', '#fbbf24', '#c084fc', '#fb7185', '#4ade80', '#e879f9', '#94a3b8'];
@@ -418,7 +495,7 @@ Controle.parseClassificacao = function (texto) {
     });
     if (!lista.length) throw new Error('nenhum time reconhecido');
     lista.sort(function (a, b) { return (a.pos || 0) - (b.pos || 0); });
-    return { times: lista, urls: urls };
+    return { times: lista, urls: urls, meta: meta };
 };
 
 Controle.importarClassificacao = function (input) {
@@ -429,9 +506,25 @@ Controle.importarClassificacao = function (input) {
         try {
             var res = Controle.parseClassificacao(String(r.result));
             Controle._ultimoCsv = { texto: String(r.result), tipo: 'tabela' };
-            Controle.setEstado({ tabelaTimes: JSON.stringify(res.times) });
+            /* competicao/categoria/grupo/fase/data/hora/local: o que o CSV (ou o
+               nome do arquivo) trouxer entra no estado e o painel atualiza sozinho.
+               O CSV vence o nome do arquivo; campo vazio nao apaga o que ja existe. */
+            var meta = Controle._metaDoNome(f.name);
+            Object.keys(res.meta || {}).forEach(function (k) {
+                if (res.meta[k]) meta[k] = res.meta[k];
+            });
+            var nomesMeta = { competicao: 'Competição', categoria: 'Categoria', grupo: 'Grupo',
+                fase: 'Fase', data: 'Data', hora: 'Hora', local: 'Local' };
+            var patch = { tabelaTimes: JSON.stringify(res.times) }, postos = [];
+            Object.keys(nomesMeta).forEach(function (k) {
+                if (!meta[k]) return;
+                patch[k] = meta[k];
+                postos.push(nomesMeta[k] + ' ' + meta[k]);
+            });
+            Controle.setEstado(patch);
             Controle.renderSelectTimes();
-            Controle.status('ok', '✅ Classificação: ' + res.times.length + ' times');
+            Controle.status('ok', '✅ Classificação: ' + res.times.length + ' times'
+                + (postos.length ? ' · ' + postos.join(' · ') : ' · CSV sem dados de competição'));
             if (res.urls.length) Controle.baixarEscudos(res.urls);
         } catch (err) {
             Controle.status('erro', '❌ ' + err.message);

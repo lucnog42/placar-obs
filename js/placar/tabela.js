@@ -171,6 +171,7 @@ Placar.Tabela = {
             zcDn: e.tabelaZonaCorDn || d.zcDn || '#ef4444',
             logo: lt ? (DADOS + 'torneios/' + lt) : '',
             vName: e.tabelaLocal || e.local || '',
+            vDate: e.data || '',                      // data do jogo (aba Competicao / CSV)
             vCity: '',
             vTime: e.tabelaHora || e.hora || '',
             vW: e.clima ? (e.clima + '°C') : '',
@@ -242,7 +243,7 @@ Placar.Tabela = {
         return [cfg.scenes.map(function (s) { return s.k + ':' + s.d; }).join(','),
             String((Placar.estado || {}).tabelaPlay || ''),
             cfg.auto ? 'auto' : 'fixa', this.tema(), cfg.a, cfg.b, cfg.c,
-            cfg.ttl, cfg.sub, cfg.vName, cfg.vTime, cfg.vW, cfg.vIcon, cfg.logo].join('|');
+            cfg.ttl, cfg.sub, cfg.vName, cfg.vDate, cfg.vTime, cfg.vW, cfg.vIcon, cfg.logo].join('|');
     },
 
     /* notificação ou mídia manual no ar têm prioridade sobre a rotação */
