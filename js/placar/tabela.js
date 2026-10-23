@@ -253,6 +253,15 @@ Placar.Tabela = {
         return !!(cam && cam.querySelector('.ativo'));
     },
 
+    /* o overlay esta no ar? (cenas automaticas, cena fixa ou cena manual segura) */
+    noAr: function () {
+        var e = Placar.estado || {};
+        return this.ativo === true
+            || String(e.tabelaAtivo) === 'true'
+            || String(e.tabelaModo) === 'fixa'
+            || !!this._interromper;
+    },
+
     /* forca uma cena manualmente (repertório tipo "cena"); d<=0 segura indefinidamente */
     mostrarCena: function (k, d) {
         var dd = parseInt(d, 10);
@@ -297,7 +306,10 @@ Placar.Tabela = {
         var times = this.times();
         this._timesChave = times ? this.chaveTimes(times) : null;
 
-        var ligado = String(e.tabelaAtivo) === 'true' || this._forcado;
+        /* cena fixa funciona sozinha: nao depende de "Cenas Automaticas" */
+        var ligado = String(e.tabelaAtivo) === 'true'
+            || String(e.tabelaModo) === 'fixa'
+            || this._forcado;
         if (ligado) {
             var cfg = this.config();
             this.cfg = cfg;
@@ -320,7 +332,6 @@ Placar.Tabela = {
         var cam = this.camada(), wrap = document.getElementById('placarWrapper');
         if (!cam) return;
         this.ativo = true;
-        this._proxSponsor = 0;
         if (wrap) wrap.classList.add('saindo');        // 1) o placar sai
         clearTimeout(this._t1);
         this._t1 = setTimeout(function () {            // 2) so entao o overlay entra

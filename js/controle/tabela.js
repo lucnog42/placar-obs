@@ -269,7 +269,9 @@ Controle.definirEscudosTabela = function () {
 /* ---------- sincronizacao com o estado ---------- */
 Controle.aplicarEstadoTabela = function () {
     var e = Controle.estado || {};
-    var ligado = e.tabelaAtivo === 'true';
+    var fixa = e.tabelaModo === 'fixa';
+    /* a cena fixa tambem poe o overlay no ar, sem depender de "Cenas Automaticas" */
+    var ligado = e.tabelaAtivo === 'true' || fixa;
     var manual = Controle.cenaManualAtiva();
     var bt = document.getElementById('btnTabela');
     if (bt) {
@@ -279,7 +281,8 @@ Controle.aplicarEstadoTabela = function () {
         if (sub) {
             var nomes = { intro: 'Abertura', intervalo: 'Intervalo', encerramento: 'Encerramento' };
             sub.textContent = manual ? ('pausadas · ' + (nomes[manual] || manual) + ' no ar')
-                                     : (ligado ? 'ligadas · overlay no ar' : 'desligadas · só o placar');
+                                     : (e.tabelaAtivo === 'true' ? 'ligadas · overlay no ar'
+                                        : (fixa ? 'desligadas · cena fixa no ar' : 'desligadas · só o placar'));
         }
     }
     var bd = document.getElementById('tabelaBadge');

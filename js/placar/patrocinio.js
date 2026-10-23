@@ -134,7 +134,10 @@ Placar.Patrocinio = {
       if (this._mostrando) this._pintar(this._i);
     }
 
-    if (!this._ativo() || !this._itens.length) {
+    /* patrocinador e lower third do PLACAR: enquanto o overlay esta no ar
+       (cenas automaticas OU cena fixa OU cena manual) a faixa sai de cena */
+    var noAr = !!(Placar.Tabela && Placar.Tabela.noAr && Placar.Tabela.noAr());
+    if (!this._ativo() || !this._itens.length || noAr) {
       if (this._mostrando) this._esconder();
       this._prox = 0;
       cam.classList.remove('on');
