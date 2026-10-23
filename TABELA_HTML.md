@@ -19,8 +19,9 @@ escudos e classes. O motor canvas (`tabela/tabela.js`, 836 linhas) foi removido.
 
 Notificacao: `partials/notificacao-overlay.php` — camada propria (`#camadaNotif`),
 **fora do placar** e fora da camada da tabela, com animacao de entrada/saida.
-Patrocinadores: `partials/cena-sponsors.php` — lower third (`#spFaixa`) com um logo por
-vez e nome vindo do painel (`spNomes`).
+Patrocinadores: camada propria `partials/camada-sponsors.php` (`#camadaSponsors`) —
+lower third (`#spFaixa`) com um logo por vez, independente do overlay; o nome vem do
+painel (`spNomes`).
 
 ## Regras
 

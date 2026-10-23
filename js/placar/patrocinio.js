@@ -1,16 +1,21 @@
-// placar/patrocinio.js — patrocinadores como lower third: um logo por vez, com transicao.
-// O PHP monta a faixa; aqui so trocamos a imagem/nome e dizemos qual esta no ar.
-// O nome exibido vem do campo de texto do painel (spNomes); NUNCA do nome do arquivo.
+// placar/patrocinio.js — patrocinadores como lower third INDEPENDENTE do overlay.
+// A camada #camadaSponsors fica fora do #camadaTabela: roda sozinha, com o overlay
+// ligado ou desligado. Aqui mora o loop (aparece / troca / esconde) e o nome exibido,
+// que vem do campo de texto do painel (spNomes) — nunca do nome do arquivo.
 var Placar = window.Placar || {};
 
 Placar.Patrocinio = {
-  _itens: [],      // [{arq, slot, nome}]
+  _itens: [],        // [{arq, slot, nome}]
   _i: 0,
-  _timer: null,
-  _tTroca: null,
   _chave: '',
+  _mostrando: false,
+  _prox: 0,          // quando o proximo bloco comeca
+  _fim: 0,           // quando o bloco atual termina
+  _tRot: null,       // rotacao dos logos dentro do bloco
+  _tTroca: null,
+  _TROCA_MS: 420,    // tempo do card sair pela direita (casa com o CSS)
 
-  /* nomes digitados no painel: {"1":"NG3 Midia", "2":"..."} (chave = numero do slot) */
+  /* nomes digitados no painel: {"1":"NG3 Midia"} (chave = numero do slot) */
   _mapa: function () {
     var s = (Placar.estado || {}).spNomes, o = null;
     if (typeof s === 'string' && s) { try { o = JSON.parse(s); } catch (e) { o = null; } }
@@ -27,94 +32,139 @@ Placar.Patrocinio = {
     }
     return out;
   },
+  _chaveDe: function (itens) {
+    return itens.map(function (x) { return x.slot + ':' + x.arq + ':' + x.nome; }).join('|')
+      + '|' + String((Placar.estado || {}).spText || '');
+  },
 
-  /* escreve o patrocinador da vez (idx) */
+  /* ---------- tempos (painel) ---------- */
+  _ativo: function () { return String((Placar.estado || {}).sponsorsAtivo) === 'true'; },
+  _ivMs: function () {
+    var v = parseInt((Placar.estado || {}).sponsorsIntervalo, 10);
+    if (isNaN(v)) v = 60;
+    if (v < 5) v = 5;
+    return Math.round(v * 1000);
+  },
+  /* tempo de cada patrocinador = 4x a fracao do bloco (duracao / nº logos), minimo 8 s */
+  _porLogoMs: function (n) {
+    var dur = parseInt((Placar.estado || {}).sponsorsDuracao, 10);
+    if (isNaN(dur) || dur < 1) dur = 8;
+    var base = Math.round(dur / Math.max(1, n));
+    return Math.max(8, base * 4) * 1000;
+  },
+
+  /* ---------- pintura ---------- */
   _pintar: function (idx) {
-    var faixa = document.getElementById('spFaixa');
     var img = document.getElementById('spImg');
-    var cena = document.querySelector('.cena-sponsors');
+    var faixa = document.getElementById('spFaixa');
     var nomeEl = document.getElementById('spNome');
     var itens = this._itens;
-
-    if (!itens.length) {
-      if (faixa) { faixa.classList.add('vazio'); faixa.classList.remove('sem-nome'); }
-      if (cena) cena.classList.add('sem-sponsor');
-      if (img) img.removeAttribute('src');
-      if (nomeEl) nomeEl.textContent = '';
-      return;
-    }
-    if (faixa) faixa.classList.remove('vazio');
-    if (cena) cena.classList.remove('sem-sponsor');
+    if (img) img.removeAttribute('src');
+    if (nomeEl) nomeEl.textContent = '';
+    if (!itens.length) return;
 
     var it = itens[idx] || itens[0];
     if (img) {
-      var src = DADOS + 'torneios/' + it.arq;
-      if (img.getAttribute('src') !== src) img.setAttribute('src', src);
+      img.setAttribute('src', DADOS + 'torneios/' + it.arq);
       img.setAttribute('alt', it.nome || 'patrocinador');
     }
     // sem nome digitado nao mostra texto nenhum (nada de nome de arquivo)
     if (faixa) faixa.classList[it.nome ? 'remove' : 'add']('sem-nome');
     if (nomeEl) nomeEl.textContent = it.nome || '';
-
     var lab = document.getElementById('spLabel');
     if (lab) lab.textContent = String((Placar.estado || {}).spText || 'PATROCINADORES').toUpperCase();
   },
 
-  /* troca para o proximo: sai pela direita e volta pela direita com o novo */
+  /* troca de patrocinador: o card inteiro sai pela direita e volta pela direita */
   _proximo: function () {
     var self = this;
     if (this._itens.length < 2) return;
     var faixa = document.getElementById('spFaixa');
     this._i = (this._i + 1) % this._itens.length;
-    if (!faixa) return;
+    if (!faixa) { this._pintar(this._i); return; }
     clearTimeout(this._tTroca);
-    faixa.classList.add('trocando');            // CSS: desliza para a direita e some
+    faixa.classList.add('trocando');
     this._tTroca = setTimeout(function () {
-      self._pintar(self._i);                    // troca o conteudo ainda invisivel
-      faixa.classList.remove('trocando');       // volta entrando pela direita
-    }, 300);
+      self._pintar(self._i);
+      faixa.classList.remove('trocando');
+    }, this._TROCA_MS);
   },
 
-  /* chamado pelo overlay a cada troca de cena (a cada 200 ms) */
-  cena: function (k) {
-    if (k === 'sponsors') this.iniciar();
-    else this.parar();
+  /* ---------- bloco: aparece, gira, esconde ---------- */
+  _mostrar: function (now, du) {
+    var cam = document.getElementById('camadaSponsors');
+    this._mostrando = true;
+    this._fim = now + du;
+    this._i = 0;
+    this._pintar(0);
+    if (cam) cam.classList.add('on');
+    this._startRot();
   },
-
-  iniciar: function () {
-    this._itens = this.itens();
-    if (!this._itens.length) { this._pintar(0); return; }
-    var rodando = !!this._timer;
-    if (!rodando) { this._i = 0; this._pintar(0); }
-    if (rodando || this._itens.length < 2) return;
-
-    // a duracao do painel e do bloco inteiro: divide entre os patrocinadores
-    var dur = parseInt((Placar.estado || {}).sponsorsDuracao, 10) || 8;
-    var passo = Math.max(2, Math.round(dur / this._itens.length));
-    var self = this;
-    this._timer = setInterval(function () { self._proximo(); }, passo * 1000);
+  _esconder: function () {
+    var cam = document.getElementById('camadaSponsors');
+    this._mostrando = false;
+    this._stopRot();
+    if (cam) cam.classList.remove('on');
   },
-
-  parar: function () {
-    if (this._timer) { clearInterval(this._timer); this._timer = null; }
+  _startRot: function () {
+    this._stopRot();
+    if (this._itens.length < 2) return;
+    var self = this, passo = this._porLogoMs(this._itens.length);
+    this._tRot = setInterval(function () { self._proximo(); }, passo);
+  },
+  _stopRot: function () {
+    if (this._tRot) { clearInterval(this._tRot); this._tRot = null; }
     clearTimeout(this._tTroca);
     var faixa = document.getElementById('spFaixa');
     if (faixa) faixa.classList.remove('trocando');
   },
 
-  /* estado mudou (logo novo, nome digitado, outro texto) */
+  /* ---------- loop (roda sempre, nao depende do overlay) ---------- */
+  _tique: function () {
+    var now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    var cam = document.getElementById('camadaSponsors');
+    if (!cam) return;
+
+    // estado mudou (logo, nome, texto) -> repinta sem esperar o proximo bloco
+    var itens = this.itens(), chave = this._chaveDe(itens);
+    if (chave !== this._chave) {
+      this._chave = chave;
+      this._itens = itens;
+      if (this._i >= itens.length) this._i = 0;
+      if (this._mostrando) this._pintar(this._i);
+    }
+
+    if (!this._ativo() || !this._itens.length) {
+      if (this._mostrando) this._esconder();
+      this._prox = 0;
+      cam.classList.remove('on');
+      return;
+    }
+    // primeiro bloco logo depois de ligar (no maximo 5 s), depois a cada intervalo
+    if (!this._prox) this._prox = now + Math.min(this._ivMs(), 5000);
+    var du = this._porLogoMs(this._itens.length) * this._itens.length;
+    if (!this._mostrando) {
+      if (now >= this._prox) this._mostrar(now, du);
+    } else if (now >= this._fim) {
+      this._esconder();
+      this._prox = now + this._ivMs();
+    }
+  },
+
+  /* compatibilidade: estado mudou -> repinta agora */
   aplicar: function () {
-    var itens = this.itens();
-    var chave = itens.map(function (x) { return x.slot + ':' + x.arq + ':' + x.nome; }).join('|')
-      + '|' + String((Placar.estado || {}).spText || '');
+    var itens = this.itens(), chave = this._chaveDe(itens);
     if (chave === this._chave) return;
     this._chave = chave;
     this._itens = itens;
     if (this._i >= itens.length) this._i = 0;
-    this._pintar(this._i);
-    if (this._timer && itens.length < 2) this.parar();
-  }
+    if (this._mostrando) this._pintar(this._i);
+  },
+
+  /* o overlay pode estar desligado; a camada roda por conta propria */
+  iniciar: function () { this._tique(); }
 };
 
-/* o estado pode chegar antes deste arquivo: tenta agora e depois nas trocas */
-try { Placar.Patrocinio.aplicar(); } catch (e) { }
+/* loop fixo: 400 ms e barato e independe da cena do overlay */
+setInterval(function () { try { Placar.Patrocinio._tique(); } catch (e) { } }, 400);
+try { Placar.Patrocinio._tique(); } catch (e) { }

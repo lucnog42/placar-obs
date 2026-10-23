@@ -60,7 +60,9 @@ O coração da integração. Abre já expandida.
 **Modo cena fixa**: ao ligar, entra já na cena que estava no ar (o placar publica
 `tabelaCenaAtual`), então a transição é contínua em vez de cortar para outra cena.
 
-**Patrocinadores**: a rotacao liga a faixa inferior (lower third) com **um logo por vez**;
+**Patrocinadores**: camada própria (`#camadaSponsors`), independente do overlay. A rotacao
+liga a faixa inferior (lower third) com **um logo por vez**, cada logo por
+4 × (`sponsorsDuracao` ÷ nº de logos) e no mínimo 8 s;
 `sponsorsDuracao` e a duracao do bloco inteiro, dividida entre os patrocinadores, e
 `sponsorsIntervalo` espera no minimo 5 s entre blocos (vazio = 60 s). O nome exibido
 embaixo do logo vem do campo **nome exibido** de cada slot (`spNomes`); vazio = so o logo.

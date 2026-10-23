@@ -17,7 +17,6 @@ Controle.TABELA_CENAS_META = [
     ['feature', 'Time destaque', 8, true],
     ['form2', 'Forma / últimos jogos', 8, true],
     ['lineups', 'Escalações', 9, true],
-    ['sponsors', 'Patrocinadores', 6, false],
     ['lower', 'Faixa inferior (placar)', 8, false]
 ];
 
@@ -78,17 +77,20 @@ Controle.initTabela = function () {
 
 /* seletor de cena fixa: sem CSV, as cenas de tabela ficam desabilitadas */
 Controle.renderSelectCena = function () {
-    var sc = document.getElementById('tabelaCena');
-    if (!sc) return;
     var tem = Controle.temClassificacao();
-    sc.innerHTML = Controle.TABELA_CENAS_META.map(function (m) {
+    var html = Controle.TABELA_CENAS_META.map(function (m) {
         var off = !tem && Controle.TABELA_CENAS_CSV[m[0]];
         return '<option value="' + m[0] + '"' + (off ? ' disabled' : '') + '>'
             + m[1] + (off ? ' — precisa do CSV' : '') + '</option>';
     }).join('');
     var atual = (Controle.estado || {}).tabelaCena || 'table';
     if (!tem && Controle.TABELA_CENAS_CSV[atual]) atual = 'intro';
-    sc.value = atual;
+    ['tabelaCena', 'tabelaCenaTop'].forEach(function (id) {
+        var sc = document.getElementById(id);
+        if (!sc) return;
+        sc.innerHTML = html;
+        sc.value = atual;
+    });
 };
 
 /* opcoes dos seletores de time (usa a classificacao do estado, se houver) */
@@ -218,6 +220,23 @@ Controle.alternarTabela = function () {
     Controle.status('ok', '▶ Cenas Automáticas ligadas');
 };
 Controle.definirCenaTabela = function (v) { Controle.setEstado({ tabelaCena: v }); };
+Controle.modoFixaAtual = function () { return (Controle.estado || {}).tabelaModo === 'fixa'; };
+/* switch "Cena Fixa" da linha de cima (ao lado de Cenas Automaticas) */
+Controle.alternarCenaFixa = function () {
+    var fixa = !Controle.modoFixaAtual();
+    Controle.alternarModoTabela(fixa);
+    Controle.syncBotaoCenaFixa();
+    Controle.status('ok', fixa ? '📌 Cena fixa ligada' : '▶ Linha do tempo ligada');
+};
+Controle.syncBotaoCenaFixa = function () {
+    var e = Controle.estado || {}, fixa = e.tabelaModo === 'fixa';
+    var b = document.getElementById('btnCenaFixa');
+    if (b) { b.classList[fixa ? 'add' : 'remove']('on'); b.setAttribute('aria-pressed', fixa ? 'true' : 'false'); }
+    var sub = document.getElementById('btnCenaFixaSub');
+    if (sub) sub.textContent = fixa ? ('no ar: ' + Controle.nomeCena(e.tabelaCena || 'table')) : 'desligada · linha do tempo';
+    var sel = document.getElementById('tabelaCenaTop');
+    if (sel) { sel.disabled = !fixa; sel.className = 'sel-cena-top' + (fixa ? '' : ' off'); sel.value = e.tabelaCena || 'table'; }
+};
 Controle.definirDestaqueTabela = function (v) { Controle.setEstado({ tabelaDestaque: v }); };
 
 /* mantem o seletor do overlay igual ao estado (chamado ao recarregar a lista) */
@@ -278,10 +297,7 @@ Controle.aplicarEstadoTabela = function () {
     v = document.getElementById('tabelaTema'); if (v) v.value = e.tabelaTema || 'laliga';
     v = document.getElementById('tabelaModo'); if (v) v.value = e.tabelaModo || 'auto';
     var modoFixa = (e.tabelaModo === 'fixa');
-    v = document.getElementById('tabelaFixa'); if (v) v.checked = modoFixa;
-    var lb = document.getElementById('tabelaModoLabel');
-    if (lb) { lb.textContent = modoFixa ? 'Cena fixa' : 'Linha do tempo'; lb.className = 'modo-lbl' + (modoFixa ? '' : ' auto'); }
-    v = document.getElementById('blocoCenaFixa'); if (v) v.className = modoFixa ? '' : 'escondido';
+    if (Controle.syncBotaoCenaFixa) Controle.syncBotaoCenaFixa();
     v = document.getElementById('secCenas'); if (v) v.className = modoFixa ? 'full escondido' : 'full';
     Controle.pintarDestaques();
     Controle.renderSelectCena();

@@ -1,16 +1,16 @@
 # Overlay de classificação
 
 Cenas ja migradas para HTML/CSS (PHP monta, CSS mostra, JS so preenche):
-`table`, `intro` (abertura), `intervalo`, `encerramento`, `sponsors` (patrocinadores),
+`table`, `intro` (abertura), `intervalo`, `encerramento`,
 `lower` (lower third), `lineups` (escalacao), `feature` (time destaque), `form2` (ultimos jogos)
 e `duel` (duelo). Todas as cenas das faixas ja sao HTML/CSS — o canvas nao desenha mais nenhuma.
 A notificacao e uma camada propria (`#camadaNotif`, `partials/notificacao-overlay.php`):
 ela aparece **fora do placar** e fora da camada da tabela, animada, e funciona com o
-overlay ligado ou desligado. Os patrocinadores aparecem como **lower third** (faixa
-inferior) mostrando **um logo por vez**: ele entra pela direita, sai pela direita e o
-proximo entra no mesmo lugar. O nome exibido vem do painel (`spNomes`), nunca do nome
-do arquivo da imagem.
-no canvas do motor.
+overlay ligado ou desligado. Os patrocinadores sao outra camada propria
+(`#camadaSponsors`, `partials/camada-sponsors.php`), tambem independente do overlay:
+lower third (faixa inferior) com **um logo por vez**, o card inteiro entra e sai pela
+direita e cada logo fica 4 x (duracao / nº de logos). O nome exibido vem do painel
+(`spNomes`), nunca do nome do arquivo da imagem.
 
 O overlay é HTML/CSS 1920×1080 montado pelo PHP (`partials/cena-*.php`) + a camada que o liga
 ao placar (`js/placar/tabela.js`) + o painel (`js/controle/tabela.js`).

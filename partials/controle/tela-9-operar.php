@@ -8,12 +8,16 @@
           <span class="sw-dot" aria-hidden="true"></span>
           <span class="sw-txt"><b>Cenas Automáticas</b><small id="btnTabelaSub">desligadas · só o placar</small></span>
         </button>
+        <button id="btnCenaFixa" class="sw-cenas" onclick="Controle.alternarCenaFixa()" aria-pressed="false" title="Cena fixa: o overlay fica parado em uma cena">
+          <span class="sw-dot" aria-hidden="true"></span>
+          <span class="sw-txt"><b>Cena Fixa</b><small id="btnCenaFixaSub">desligada · linha do tempo</small></span>
+        </button>
+        <select id="tabelaCenaTop" class="sel-cena-top" onchange="Controle.definirCenaTabela(this.value)" title="Cena que fica no ar no modo cena fixa"></select>
         <button id="btnPatrocinadores" class="sw-cenas" onclick="Controle.alternarPatrocinadores()" aria-pressed="false" title="Liga ou desliga a rotacao de patrocinadores no overlay">
           <span class="sw-dot" aria-hidden="true"></span>
           <span class="sw-txt"><b>Patrocinadores</b><small id="btnPatrocinadoresSub">desligados</small></span>
         </button>
         <span class="badge" id="tabelaBadge">fora do ar</span>
-        <button id="toggleNomesBtn" onclick="Controle.alternarNomes()" style="background:#2a3a55">📝 Nomes</button>
         <button onclick="Controle.toggleOverlayPop()" style="background:#2a3a55">⚙️ Configuração</button>
       </div>
       <div id="tabelaSemCsv" class="escondido aviso-csv">
@@ -22,22 +26,14 @@
         Abertura, intervalo e encerramento continuam funcionando.
       </div>
       <div class="overlay-pop" id="overlayPop">
-        <p style="font-size:11px;color:#93a4c0;margin:0 0 6px">Modo de exibição</p>
+        <p style="font-size:11px;color:#93a4c0;margin:0 0 6px">Modo de exibição <span class="hint">use o switch <b>Cena Fixa</b>, na linha de cima</span></p>
         <div class="modo-row">
-          <label class="toggle-sw" title="Ligado = cena fixa · Desligado = linha do tempo">
-            <input type="checkbox" id="tabelaFixa" onchange="Controle.alternarModoTabela(this.checked)"><span class="slider"></span>
-          </label>
-          <span class="modo-lbl auto" id="tabelaModoLabel">Linha do tempo</span>
           <button class="btn-play" id="btnTabelaPlay" onclick="Controle.tocarSequencia()" title="Recomeça a sequência agora">▶ Tocar</button>
         </div>
         <select id="tabelaModo" class="escondido">
           <option value="auto">Linha do tempo (sequência)</option>
           <option value="fixa">Cena fixa</option>
         </select>
-        <div id="blocoCenaFixa" class="escondido">
-          <p style="font-size:11px;color:#93a4c0;margin:6px 0 3px">Cena fixa <span class="hint">(entra na cena que estava no ar)</span></p>
-          <select id="tabelaCena" onchange="Controle.definirCenaTabela(this.value)" style="width:100%"></select>
-        </div>
         <div class="overlay-cat" onclick="Controle.abrirCenas()" style="margin-top:8px"><span>🎬 Ajustar cenas…</span><span style="color:#93a4c0;font-size:10px">linha do tempo</span></div>
         <p style="font-size:11px;color:#93a4c0;margin:12px 0 4px">🖼 Fundos das cenas <span class="hint">PNG · JPG · GIF</span></p>
         <div id="fundoCenas" class="fundo-cenas"></div>

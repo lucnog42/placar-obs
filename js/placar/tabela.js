@@ -22,7 +22,7 @@ Placar.Tabela = {
     _forcado: false,
 
     /* cenas que o motor conhece (usado para validar o painel/estado) */
-    CENAS_VALIDAS: { intro: 1, table: 1, duel: 1, feature: 1, form2: 1, lineups: 1, sponsors: 1, lower: 1, intervalo: 1, encerramento: 1 },
+    CENAS_VALIDAS: { intro: 1, table: 1, duel: 1, feature: 1, form2: 1, lineups: 1, lower: 1, intervalo: 1, encerramento: 1 },
     /* cenas que só existem se houver classificacao (CSV importado) */
     CENAS_CSV: { table: 1, duel: 1, feature: 1, form2: 1, lineups: 1 },
 
@@ -245,19 +245,6 @@ Placar.Tabela = {
             cfg.ttl, cfg.sub, cfg.vName, cfg.vTime, cfg.vW, cfg.vIcon, cfg.logo].join('|');
     },
 
-    /* ---------- patrocinadores (sp1..spN) ---------- */
-    sponsorNomes: function () {
-        var e = Placar.estado || {}, out = [];
-        for (var i = 1; i <= 30; i++) { var v = e['sp' + i]; if (v) out.push(String(v)); }
-        return out;
-    },
-    carregarPatrocinadores: function () {
-        // a cena de patrocinadores agora e HTML: so preenchemos os slots (sem imagens em canvas)
-        if (Placar.Patrocinio) Placar.Patrocinio.aplicar();
-    },
-    sponsorAtivo: function () { return String((Placar.estado || {}).sponsorsAtivo) === 'true'; },
-    _sponsorIntervaloMs: function () { var v = parseInt((Placar.estado || {}).sponsorsIntervalo, 10); if (isNaN(v)) v = 60; if (v < 5) v = 5; return Math.round(v * 1000); },
-    _sponsorDuracaoMs: function () { var v = parseInt((Placar.estado || {}).sponsorsDuracao, 10); return (isNaN(v) || v < 1) ? 8000 : v * 1000; },
     /* notificação ou mídia manual no ar têm prioridade sobre a rotação */
     prioridadeManual: function () {
         var nt = document.getElementById('notifOv');
@@ -313,7 +300,6 @@ Placar.Tabela = {
         var ligado = String(e.tabelaAtivo) === 'true' || this._forcado;
         if (ligado) {
             var cfg = this.config();
-            this.carregarPatrocinadores();   // cena de patrocinadores (HTML)
             this.cfg = cfg;
             if (window.TabelaDados) { try { window.TabelaDados.fill(cfg, this.tema()); } catch (e) {} }
             var c = this.chaveDe(cfg);
@@ -354,7 +340,6 @@ Placar.Tabela = {
 
     desligar: function () {
         var self = this;
-        if (Placar.Patrocinio && Placar.Patrocinio.cena) Placar.Patrocinio.cena(null);
         var cam = this.camada(), wrap = document.getElementById('placarWrapper');
         this.ativo = false;
         this._interromper = null;
@@ -400,24 +385,11 @@ Placar.Tabela = {
             } else {
                 cena = cfg.scenes[0] && cfg.scenes[0].k;
             }
-            // rotacao de patrocinadores (abaixo de notificacao/midia manual)
-            // nao depende de cfg.auto: roda tambem em cena fixa / playlist de 1 cena
-            if (this.sponsorAtivo()) {
-                var iv = this._sponsorIntervaloMs(), du = this._sponsorDuracaoMs();
-                if (!this._proxSponsor) this._proxSponsor = now + iv;
-                var loc = now - this._proxSponsor;
-                if (loc >= 0 && loc < du) cena = 'sponsors';
-                else if (loc >= du) this._proxSponsor = this.prioridadeManual() ? (now + 1000) : (now + iv);
-                else if (this.prioridadeManual()) this._proxSponsor = now + iv;
-            } else { this._proxSponsor = 0; }
         }
 
         this.publicarCena(cena);
         var cam = this.camada();
-        if (cam && cena && cam.getAttribute('data-cena') !== cena) cam.setAttribute('data-cena', cena);
-        // a cena de patrocinadores roda a propria troca (lower third, um logo por vez)
-        if (Placar.Patrocinio && Placar.Patrocinio.cena) Placar.Patrocinio.cena(cena);
-    },
+        if (cam && cena && cam.getAttribute('data-cena') !== cena) cam.setAttribute('data-cena', cena);    },
 
     iniciarLoop: function () {
         var self = this;

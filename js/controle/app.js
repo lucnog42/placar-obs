@@ -380,7 +380,10 @@ Controle.toggleCustomizacao = function(input){
 Controle.renderMenuRapido = function(){
   var el = document.getElementById('menuRapido');
   if(!el) return;
+  var nomesExp = ((Controle.estado || {}).nomesExpandidos === 'true');
   var itens = [
+    { h:'<button id="toggleNomesBtn" onclick="Controle.alternarNomes()" style="background:#2a3a55;font-size:13px;padding:10px 14px">'
+        + (nomesExp ? '📝 Siglas' : '📝 Expandir Nomes') + '</button>' },
     { feat:'feat_gol', h:'<button onclick="Controle.notifRapida(\'gol\')" style="background:#dc2626;color:#fff;font-size:13px;padding:10px 14px">⚽ Gol</button>' },
     { feat:'feat_faltas', h:'<button onclick="Controle.notifRapida(\'amarelo\')" style="background:#facc15;color:#000;font-size:13px;padding:10px 14px">🟨 Faltas</button><button onclick="Controle.notifRapida(\'vermelho\')" style="background:#7f1d1d;color:#fff;font-size:13px;padding:10px 14px">🟥 Expulsão</button>' },
     { feat:'feat_midias', h:'<button onclick="Controle.abrirRepertorio()" style="background:#2a3a55;font-size:13px;padding:10px 14px">🖼 Mídias</button>' },
@@ -389,7 +392,7 @@ Controle.renderMenuRapido = function(){
   ];
   var h = '';
   for(var i = 0; i < itens.length; i++){
-    if(Controle.featAtiva(itens[i].feat)) h += itens[i].h;
+    if(!itens[i].feat || Controle.featAtiva(itens[i].feat)) h += itens[i].h;
   }
   if(!h) h = '<span style="color:#5b6f88;font-size:11px">Nenhuma ação habilitada.</span>';
   el.innerHTML = h;
@@ -424,7 +427,7 @@ Controle.voltarLoop = function(){
    O arquivo mora em dados/fundos/; a cena guarda só o caminho.
    ============================================================ */
 Controle.FUNDO_CENAS = [['intro','Abertura'],['intervalo','Intervalo'],['encerramento','Encerramento'],['table','Tabela'],
-                        ['lower','Lower third'],['lineups','Escalação'],['sponsors','Patrocinadores']];
+                        ['lower','Lower third'],['lineups','Escalação']];
 Controle._fundoAlvo = 'intro';
 
 Controle._fundoMapa = function(){

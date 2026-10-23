@@ -1,5 +1,21 @@
 # Histórico
 
+## 2026-10-22 — Patrocinador vira camada própria + Cena Fixa na tela ao vivo
+
+- **Patrocinador agora é camada própria** (`#camadaSponsors`, `partials/camada-sponsors.php`),
+  fora do `#camadaTabela`: aparece **com o overlay ligado ou desligado**. Era por isso que
+  o loop "não funcionava" — a rotação só rodava enquanto a cena do overlay estava no ar.
+  `partials/cena-sponsors.php` e a cena `sponsors` foram removidas (9 cenas agora).
+- **Loop próprio** (`js/placar/patrocinio.js`): tique de 400 ms; primeiro bloco em até 5 s
+  depois de ligar, esconde no fim do bloco e volta a cada `sponsorsIntervalo`.
+- **4x por patrocinador**: cada logo fica 4 × (duração ÷ nº de logos), mínimo 8 s.
+- **Transição no card inteiro**: a `.sp-faixa` toda desliza para a direita e volta pela
+  direita (não só o logo/texto internos).
+- **Cena Fixa na tela Operar ao vivo**: switch ao lado de "Cenas Automáticas" + dropdown
+  com a cena, na mesma linha (saiu de dentro do pop ⚙). O dropdown só habilita no modo fixo.
+- **"Expandir Nomes" foi para o ⚡ Menu rápido** (saiu da linha de botões do overlay).
+- `?v=20261107a`
+
 ## 2026-10-22 — Patrocinador: nome digitado, animação pela direita, rotação corrigida
 
 - **Nome do patrocinador é campo de texto**: cada slot da aba Patrocinadores ganhou um
