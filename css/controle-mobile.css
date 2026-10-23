@@ -1,21 +1,80 @@
+/* ============================================================================
+   MOBILE (<=759px)
+   Regras que só valem no celular. O desktop fica intocado.
+   Meta: alvo de toque confortável (botões/menus com o DOBRO do tamanho base),
+   nada cortado, nada sobreposto, preview compacto.
+   ========================================================================== */
 @media(max-width:759px){
-  body{zoom:2}
-  /* toggles de cena ocupam a largura toda no celular */
-  .cenas-manuais{grid-template-columns:1fr}
-  button.sw-cenas{min-width:0;width:100%}
-  #previewWrapper{position:sticky;top:48px;z-index:40}
-  /* menu mobile: fonte e botões em 2x */
-  .drawer-head{font-size:24px;padding:18px 22px 8px}
-  .drawer-instancia{font-size:20px;padding:0 22px 16px}
-  .drawer-item{font-size:26px;padding:20px 22px}
-  .drawer-btn{font-size:24px;padding:16px;margin:8px 22px;width:calc(100% - 44px)}
-  /* botões e menus com o DOBRO do tamanho (alvo de toque no celular) */
-  .tela button,.tela select,.tela input{font-size:24px;padding:16px 20px;min-height:56px;border-radius:10px}
+
+  /* ---------- base ----------
+     NUNCA usar body{zoom:2}: com zoom o layout pensa que tem metade da largura
+     e os botões nascem com 430px num viewport de 390 -> rótulo cortado
+     ("Av..."). O dobro se faz com font-size/padding/min-height. */
+  body{zoom:1;padding-top:70px;padding-bottom:84px}
+
+  /* ---------- topbar ---------- */
+  #topbar{height:56px;gap:8px}
+  #btnMenu{font-size:26px;padding:8px 12px;min-width:56px;min-height:48px}
+  .topbar-titulo{font-size:17px;line-height:1.15}
+  .topbar-instancia{font-size:13px}
+  .topbar-sync{font-size:16px}
+
+  /* ---------- barra de status (não pode cobrir o preview) ---------- */
+  #status{top:56px;font-size:13px;padding:6px 10px}
+
+  /* ---------- preview: compacto, logo abaixo da topbar+status ---------- */
+  #previewWrapper{position:sticky;top:92px;z-index:40;max-width:none;margin:0 0 10px;padding:0 8px}
+  #previewBar{font-size:15px;padding:8px 10px}
+  #previewBar button{font-size:15px;padding:8px 12px;min-height:40px}
+
+  /* ---------- títulos ---------- */
+  .tela h2.titulo{font-size:22px;margin:8px 0 14px}
+
+  /* ---------- botões, selects e inputs: DOBRO do tamanho ---------- */
+  .tela button,.tela select,.tela input{
+    font-size:24px;padding:14px 18px;min-height:56px;border-radius:10px;
+    max-width:100%;white-space:normal;line-height:1.2;overflow-wrap:anywhere}
+  .tela select{min-height:56px}
+  .tela label{font-size:20px}
+  .tela p{font-size:20px}
+
+  /* micro-botões das listas (mídia, escudo, preset, fundo, cor) */
   .tela .midia-item button,.tela .escudo-item button,.tela .preset-item button,
   .tela .preset-item .preset-botoes button,.tela .cor-item button,
-  .tela .fundo-acoes button,.tela .fundo-item button{font-size:18px;padding:10px 14px;min-height:44px}
-  button.sw-cenas{padding:14px 18px;min-height:64px}
+  .tela .fundo-acoes button,.tela .fundo-item button{
+    font-size:18px;padding:10px 14px;min-height:48px;white-space:normal}
+  .tela .midia-item,.tela .escudo-item,.tela .preset-item,.tela .fundo-item{font-size:18px}
+
+  /* toggles de cena ocupam a largura toda e ficam altos */
+  .cenas-manuais{grid-template-columns:1fr}
+  button.sw-cenas{min-width:0;width:100%;padding:14px 18px;min-height:64px}
   button.sw-cenas .sw-txt b{font-size:24px}
   button.sw-cenas .sw-txt small{font-size:15px}
+
+  /* ---------- bottombar: os três pedaços cabem na tela ---------- */
+  #bottombar{height:auto;min-height:64px;padding:8px;gap:8px;flex-wrap:nowrap}
+  #bottombar button{flex:1 1 0;min-width:0;font-size:20px;padding:14px 8px;
+    min-height:56px;white-space:normal;line-height:1.1}
+  #stepperLabel{flex:0 0 auto;font-size:13px;text-align:center;white-space:nowrap}
+
+  /* ---------- drawer (menu) ---------- */
+  .drawer-head{font-size:24px;padding:18px 22px 8px}
+  .drawer-instancia{font-size:18px;padding:0 22px 16px}
+  .drawer-item{font-size:24px;padding:18px 22px}
+  .drawer-btn{font-size:22px;padding:16px;margin:8px 14px;width:calc(100% - 28px)}
+
+  /* ---------- seções e grids ---------- */
+  .tela .grid-inner{grid-template-columns:1fr;gap:12px}
+  section{padding:12px}
+  section p{font-size:18px}
+  .midia-item img{width:72px;height:40px}
 }
+
+/* telas muito estreitas (iPhone SE e afins) */
+@media(max-width:359px){
+  .tela button,.tela select,.tela input{font-size:20px;padding:12px 14px}
+  #bottombar button{font-size:17px}
+  .topbar-titulo{font-size:15px}
+}
+
 .sel-cena-top{width:100%;max-width:none}

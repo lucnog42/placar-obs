@@ -106,6 +106,20 @@ var TabelaDados = (function () {
       fillRow(rows[i], tm, cfg, total, i + 1, !!tm && tm === A, !!tm && tm === B);
     }
     ajustarScroll();
+    observarAltura();
+  }
+
+  /* A cena nasce com display:none -> clientHeight 0 -> ajustarScroll desiste.
+     Observa o #thBody e arma a rolagem assim que ele ganhar altura (cena no ar,
+     fonte carregada, preview do painel redimensionado). */
+  function observarAltura() {
+    if (typeof ResizeObserver === 'undefined') return;
+    var corpo = document.getElementById('thBody');
+    if (!corpo || corpo._obsScroll) return;
+    try {
+      corpo._obsScroll = new ResizeObserver(function () { ajustarScroll(); });
+      corpo._obsScroll.observe(corpo);
+    } catch (e) { }
   }
 
   /* Rolagem automática da classificação.
@@ -476,5 +490,5 @@ var TabelaDados = (function () {
     fillRival(cfg, times);
   }
 
-  return { fill: fill, setFundos: setFundos, ajustarScroll: ajustarScroll };
+  return { fill: fill, setFundos: setFundos, ajustarScroll: ajustarScroll, observarAltura: observarAltura };
 })();

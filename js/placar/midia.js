@@ -17,6 +17,7 @@ Placar.preCacheMidias=function(){
     var midias=Placar.getMidias();
     midias.forEach(function(m){
         if(m.tipo==='texto')return;                       // texto nao tem arquivo
+        if(!m.src)return;                                 // sem arquivo: nao cria <img src="undefined"> (404)
         if(camada.querySelector('[data-midia-id="'+m.id+'"]'))return;
         var el;
         if(m.tipo==='video'){el=document.createElement('video');el.src=m.src;el.autoplay=false;el.loop=false;el.muted=true;el.playsInline=true;el.preload='auto';}

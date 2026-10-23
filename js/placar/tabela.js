@@ -401,7 +401,18 @@ Placar.Tabela = {
 
         this.publicarCena(cena);
         var cam = this.camada();
-        if (cam && cena && cam.getAttribute('data-cena') !== cena) cam.setAttribute('data-cena', cena);    },
+        if (cam && cena && cam.getAttribute('data-cena') !== cena) {
+            cam.setAttribute('data-cena', cena);
+            this._armarScroll();                 // cena acabou de ganhar altura
+        }    },
+
+    /* a tabela precisa medir depois do layout (cena sai de display:none) */
+    _armarScroll: function () {
+        var raf = window.requestAnimationFrame || function (f) { setTimeout(f, 16); };
+        raf(function () {
+            if (window.TabelaDados && TabelaDados.ajustarScroll) TabelaDados.ajustarScroll();
+        });
+    },
 
     iniciarLoop: function () {
         var self = this;
