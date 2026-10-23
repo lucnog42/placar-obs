@@ -105,6 +105,49 @@ var TabelaDados = (function () {
       var tm = times[i];
       fillRow(rows[i], tm, cfg, total, i + 1, !!tm && tm === A, !!tm && tm === B);
     }
+    ajustarScroll();
+  }
+
+  /* Rolagem automática da classificação.
+     Os 24 slots fixos de #thBody não cabem quando há muitos times — em vez de
+     encolher a fonte, cada linha tem altura fixa (60 px) e o corpo rola. Aqui
+     só calculamos a distância e injetamos o @keyframes com os tempos exatos:
+     40 px/s de rolagem, 1 s parado no topo e 3 s parado no fim. Se couber na
+     tela, nada anima. (Não criamos HTML: o PHP continua montando a tabela.) */
+  var VEL_SCROLL = 40, PAUSA_TOPO = 1, PAUSA_FIM = 3, VOLTA = 0.6;
+
+  function ajustarScroll() {
+    var corpo = document.getElementById('thBody');
+    if (!corpo) return;
+    corpo.classList.remove('rolar');
+    corpo.style.transform = '';
+    var linhas = corpo.querySelectorAll('.th-row'), n = 0, alt = 0;
+    for (var i = 0; i < linhas.length; i++) {
+      if (linhas[i].style.display === 'none') continue;
+      n++;
+      if (!alt) alt = linhas[i].offsetHeight || 0;
+    }
+    var visivel = corpo.clientHeight || 0;
+    var dist = n * alt - visivel;
+    if (!n || !alt || !visivel || dist < 8) return;      // cabe: sem rolagem
+
+    var rolagem = dist / VEL_SCROLL;
+    var total = PAUSA_TOPO + rolagem + PAUSA_FIM + rolagem * VOLTA;
+    var pc = function (s) { return Math.round((s / total) * 1000) / 10; };
+    var st = document.getElementById('thAnim');
+    if (!st) {
+      if (!document.head) return;
+      st = document.createElement('style');
+      st.id = 'thAnim';
+      document.head.appendChild(st);
+    }
+    st.textContent = '@keyframes thScroll{'
+      + '0%,' + pc(PAUSA_TOPO) + '%{transform:translateY(0)}'
+      + pc(PAUSA_TOPO + rolagem) + '%,' + pc(PAUSA_TOPO + rolagem + PAUSA_FIM) + '%{transform:translateY(-' + dist + 'px)}'
+      + '100%{transform:translateY(0)}}';
+    corpo.style.setProperty('--th-y', '-' + dist + 'px');
+    corpo.style.setProperty('--th-dur', total.toFixed(1) + 's');
+    corpo.classList.add('rolar');
   }
 
   function fillIntro(cfg, A, B) {
@@ -388,5 +431,5 @@ var TabelaDados = (function () {
     fillDuel(cfg, A, B, times);
   }
 
-  return { fill: fill, setFundos: setFundos };
+  return { fill: fill, setFundos: setFundos, ajustarScroll: ajustarScroll };
 })();

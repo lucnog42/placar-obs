@@ -66,7 +66,7 @@
       <p>🔔 Histórico de Notificações <span class="hint">texto enviado/guardado</span></p>
       <div id="listaNotificacoes" style="min-height:60px;max-height:340px;overflow-y:auto"><span style="color:#888;font-size:11px;">Nenhuma notificação no histórico</span></div>
     </section>
-    <section>
+    <section class="full">
       <p>Pontos</p>
       <div class="futebol-ctrl">
         <button class="A" onclick="Controle.adicionarGol(1,'A')">+ <span class="nomeTimeA">Time A</span></button>

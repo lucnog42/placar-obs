@@ -342,3 +342,8 @@ button.sw-cenas.pausada .sw-txt small{color:#fbbf24}
   padding:9px 10px;font-size:12px;max-width:240px;box-sizing:border-box}
 .sel-cena-top:focus{outline:none;border-color:#3b5680}
 .sel-cena-top.off{opacity:.45}
+/* ---------- textos com overflow (nada redimensiona o painel) ---------- */
+body{touch-action:manipulation}         /* bloqueia zoom por duplo-toque, mantém a pinça */
+button,select,input,.drawer-item,.preset-item,.midia-item,.escudo-item{min-width:0;overflow:hidden;text-overflow:ellipsis}
+button{white-space:nowrap}
+

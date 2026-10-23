@@ -39,7 +39,7 @@
 .cena.com-fundo{background-color:transparent}
 .cena-table.com-fundo::before{background:transparent}
 .cena.com-fundo .cena-bg::after{content:"";position:absolute;inset:0;
-  background:linear-gradient(180deg,rgba(var(--bg),.55),rgba(var(--bg),.72))}
+  background:linear-gradient(180deg,rgba(var(--bg),.90),rgba(var(--bg),.93))}
 #camadaTabela[data-cena="table"]       .cena-table,
 #camadaTabela[data-cena="intro"]       .cena-intro,
 #camadaTabela[data-cena="intervalo"]   .cena-intervalo,
@@ -57,7 +57,7 @@
 .cena{color:rgba(var(--fg),1);font-family:'Arial','Helvetica Neue',sans-serif}
 
 /* ================= TABELA ================= */
-.cena-table{padding:26px 40px 22px;display:none;flex-direction:column;gap:0}
+.cena-table{padding:44px 64px 40px;display:none;flex-direction:column;gap:0}   /* mesma margem das outras cenas */
 #camadaTabela[data-cena="table"] .cena-table{display:flex}
 .cena-table::before{content:"";position:absolute;inset:0;z-index:-1;
   background:linear-gradient(180deg,rgba(var(--bg),.94),rgba(var(--bg),.90))}
@@ -77,32 +77,37 @@
 .th-vbar{width:160px;height:3px;margin-left:auto;margin-top:8px;background:rgba(var(--ac),.85);border-radius:2px}
 
 .th-tbl{flex:1 1 auto;display:flex;flex-direction:column;min-height:0;border:1px solid rgba(var(--fg),.12);
-  border-radius:14px;overflow:hidden;background:rgba(var(--bg),.55)}
-.th-grid{display:grid;grid-template-columns:54px 64px 1fr 66px 46px 46px 46px 46px 46px 46px 156px;
+  border-radius:16px;overflow:hidden;background:rgba(var(--bg),.90);box-shadow:0 10px 40px rgba(0,0,0,.35)}
+.th-grid{display:grid;grid-template-columns:62px 76px 1fr 74px 50px 50px 50px 50px 50px 50px 176px;
   align-items:center;column-gap:2px}
-.th-thead{padding:10px 16px;font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
-  opacity:.6;border-bottom:1px solid rgba(var(--fg),.14);flex:0 0 auto}
+.th-thead{padding:14px 18px;font-size:14px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+  color:rgba(var(--fg),.6);border-bottom:1px solid rgba(var(--fg),.14);flex:0 0 auto;
+  position:relative;z-index:2;background:rgba(var(--bg),.95)}   /* fixo: as linhas passam por baixo */
 .th-thead .th-pts,.th-thead div:nth-child(n+5){text-align:center}
-.th-body{flex:1 1 auto;overflow:hidden;display:flex;flex-direction:column}
-.th-row{flex:1 1 0;min-height:0;padding:0 16px;font-size:22px;border-bottom:1px solid rgba(var(--fg),.06);
-  animation:rowIn .5s cubic-bezier(.2,.7,.3,1) both;animation-delay:calc(var(--i) * 55ms)}
+.th-body{flex:1 1 0;min-height:0;overflow:hidden;display:flex;flex-direction:column;will-change:transform}
+/* rolagem automatica: JS grava @keyframes thScroll com a distancia e os tempos
+   (40 px/s, 1 s no topo, 3 s no fim) e liga a classe .rolar */
+.th-body.rolar{animation:thScroll var(--th-dur,22s) linear infinite}
+@keyframes thScroll{0%,5%{transform:translateY(0)}90%,94%{transform:translateY(var(--th-y,0px))}100%{transform:translateY(0)}}
+.th-row{flex:0 0 88px;min-height:88px;padding:0 22px;font-size:30px;border-bottom:1px solid rgba(var(--fg),.06);
+  animation:rowIn .5s cubic-bezier(.2,.7,.3,1) both;animation-delay:calc(var(--i) * 45ms)}
 .th-row:last-child{border-bottom:0}
 .th-row:nth-child(even){background:rgba(var(--fg),.025)}
 .th-row.foco{background:rgba(var(--ac),.12);box-shadow:inset 3px 0 rgba(var(--ac),1)}
-.th-pos{font-weight:900;font-size:20px;padding-left:10px;box-shadow:inset 3px 0 var(--zc,transparent)}
+.th-pos{font-weight:900;font-size:26px;padding-left:12px;box-shadow:inset 4px 0 var(--zc,transparent)}
 .th-crest{justify-content:center}
 .th-crestbox{display:flex;align-items:center;justify-content:center;width:100%;height:100%}
 .th-crestbox img{width:100%;height:100%;object-fit:contain;display:block}
 .th-crestbox .mono{width:100%;height:100%;display:flex;align-items:center;justify-content:center;
   border-radius:7px;background:rgba(var(--fg),.14);font-weight:900;color:rgba(var(--fg),.9)}
-.th-crest .th-crestbox{width:38px;height:38px}
+.th-crest .th-crestbox{width:56px;height:56px}
 .th-crest .mono{font-size:15px}
-.th-name{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:10px}
-.th-pts{font-weight:900;font-size:26px;text-align:center;color:rgba(var(--ac),1)}
+.th-name{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:10px;min-width:0}
+.th-pts{font-weight:900;font-size:34px;text-align:center;color:rgba(var(--ac),1)}
 .th-num{text-align:center;font-variant-numeric:tabular-nums;opacity:.85}
 .th-form{display:flex;gap:5px;justify-content:flex-end}
-.th-chip{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;
-  font-size:13px;font-weight:900;color:#fff;display:none}
+.th-chip{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-size:16px;font-weight:900;color:#fff;display:none}
 .th-chip.v{display:flex;background:#2e9e56}
 .th-chip.e{display:flex;background:#8a8f98}
 .th-chip.d{display:flex;background:#c0392b}
@@ -122,17 +127,17 @@
 .in-linha{width:220px;height:3px;background:rgba(var(--fg),.25);margin:10px 0 14px;animation:fadeUp .6s .25s both}
 .in-sub{font-size:22px;font-weight:700;opacity:.85;animation:fadeUp .6s .3s both}
 .in-vs{position:relative;width:100%;max-width:1280px;height:220px;margin-top:34px}
-.in-vs .bd{position:absolute;top:50%;transform:translateY(-50%);width:132px;height:132px;animation:zoomIn .6s .45s both}
+.in-vs .bd{position:absolute;top:50%;transform:translateY(-50%);width:132px;height:132px;animation:bdIn .6s .45s both}
 .in-vs #inBdA{left:40px}
 .in-vs #inBdB{right:40px}
 .in-vs .na,.in-vs .nb{position:absolute;top:50%;transform:translateY(-50%);font-size:30px;font-weight:900;max-width:340px;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;animation:fadeUp .6s .55s both}
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;animation:nomeIn .6s .55s both}
 .in-vs .na{left:190px;text-align:left}
 .in-vs .nb{right:190px;text-align:right}
 .in-vs .vsx{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:56px;font-weight:900;
-  color:rgba(var(--ac),1);animation:zoomIn .6s .4s both}
+  color:rgba(var(--ac),1);animation:vsIn .6s .4s both}
 .in-vs .vsub{position:absolute;left:50%;top:calc(50% + 46px);transform:translateX(-50%);font-size:16px;font-weight:700;
-  opacity:.8;letter-spacing:.2em;text-transform:uppercase;animation:fadeUp .6s .65s both}
+  opacity:.8;letter-spacing:.2em;text-transform:uppercase;animation:vsubIn .6s .65s both}
 .in-fcf{margin-top:40px;font-size:14px;letter-spacing:.36em;opacity:.5;animation:fadeUp .6s .7s both}
 
 /* ================= INTERVALO / ENCERRAMENTO ================= */
@@ -151,6 +156,13 @@
 
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 @keyframes zoomIn{from{opacity:0;transform:scale(.86)}to{opacity:1;transform:none}}
+/* animações que NÃO podem usar zoomIn/fadeUp: esses keyframes terminam em
+   transform:none e apagam o translate de centralização (VS/nomes/escudos da
+   abertura saíam fora de centro). */
+@keyframes vsIn{from{opacity:0;transform:translate(-50%,-50%) scale(.86)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+@keyframes bdIn{from{opacity:0;transform:translateY(-50%) scale(.86)}to{opacity:1;transform:translateY(-50%) scale(1)}}
+@keyframes nomeIn{from{opacity:0;transform:translateY(calc(-50% + 16px))}to{opacity:1;transform:translateY(-50%)}}
+@keyframes vsubIn{from{opacity:0;transform:translateX(-50%) translateY(16px)}to{opacity:.8;transform:translateX(-50%) translateY(0)}}
 
 /* variante de layout por tema (mantém simples; grade cai em lista) */
 #camadaTabela[data-layout="grade"] .th-tbl{display:grid;grid-template-columns:1fr 1fr;gap:20px;border:0;background:transparent}
@@ -361,3 +373,18 @@
 .du-b{animation:fadeInRight .6s cubic-bezier(.2,.9,.25,1) both}
 .du-vs{animation:pulseVs 3s ease-in-out infinite}
 @keyframes pulseVs{0%,100%{box-shadow:0 0 0 16px rgba(var(--ac),.12)}50%{box-shadow:0 0 0 24px rgba(var(--ac),.05)}}
+/* ---------- textos nunca redimensionam o layout (overflow hidden) ---------- */
+#camadaTabela #thTtl,#camadaTabela #thSub,#camadaTabela #thVname,#camadaTabela #thVmeta,
+#camadaTabela #inTitulo,#camadaTabela #inSub,#camadaTabela #inNa,#camadaTabela #inNb,#camadaTabela #inVsub,
+#camadaTabela #intNa,#camadaTabela #intNb,#camadaTabela #encNa,#camadaTabela #encNb,
+#camadaTabela #duNa,#camadaTabela #duNb,#camadaTabela #duPa,#camadaTabela #duPb,
+#camadaTabela #duResA,#camadaTabela #duResB,#camadaTabela #duResC,
+#camadaTabela #luNome,#camadaTabela #luTime,#camadaTabela #luMeta,
+#camadaTabela #ftNome,#camadaTabela #ftPos,#camadaTabela #ftPts,#camadaTabela #ftStats,
+#camadaTabela #lwNa,#camadaTabela #lwNb,#camadaTabela #lwSub,
+#camadaTabela .na,#camadaTabela .nb,#camadaTabela .du-nome,#camadaTabela .du-pos,
+#camadaTabela .lw-nome,#camadaTabela .lw-sub,#camadaTabela .lu-nome,
+#camadaTabela .ft-nome,#camadaTabela .fl-nome,#camadaTabela .f2-nome,
+#camadaSponsors #spLabel,#camadaSponsors #spNome{
+  min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
