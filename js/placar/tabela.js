@@ -379,9 +379,6 @@ Placar.Tabela = {
         var cfg = this.cfg;
         if (!cfg) return;
         now = now || performance.now();
-        // passo de seguranca da rolagem: se o requestAnimationFrame do viewer
-        // parar, o transform ainda avanca 5x por segundo por aqui
-        if (window.TabelaDados && TabelaDados.tickRolagem) { try { TabelaDados.tickRolagem(); } catch (e) { } }
         var el = (now - this.t0) / 1000;
         var cena = null;
 
@@ -418,16 +415,12 @@ Placar.Tabela = {
             if (_velha) {
                 var _velhaEl = cam.querySelector('.cena[data-scene="' + _velha + '"]');
                 if (_velhaEl && _velhaEl.classList) {
-                    var _disp = 'block';
-                    try { _disp = window.getComputedStyle(_velhaEl).display || 'block'; } catch (e) { }
-                    if (!_disp || _disp === 'none') _disp = 'block';
-                    _velhaEl.style.display = _disp;      // congela o layout atual
+                    // quem mantem a cena antiga visivel durante o fade e o CSS
+                    // (.cena.saindo / .cena-full.saindo) — sem display inline,
+                    // que ficava pendurado e deixava a cena na tela depois
                     _velhaEl.classList.add('saindo');
                     (function (el) {
-                        setTimeout(function () {
-                            el.classList.remove('saindo');
-                            el.style.display = '';
-                        }, 640);                             // 600ms de fade + folga
+                        setTimeout(function () { el.classList.remove('saindo'); }, 640);
                     })(_velhaEl);
                 }
             }
@@ -448,16 +441,8 @@ Placar.Tabela = {
                     }, ms + 520);
                 })(_novaEl, _espera);
             }
-            // rolagem da classificacao: informa quanto tempo a cena fica no ar
-            // (para o ciclo caber no segmento) e arma agora + quando a cena
-            // aparece de fato (o ciclo recomeca do topo junto com o fade)
-            var _dSeg = 0;
-            if (cfg.scenes) {
-                for (var _si = 0; _si < cfg.scenes.length; _si++) {
-                    if (cfg.scenes[_si].k === cena) { _dSeg = Number(cfg.scenes[_si].d) || 0; break; }
-                }
-            }
-            if (window.TabelaDados && TabelaDados.definirTempoSegmento) TabelaDados.definirTempoSegmento(_dSeg);
+            // a tabela agora CABE todos os times (sem rolagem): re-mede a
+            // altura das linhas depois que a cena ganha layout
             this._armarScroll();
             if (_espera) this._armarScroll(_espera + 500);
         }    },

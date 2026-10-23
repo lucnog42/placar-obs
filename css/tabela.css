@@ -40,14 +40,24 @@
 .cena-table.com-fundo::before{background:transparent}
 .cena.com-fundo .cena-bg::after{content:"";position:absolute;inset:0;
   background:linear-gradient(180deg,rgba(var(--bg),.90),rgba(var(--bg),.93))}
-#camadaTabela[data-cena="table"]       .cena-table,
-#camadaTabela[data-cena="intervalo"]   .cena-intervalo,
-#camadaTabela[data-cena="encerramento"] .cena-encerramento{display:block}
-#camadaTabela[data-cena="lower"] .cena-lower{display:block}
-#camadaTabela[data-cena="lineups"] .cena-lineups{display:block}
-#camadaTabela[data-cena="feature"] .cena-feature{display:block}
-#camadaTabela[data-cena="form2"]   .cena-form2{display:block}
-#camadaTabela[data-cena="duel"]    .cena-duel{display:block}
+
+/* ---------- ativação das cenas POR data-scene (não por classe) ----------
+   A cena rival reaproveita as classes .cena-table (pele igual à tabela); como a
+   regra antiga era por classe, com data-cena="table" a RIVAL também virava
+   display:flex e cobria a tabela. Agora cada cena só aparece com a sua chave. */
+#camadaTabela[data-cena="table"]        .cena[data-scene="table"],
+#camadaTabela[data-cena="rival"]        .cena[data-scene="rival"],
+#camadaTabela[data-cena="intro"]        .cena[data-scene="intro"],
+#camadaTabela[data-cena="intervalo"]    .cena[data-scene="intervalo"],
+#camadaTabela[data-cena="encerramento"] .cena[data-scene="encerramento"]{display:flex}
+#camadaTabela[data-cena="lower"]   .cena[data-scene="lower"],
+#camadaTabela[data-cena="lineups"] .cena[data-scene="lineups"],
+#camadaTabela[data-cena="feature"] .cena[data-scene="feature"],
+#camadaTabela[data-cena="form2"]   .cena[data-scene="form2"],
+#camadaTabela[data-cena="duel"]    .cena[data-scene="duel"]{display:block}
+/* a cena que sai continua renderizada durante o fade (o JS não mexe em display) */
+.cena.saindo{display:block}
+.cena-full.saindo,.cena-table.saindo{display:flex}
 
 /* ---------- temas (iguais em espírito ao placar) ---------- */
 /* Tema único — La Liga (mesma base do placar). Um só tema para placar + overlay. */
@@ -57,7 +67,6 @@
 
 /* ================= TABELA ================= */
 .cena-table{padding:60px 80px;display:none;flex-direction:column;gap:0}   /* mesma margem das outras (60/80) */
-#camadaTabela[data-cena="table"] .cena-table{display:flex}
 .cena-table::before{content:"";position:absolute;inset:0;z-index:-1;
   background:linear-gradient(180deg,rgba(var(--bg),.94),rgba(var(--bg),.90))}
 
@@ -84,31 +93,40 @@
   position:relative;z-index:2;background:rgba(var(--bg),.95)}   /* fixo: as linhas passam por baixo */
 .th-thead .th-pts,.th-thead div:nth-child(n+5){text-align:center}
 .th-body{flex:1 1 0;min-height:0;overflow:hidden;display:block}
+/* muitos times: duas colunas para todos caberem sem encolher demais */
+.th-body{--th-colunas:1}
+.th-body.duas-colunas .th-scroll{display:grid;grid-template-columns:1fr 1fr;column-gap:18px;
+  grid-auto-flow:column;grid-template-rows:var(--th-linhas,1fr);align-content:start}
+.th-body.duas-colunas .th-row{--th-pad:14px}
+.th-body.duas-colunas .th-row .th-num{padding:0 6px}
+/* poucos times: as linhas mantem o tamanho de referencia e ficam centradas */
+.th-body.centrar{display:flex;flex-direction:column;justify-content:center}
 /* o que rola é o CONTEÚDO dentro do .th-body: se o transform fosse no próprio
    .th-body o clip andava junto e nada novo aparecia */
-.th-scroll{display:flex;flex-direction:column;will-change:transform}
-/* rolagem da classificacao: motor em JS (TabelaDados.ajustarScroll grava o
-   transform a cada quadro). Nao usar animation infinita aqui — no CEF do OBS
-   ela nao rodava. */
-.th-row{flex:0 0 88px;min-height:88px;padding:0 22px;font-size:30px;border-bottom:1px solid rgba(var(--fg),.06);
+.th-scroll{display:flex;flex-direction:column}
+/* A cena da tabela mostra TODOS os times: nada de rolagem. ajustarTabela()
+   mede a altura do corpo, divide pelos times e grava --th-row-h/--th-fs/...
+   (variaveis no #thBody, herdadas pelas linhas). Se ainda nao couber, o
+   corpo vira 2 colunas. */
+.th-row{flex:0 0 var(--th-row-h,88px);min-height:var(--th-row-h,88px);padding:0 var(--th-pad,22px);font-size:var(--th-fs,30px);border-bottom:1px solid rgba(var(--fg),.06);
   animation:rowIn .5s cubic-bezier(.2,.7,.3,1) both;animation-delay:calc(var(--i) * 45ms)}
 .th-row:last-child{border-bottom:0}
 .th-row:nth-child(even){background:rgba(var(--fg),.025)}
 .th-row.foco{background:rgba(var(--ac),.12);box-shadow:inset 3px 0 rgba(var(--ac),1)}
-.th-pos{font-weight:900;font-size:26px;padding-left:12px;box-shadow:inset 4px 0 var(--zc,transparent)}
+.th-pos{font-weight:900;font-size:var(--th-pos-fs,26px);padding-left:12px;box-shadow:inset 4px 0 var(--zc,transparent)}
 .th-crest{justify-content:center}
 .th-crestbox{display:flex;align-items:center;justify-content:center;width:100%;height:100%}
 .th-crestbox img{width:100%;height:100%;object-fit:contain;display:block}
 .th-crestbox .mono{width:100%;height:100%;display:flex;align-items:center;justify-content:center;
   border-radius:7px;background:rgba(var(--fg),.14);font-weight:900;color:rgba(var(--fg),.9)}
-.th-crest .th-crestbox{width:56px;height:56px}
+.th-crest .th-crestbox{width:var(--th-crest,56px);height:var(--th-crest,56px)}
 .th-crest .mono{font-size:15px}
 .th-name{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:10px;min-width:0}
-.th-pts{font-weight:900;font-size:34px;text-align:center;color:rgba(var(--ac),1)}
+.th-pts{font-weight:900;font-size:var(--th-pts,34px);text-align:center;color:rgba(var(--ac),1)}
 .th-num{text-align:center;font-variant-numeric:tabular-nums;opacity:.85}
 .th-form{display:flex;gap:5px;justify-content:flex-end}
-.th-chip{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;
-  font-size:16px;font-weight:900;color:#fff;display:none}
+.th-chip{width:var(--th-chip,34px);height:var(--th-chip,34px);border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-size:var(--th-chip-fs,16px);font-weight:900;color:#fff;display:none}
 .th-chip.v{display:flex;background:#2e9e56}
 .th-chip.e{display:flex;background:#8a8f98}
 .th-chip.d{display:flex;background:#c0392b}
@@ -123,8 +141,6 @@
    o título está preenchido. */
 /* abertura usa a MESMA pele de intervalo/encerramento (.cena-full + .fl-*);
    só o centro é o VS. Assim o alinhamento vertical fica idêntico. */
-.cena-full.cena-intro{display:none}
-#camadaTabela[data-cena="intro"] .cena-intro{display:flex}
 .in-hoje{font-size:20px;font-weight:800;letter-spacing:.4em;color:rgba(var(--ac),1);
   text-transform:uppercase;animation:fadeUp .55s .12s both}
 .fl-vs{font-size:64px;font-weight:900;letter-spacing:.04em;color:rgba(var(--fg),.92);
@@ -134,7 +150,6 @@
 .cena-full{display:none;flex-direction:column;align-items:center;justify-content:center;gap:30px;
   background:rgba(var(--bg),.92)}
 #camadaTabela[data-cena="intervalo"] .cena-intervalo,
-#camadaTabela[data-cena="encerramento"] .cena-encerramento{display:flex}
 .fl-titulo{font-size:52px;font-weight:900;letter-spacing:.2em;color:rgba(var(--ac),1);animation:fadeUp .55s both}
 .fl-logo{width:92px;height:92px;object-fit:contain;margin-bottom:-8px;animation:fadeUp .55s both}
 .fl-logo:not([src]),.fl-logo[src=""]{display:none}
@@ -392,7 +407,6 @@
 
 /* ================= RIVAL (top 3 · rival · perseguindo) ================= */
 .cena-rival{display:none}
-#camadaTabela[data-cena="rival"] .cena-rival{display:flex}
 .rv-painel{position:absolute;left:56px;top:100px;width:1168px;height:520px;box-sizing:border-box;
   border-radius:20px;background:rgba(var(--bg),.90);border:1px solid rgba(var(--fg),.14);
   padding:24px 28px;display:flex;flex-direction:column;gap:16px}
