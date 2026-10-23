@@ -8,7 +8,8 @@
   opacity:0;transform:translateX(-46px) scale(.96);visibility:hidden;
   transition:opacity .26s ease,transform .32s cubic-bezier(.2,.9,.25,1),visibility .26s}
 .notif-ov::before{content:"";position:absolute;left:0;top:0;bottom:0;width:9px;
-  border-radius:16px 0 0 16px;background:var(--nt,#ffd700)}
+  /* a barra lateral e sempre o amarelo do sistema (era --nt: gol saia vermelho) */
+  border-radius:16px 0 0 16px;background:rgba(var(--ac,255,215,0),1)}
 .notif-ov.show{opacity:1;transform:none;visibility:visible}
 .no-ico{font-size:26px;line-height:1;color:var(--nt,#ffd700);flex:0 0 auto}
 .no-txts{display:flex;flex-direction:column;gap:2px;min-width:0}

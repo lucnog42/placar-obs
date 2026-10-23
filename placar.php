@@ -16,9 +16,9 @@ $dev = isset($_GET['dev']); // ?dev=1 = fundo escuro para testar o CSS no navega
 <head>
 <meta charset="UTF-8">
 <title>Placar OBS</title>
-<link rel="stylesheet" href="css/base.css?v=20261118a">
-<link id="tema" rel="stylesheet" href="css/laliga.css?v=20261118a">
-<link rel="stylesheet" href="css/midia-anim.css?v=20261118a">
+<link rel="stylesheet" href="css/base.css?v=20261118b">
+<link id="tema" rel="stylesheet" href="css/laliga.css?v=20261118b">
+<link rel="stylesheet" href="css/midia-anim.css?v=20261118b">
 <link rel="stylesheet" href="css/tabela.css?v=<?= $v ?>">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -49,15 +49,15 @@ body{width:1920px;height:1080px;<?= $dev ? 'background:#20242b' : 'background:tr
   <?php include __DIR__ . '/partials/cena-duel.php'; ?>
 </div>
 
-<script src="js/eventbus.js?v=20261118a"></script>
-<script src="js/comum.js?v=20261118a"></script>
-<script src="js/placar/core.js?v=20261118a"></script>
-<script src="js/placar/timer.js?v=20261118a"></script>
-<script src="js/placar/gols.js?v=20261118a"></script>
-<script src="js/placar/times.js?v=20261118a"></script>
-<script src="js/placar/penaltes.js?v=20261118a"></script>
-<script src="js/placar/notificacao.js?v=20261118a"></script>
-<script src="js/placar/tema.js?v=20261118a"></script>
+<script src="js/eventbus.js?v=20261118b"></script>
+<script src="js/comum.js?v=20261118b"></script>
+<script src="js/placar/core.js?v=20261118b"></script>
+<script src="js/placar/timer.js?v=20261118b"></script>
+<script src="js/placar/gols.js?v=20261118b"></script>
+<script src="js/placar/times.js?v=20261118b"></script>
+<script src="js/placar/penaltes.js?v=20261118b"></script>
+<script src="js/placar/notificacao.js?v=20261118b"></script>
+<script src="js/placar/tema.js?v=20261118b"></script>
 <script src="js/placar/midia.js?v=<?= $v ?>"></script>
 <script src="js/placar/patrocinio.js?v=<?= $v ?>"></script>
 <script src="js/placar/tabela-dados.js?v=<?= $v ?>"></script>
