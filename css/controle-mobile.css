@@ -4,7 +4,7 @@
    Meta: alvo de toque confortável (botões/menus com o DOBRO do tamanho base),
    nada cortado, nada sobreposto, preview compacto.
    ========================================================================== */
-@media(max-width:759px){
+@media (max-width:1100px),(pointer:coarse){
 
   /* ---------- base ----------
      NUNCA usar body{zoom:2}: com zoom o layout pensa que tem metade da largura
@@ -80,35 +80,14 @@
     display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
     overflow-wrap:anywhere}
 
-  /* ---------- TELA AO VIVO: controles lado a lado ----------
-     Em transmissão o operador precisa de +gol / -gol e do tempo sem rolar:
-     os botões ficam 2 por linha e as seções mais usadas sobem para o topo. */
-  #tela-9 .grid-inner{display:flex;flex-direction:column;gap:12px}
-  /* ordem real das seções: 1 Overlay · 2 Menu rápido · 3 Histórico · 4 Pontos
-     · 5/6/8/9/10 basquete (ocultas) · 7 Tempo · 11 Pênaltis */
-  #tela-9 .grid-inner>section:nth-child(4){order:1}   /* Pontos */
-  #tela-9 .grid-inner>section:nth-child(7){order:2}   /* Tempo */
-  #tela-9 .grid-inner>section:nth-child(11){order:3}  /* Pênaltis */
-  #tela-9 .grid-inner>section:nth-child(1){order:4}   /* Overlay (switches) */
-  #tela-9 .grid-inner>section:nth-child(2){order:5}   /* Menu rápido */
-  #tela-9 .grid-inner>section:nth-child(3){order:9}   /* Histórico */
-
-  #tela-9 .futebol-ctrl{display:flex;flex-wrap:wrap;gap:8px}
-  #tela-9 .futebol-ctrl>button{flex:1 1 calc(50% - 8px);min-width:0;
-    font-size:21px;padding:14px 8px;min-height:58px;line-height:1.1}
-  #tela-9 .tempo-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-  #tela-9 .tempo-row>button{flex:1 1 calc(50% - 8px);min-width:0;
-    font-size:19px;padding:12px 6px;min-height:54px}
-  #tela-9 .cenas-manuais{grid-template-columns:repeat(2,minmax(0,1fr))}
+  /* ---------- TELA AO VIVO: só dimensionamento de toque ----------
+     a estrutura (ordem das seções, linhas, 2 colunas) está em controle.css
+     e vale para o desktop também */
+  #tela-9 .futebol-ctrl>button{flex:1 1 calc(50% - 8px);font-size:21px;padding:14px 8px;min-height:58px;line-height:1.1}
+  #tela-9 .tempo-row>button{flex:1 1 calc(50% - 8px);font-size:19px;padding:12px 6px;min-height:54px}
   #tela-9 .sw-cenas{min-height:58px;padding:12px 14px}
   #tela-9 .sw-cenas .sw-txt b{font-size:22px}
   #tela-9 .sw-cenas .sw-txt small{font-size:14px}
-  /* pênaltis: 5 bolinhas cabem na largura, com alvo de toque de 44px */
-  #tela-9 .SessaoPenaltes{gap:6px}
-  #tela-9 .SessaoPenaltes button{flex:1 1 0;min-width:44px;min-height:44px;max-width:64px;
-    aspect-ratio:1;height:auto;font-size:20px;padding:0}
-  /* listas com “enviar/remover” quebram linha em vez de sair da tela */
-  .btn-enviar,.btn-remover{max-width:100%;white-space:normal;overflow-wrap:anywhere}
 
   /* listas (mídias, escudos) quebram linha em vez de estourar a largura */
   .tela .midia-item,.tela .escudo-item,.tela .preset-item{flex-wrap:wrap;gap:8px}

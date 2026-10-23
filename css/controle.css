@@ -350,3 +350,23 @@ button{white-space:nowrap}
 /* ---- times: nome + sigla (antes era style inline) ---- */
 .times-grid{display:grid;grid-template-columns:2fr 1fr 2fr 1fr;gap:6px}
 .lbl-time{font-size:10px;color:#aaa}
+
+/* ---------- Tela ao vivo (Operar): tudo em linha, desktop e mobile ----------
+   O operador precisa de +gol/-gol e do tempo sem rolar: as seções mais usadas
+   sobem para o topo e os botões ficam lado a lado nas duas versões. */
+#tela-9 .grid-inner{display:flex;flex-direction:column;gap:10px}
+#tela-9 .grid-inner>section{min-width:0}
+#tela-9 .grid-inner>section:nth-child(4){order:1}   /* Pontos */
+#tela-9 .grid-inner>section:nth-child(7){order:2}   /* Tempo */
+#tela-9 .grid-inner>section:nth-child(11){order:3}  /* Pênaltis */
+#tela-9 .grid-inner>section:nth-child(1){order:4}   /* Overlay */
+#tela-9 .grid-inner>section:nth-child(2){order:5}   /* Menu rápido */
+#tela-9 .grid-inner>section:nth-child(3){order:9}   /* Histórico */
+#tela-9 .futebol-ctrl{display:flex;flex-wrap:wrap;gap:8px}
+#tela-9 .futebol-ctrl>button{flex:1 1 170px;min-width:0}
+#tela-9 .tempo-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+#tela-9 .tempo-row>button{flex:1 1 150px;min-width:0}
+#tela-9 .cenas-manuais{grid-template-columns:repeat(2,minmax(0,1fr))}
+#tela-9 .SessaoPenaltes{display:flex;flex-wrap:wrap;gap:6px}
+#tela-9 .SessaoPenaltes button{flex:1 1 0;min-width:44px;min-height:44px;max-width:64px;
+  aspect-ratio:1;height:auto;padding:0}

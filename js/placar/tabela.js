@@ -402,7 +402,22 @@ Placar.Tabela = {
         this.publicarCena(cena);
         var cam = this.camada();
         if (cam && cena && cam.getAttribute('data-cena') !== cena) {
+            var _velha = cam.getAttribute('data-cena');
+            // dissolve: a cena que sai continua no ar por 300ms desbotando,
+            // a que entra sobe 6px e aparece em 450ms. Sem isso a troca era seca.
+            if (_velha) {
+                var _velhaEl = cam.querySelector('.cena[data-scene="' + _velha + '"]');
+                if (_velhaEl && _velhaEl.classList) {
+                    _velhaEl.classList.add('saindo');
+                    (function (el) { setTimeout(function () { el.classList.remove('saindo'); }, 320); })(_velhaEl);
+                }
+            }
             cam.setAttribute('data-cena', cena);
+            var _novaEl = cam.querySelector('.cena[data-scene="' + cena + '"]');
+            if (_novaEl && _novaEl.classList) {
+                _novaEl.classList.add('entrando');
+                (function (el) { setTimeout(function () { el.classList.remove('entrando'); }, 500); })(_novaEl);
+            }
             this._armarScroll();                 // cena acabou de ganhar altura
         }    },
 

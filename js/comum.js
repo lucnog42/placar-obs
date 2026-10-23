@@ -25,5 +25,21 @@ tabelaZonaCorUp:'tabela',tabelaZonaCorDn:'tabela',previewZoom:'tabela',
 tabelaModo:'tabela',tabelaPlay:'tabela',tabelaCenaAtual:'tabela',tabelaCenas:'tabela',tabelaTimes:'tabela',cenaFundos:'tabela',
 clima:'times',climaIcone:'times',spText:'torneio',spNomes:'torneio',sponsorsAtivo:'torneio',sponsorsIntervalo:'torneio',sponsorsDuracao:'torneio',sp1:'torneio',sp2:'torneio',sp3:'torneio',sp4:'torneio',sp5:'torneio',sp6:'torneio',sp7:'torneio',sp8:'torneio',sp9:'torneio',sp10:'torneio',sp11:'torneio',sp12:'torneio',sp13:'torneio',sp14:'torneio',sp15:'torneio',sp16:'torneio',sp17:'torneio',sp18:'torneio',sp19:'torneio',sp20:'torneio',sp21:'torneio',sp22:'torneio',sp23:'torneio',sp24:'torneio',sp25:'torneio',sp26:'torneio',sp27:'torneio',sp28:'torneio',sp29:'torneio',sp30:'torneio'};
 var FONTES={arial:"'Arial',sans-serif",impact:"'Impact',sans-serif",georgia:"'Georgia',serif",courier:"'Courier New',monospace",trebuchet:"'Trebuchet MS',sans-serif",verdana:"'Verdana',sans-serif"};
-function buildFlat(cru){return Object.assign({},cru.placar,cru.times,cru.estilo,cru.penaltes,cru.notif,cru.posicao,cru.midia,cru.basquete,cru.torneio,cru.tabela,{estadoVersao:cru.estadoVersao});}
+/* Junta as secoes num objeto plano. Regra: valor VAZIO nao sobrescreve valor
+   preenchido — a secao 'torneio' vem depois de 'times' e traz competicao/
+   categoria/grupo/fase/data/hora/local vazias, o que zerava tudo (o painel
+   salva esses campos em 'times', por isso as cenas ficavam sem os dados). */
+function buildFlat(cru){
+  var ordem=[cru.placar,cru.times,cru.estilo,cru.penaltes,cru.notif,cru.posicao,cru.midia,cru.basquete,cru.torneio,cru.tabela];
+  var out={};
+  for(var i=0;i<ordem.length;i++){
+    var s=ordem[i]||{};
+    for(var k in s){ if(!Object.prototype.hasOwnProperty.call(s,k))continue;
+      var v=s[k];
+      if((v===''||v===null||v===undefined)&&out[k]!==undefined&&out[k]!==''&&out[k]!==null)continue;
+      out[k]=v; }
+  }
+  out.estadoVersao=cru.estadoVersao;
+  return out;
+}
 function paraSecoes(flat){var s={};Object.keys(flat).forEach(function(k){var sec=MS[k];if(sec){if(!s[sec])s[sec]={};s[sec][k]=flat[k];}});return s;}

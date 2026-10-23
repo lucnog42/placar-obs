@@ -204,49 +204,50 @@ var TabelaDados = (function () {
     setCrest(document.querySelector('#' + pfx + 'BdB .th-crestbox'), B);
   }
 
-  /* --- cena RIVAL: top 3, o time logo acima do principal e os 3 abaixo --- */
-  function fillRivalLinha(el, tm, ehPrincipal) {
-    if (!el) return;
-    if (!tm) { el.style.display = 'none'; return; }
-    el.style.display = '';
-    var q = function (s) { return el.querySelector(s); };
-    var pos = q('.rv-pos'), nome = q('.rv-nome'), pts = q('.rv-pts');
-    if (pos) pos.textContent = (tm.pos != null ? tm.pos : '') + 'º';
-    if (nome) nome.textContent = tm.short || tm.name || '';
-    if (pts) pts.textContent = num(tm.pts) + ' pts';
-    setCrest(q('.rv-crest'), tm);
-    if (el.classList) el.classList.toggle('on', !!ehPrincipal);
-  }
-
+  /* --- cena RIVAL: desenha LINHAS iguais às da tabela, estáticas.
+     Mostra só o que importa: top 3, o rival (logo acima do principal), o time
+     principal e os 3 seguintes. Sem rolagem e sem animação de entrada. --- */
   function fillRival(cfg, times) {
     txt('rvTitulo', cfg.ttl);
     txt('rvSub', cfg.sub);
-    txt('rvTime', [cfg.vDate, cfg.vTime, cfg.vW].filter(Boolean).join(' · '));
+    txt('rvVname', cfg.vName);
+    txt('rvVmeta', [cfg.vDate, cfg.vTime, cfg.vW].filter(Boolean).join(' · '));
     setLogo('rvLogo', cfg.logo);
-    var lista = times || [];
+
+    var lista = times || [], total = lista.length;
     var i = parseInt(cfg.c, 10);
-    if (isNaN(i) || i < 0 || i >= lista.length) i = 0;
-    var eu = lista[i] || null;
-    ['rvT1', 'rvT2', 'rvT3'].forEach(function (id, k) {
-      fillRivalLinha(document.getElementById(id), lista[k], lista[k] === eu);
-    });
-    var rival = i > 0 ? lista[i - 1] : null;
-    fillRivalLinha(document.getElementById('rvRiv'), rival, false);
-    txt('rvLblRiv', rival ? ('RIVAL · ' + (rival.pos || i) + 'º') : 'LIDERA A TABELA');
-    fillRivalLinha(document.getElementById('rvPrin'), eu, true);
-    ['rvB1', 'rvB2', 'rvB3'].forEach(function (id, k) {
-      fillRivalLinha(document.getElementById(id), lista[i + 1 + k], false);
-    });
+    if (isNaN(i) || i < 0 || i >= total) i = 0;
+
+    // indices na ordem da classificacao: top 3 + rival + principal + 3 abaixo
+    var idx = [];
+    var add = function (n) { if (n >= 0 && n < total && idx.indexOf(n) < 0) idx.push(n); };
+    add(0); add(1); add(2);
+    add(i - 1);            // rival: imediatamente acima do time principal
+    add(i);
+    add(i + 1); add(i + 2); add(i + 3);
+    idx.sort(function (a, b) { return a - b; });
+
+    var rows = document.querySelectorAll('.cena-rival .th-body .th-row');
+    for (var r = 0; r < rows.length; r++) {
+      var n = idx[r];
+      var row = rows[r];
+      if (n === undefined) { row.style.display = 'none'; row.classList.remove('foco', 'rv-rival'); continue; }
+      var tm = lista[n];
+      fillRow(row, tm, cfg, total, n + 1, false, false);   // mesma linha da tabela
+      row.style.display = '';
+      row.classList.toggle('foco', n === i);               // time principal
+      row.classList.toggle('rv-rival', n === i - 1 && i > 0);
+    }
+
+    var eu = lista[i] || null, rival = i > 0 ? lista[i - 1] : null;
     var foot = '';
     if (eu && rival && eu.pts != null && rival.pts != null) {
       var dif = rival.pts - eu.pts;
       foot = dif > 0 ? ('Faltam ' + dif + ' pt' + (dif > 1 ? 's' : '') + ' para o rival')
-                     : ('Empatado em pontos com o rival');
-    }
-    else if (eu && i === 0) foot = 'Líder da competição';
+                     : 'Empatado em pontos com o rival';
+    } else if (eu && i === 0) foot = 'Líder da competição';
     txt('rvFoot', foot);
   }
-
   // fundo opcional por cena (intro/table/intervalo/encerramento), vindo do painel
   function setFundos(txt) {
     var map = {};

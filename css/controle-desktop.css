@@ -1,4 +1,4 @@
-@media(min-width:760px){
+@media (min-width:1101px) and (pointer:fine){
   #telas{max-width:920px}
   .tela .grid-inner{grid-template-columns:1fr 1fr}
   .tela section.full{grid-column:1/-1}
