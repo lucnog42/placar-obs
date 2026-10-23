@@ -327,7 +327,13 @@ Controle.renderMidias=function(){
     var midias=Controle.getMidiasCtrl();
     var ativas=Controle.getAtivasCtrl();
     var arquivos=[],textos=[];
-    for(var i=0;i<midias.length;i++){ (midias[i].tipo==='texto'?textos:arquivos).push(midias[i]); }
+    for(var i=0;i<midias.length;i++){
+        var m=midias[i]; if(!m) continue;
+        /* cenas internas (abertura/intervalo/encerramento) sao disparadas pelo painel:
+           ficam no estado mas nao entram no repertorio nem no historico */
+        if(m.tipo==='cena') continue;
+        (m.tipo==='texto'?textos:arquivos).push(m);
+    }
     if(c) c.innerHTML = arquivos.length ? Controle._renderItens(arquivos,ativas,'') : '<span style="color:#888;font-size:11px;">Nenhuma mídia adicionada</span>';
     if(cp) cp.innerHTML = arquivos.length ? Controle._renderItens(arquivos,ativas,'pop') : '<span style="color:#888;font-size:11px;">Nenhuma mídia adicionada</span>';
     if(n) n.innerHTML = textos.length ? Controle._renderItens(textos,ativas,'') : '<span style="color:#888;font-size:11px;">Nenhuma notificação no histórico</span>';

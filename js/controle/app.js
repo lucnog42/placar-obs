@@ -234,19 +234,37 @@ Controle.renderSponsors = function() {
   for(var k in e){ var m = /^sp(\d+)$/.exec(k); if(m){ var n = parseInt(m[1],10); if(n > max) max = n; } }
   var N = Math.max(3, max, Controle._sponsorsN || 3);
   Controle._sponsorsN = N;
+  var nomes = Controle.getSpNomes();
+  var esc = function(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); };
   var h = '';
   for(var i = 1; i <= N; i++){
     var nome = e['sp'+i] || '';
     var img = nome ? ('<img src="'+DADOS+'torneios/'+nome+'" style="max-width:76px;max-height:76px;object-fit:contain" onerror="this.style.display=\'none\'">') : ('logo '+i);
-    h += '<div style="text-align:center">';
-    h += '<div id="spPrev'+i+'" style="width:80px;height:80px;border:1px dashed #2a3a55;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#5b6f88">'+img+'</div>';
+    h += '<div style="text-align:center;width:104px">';
+    h += '<div id="spPrev'+i+'" style="width:80px;height:80px;margin:0 auto;border:1px dashed #2a3a55;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#5b6f88">'+img+'</div>';
     h += '<div style="margin-top:4px;display:flex;gap:4px;justify-content:center">';
     h += '<button onclick="Controle.uploadSponsor('+i+')" style="font-size:10px;padding:2px 6px">Subir</button>';
     h += '<button onclick="Controle.removerPatrocinador('+i+')" style="font-size:10px;padding:2px 6px;color:#f87171" title="Remover logo">✕</button>';
-    h += '</div></div>';
+    h += '</div>';
+    // nome exibido no overlay (campo de texto por patrocinador)
+    h += '<input type="text" id="spNome'+i+'" value="'+esc(nomes[i]||'')+'" placeholder="nome exibido" maxlength="60" style="width:100%;box-sizing:border-box;margin-top:4px;font-size:10px;padding:2px 4px" title="Nome que aparece na faixa, embaixo do logo" onchange="Controle.salvarNomePatrocinador('+i+', this.value)">';
+    h += '</div>';
   }
   el.innerHTML = h;
 };
+/* nomes exibidos na faixa (por indice do slot) */
+Controle.getSpNomes = function() {
+  try { var o = JSON.parse((Controle.estado || {}).spNomes || '{}'); return (o && typeof o === 'object') ? o : {}; }
+  catch(e){ return {}; }
+};
+Controle.salvarNomePatrocinador = function(n, valor) {
+  var nomes = Controle.getSpNomes();
+  var v = String(valor == null ? '' : valor).trim();
+  if(v) nomes[n] = v; else delete nomes[n];
+  Controle.setEstado({ spNomes: JSON.stringify(nomes) });
+  Controle.status('ok', v ? ('Nome do patrocinador ' + n + ' salvo') : ('Patrocinador ' + n + ' sem nome exibido'));
+};
+
 Controle.adicionarPatrocinador = function() {
   var N = (Controle._sponsorsN || 3) + 1;
   if(N > 30){ Controle.status('erro','Máximo de 30 patrocinadores'); return; }
@@ -277,7 +295,9 @@ Controle.limparCenaPatrocinador = function() {
   if(Controle.renderMidias) Controle.renderMidias();
 };
 Controle.removerPatrocinador = function(n) {
-  var st = {}; st['sp'+n] = '';
+  var nomes = Controle.getSpNomes();
+  if(nomes[n] !== undefined) delete nomes[n];
+  var st = { spNomes: JSON.stringify(nomes) }; st['sp'+n] = '';
   Controle.setEstado(st);
   Controle.renderSponsors();
   Controle.status('ok','Patrocinador '+n+' removido');
@@ -290,6 +310,27 @@ Controle.definirSponsorRotacao = function(campo, val) {
   Controle.setEstado(d);
   Controle.syncSponsors();
 };
+/* switch da tela "Ao vivo" (mesmo estado da aba Patrocinadores) */
+Controle.alternarPatrocinadores = function() {
+  var ligado = (Controle.estado || {}).sponsorsAtivo === 'true';
+  Controle.setEstado({ sponsorsAtivo: ligado ? 'false' : 'true' });
+  Controle.syncSponsors();
+  Controle.status('ok', ligado ? 'Patrocinadores desligados' : 'Patrocinadores ligados');
+};
+Controle.syncBotaoPatrocinadores = function() {
+  var e = Controle.estado || {};
+  var on = e.sponsorsAtivo === 'true';
+  var btn = document.getElementById('btnPatrocinadores');
+  if(btn) {
+    btn.classList[on ? 'add' : 'remove']('on');
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  }
+  var sub = document.getElementById('btnPatrocinadoresSub');
+  if(sub) {
+    var iv = parseInt(e.sponsorsIntervalo, 10); if(isNaN(iv) || iv < 5) iv = 60;
+    sub.textContent = on ? ('ligados · a cada ' + iv + ' s') : 'desligados';
+  }
+};
 Controle.syncSponsors = function() {
   var e = Controle.estado || {};
   if(Controle.limparCenaPatrocinador) Controle.limparCenaPatrocinador();
@@ -297,6 +338,7 @@ Controle.syncSponsors = function() {
   if(chk) chk.checked = e.sponsorsAtivo === 'true';
   var lbl = document.getElementById('sponsorsAtivoLabel');
   if(lbl) lbl.textContent = (e.sponsorsAtivo === 'true') ? 'ligada' : 'desligada';
+  if(Controle.syncBotaoPatrocinadores) Controle.syncBotaoPatrocinadores();
   var iv = document.getElementById('sponsorsIntervalo');
   if(iv && !iv.value) iv.value = e.sponsorsIntervalo || '120';
   var du = document.getElementById('sponsorsDuracao');

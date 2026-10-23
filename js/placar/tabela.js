@@ -256,7 +256,7 @@ Placar.Tabela = {
         if (Placar.Patrocinio) Placar.Patrocinio.aplicar();
     },
     sponsorAtivo: function () { return String((Placar.estado || {}).sponsorsAtivo) === 'true'; },
-    _sponsorIntervaloMs: function () { var v = parseInt((Placar.estado || {}).sponsorsIntervalo, 10); return (isNaN(v) || v < 5) ? 120000 : v * 1000; },
+    _sponsorIntervaloMs: function () { var v = parseInt((Placar.estado || {}).sponsorsIntervalo, 10); if (isNaN(v)) v = 60; if (v < 5) v = 5; return Math.round(v * 1000); },
     _sponsorDuracaoMs: function () { var v = parseInt((Placar.estado || {}).sponsorsDuracao, 10); return (isNaN(v) || v < 1) ? 8000 : v * 1000; },
     /* notificação ou mídia manual no ar têm prioridade sobre a rotação */
     prioridadeManual: function () {
@@ -401,7 +401,8 @@ Placar.Tabela = {
                 cena = cfg.scenes[0] && cfg.scenes[0].k;
             }
             // rotacao de patrocinadores (abaixo de notificacao/midia manual)
-            if (cfg.auto && this.sponsorAtivo()) {
+            // nao depende de cfg.auto: roda tambem em cena fixa / playlist de 1 cena
+            if (this.sponsorAtivo()) {
                 var iv = this._sponsorIntervaloMs(), du = this._sponsorDuracaoMs();
                 if (!this._proxSponsor) this._proxSponsor = now + iv;
                 var loc = now - this._proxSponsor;

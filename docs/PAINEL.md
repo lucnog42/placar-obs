@@ -61,8 +61,11 @@ O coração da integração. Abre já expandida.
 `tabelaCenaAtual`), então a transição é contínua em vez de cortar para outra cena.
 
 **Patrocinadores**: a rotacao liga a faixa inferior (lower third) com **um logo por vez**;
-`sponsorsDuracao` e a duracao do bloco inteiro, dividida entre os patrocinadores.
+`sponsorsDuracao` e a duracao do bloco inteiro, dividida entre os patrocinadores, e
+`sponsorsIntervalo` espera no minimo 5 s entre blocos (vazio = 60 s). O nome exibido
+embaixo do logo vem do campo **nome exibido** de cada slot (`spNomes`); vazio = so o logo.
 Clicar em "Adicionar Patrocinador" nao mexe no overlay — ele so entra na rotacao.
+O switch tambem esta na tela **Operar ao vivo**.
 
 **Cenas em tamanho fixo**: cada cena ocupa a tela inteira do overlay (1920×1080).
 Não existe mais posição/escala por cena — o overlay é uma sobreposição de

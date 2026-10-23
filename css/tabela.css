@@ -171,13 +171,17 @@
 .sp-txts{display:flex;flex-direction:column;gap:4px;min-width:0}
 .sp-label{font-size:13px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:rgba(var(--fg),.55)}
 .sp-nome{font-size:26px;font-weight:800;color:rgba(var(--fg),.97);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:520px}
-.sp-faixa .sp-logo-box,.sp-faixa .sp-txts{transition:opacity .26s ease,transform .26s ease}
-.sp-faixa.trocando .sp-logo-box,.sp-faixa.trocando .sp-txts{opacity:0;transform:translateY(12px)}
+.sp-faixa .sp-logo-box,.sp-faixa .sp-txts{transition:opacity .28s ease,transform .32s cubic-bezier(.4,0,.7,0)}
+/* troca: o conteudo atual sai pela direita e o proximo volta entrando pela direita */
+.sp-faixa.trocando .sp-logo-box,.sp-faixa.trocando .sp-txts{opacity:0;transform:translateX(90px)}
 .sp-faixa.vazio{display:none}
 .sp-vazio{display:none;position:absolute;left:52px;bottom:84px;margin:0;font-size:18px;color:rgba(var(--fg),.5)}
 .cena-sponsors.sem-sponsor .sp-vazio{display:block}
 #camadaTabela[data-cena="sponsors"] .sp-faixa{animation:spIn .5s cubic-bezier(.2,.9,.25,1) both}
-@keyframes spIn{from{opacity:0;transform:translateX(-60px)}to{opacity:1;transform:none}}
+@keyframes spIn{from{opacity:0;transform:translateX(90px)}to{opacity:1;transform:none}}
+/* sem nome digitado no painel: faixa so com o logo */
+.sp-faixa.sem-nome .sp-txts{justify-content:center}
+.sp-faixa.sem-nome .sp-nome{display:none}
 
 /* ================= LOWER THIRD ================= */
 .cena-lower{display:none}

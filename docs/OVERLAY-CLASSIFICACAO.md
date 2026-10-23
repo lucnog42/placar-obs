@@ -7,7 +7,9 @@ e `duel` (duelo). Todas as cenas das faixas ja sao HTML/CSS — o canvas nao des
 A notificacao e uma camada propria (`#camadaNotif`, `partials/notificacao-overlay.php`):
 ela aparece **fora do placar** e fora da camada da tabela, animada, e funciona com o
 overlay ligado ou desligado. Os patrocinadores aparecem como **lower third** (faixa
-inferior) mostrando **um logo por vez**, com transicao entre eles.
+inferior) mostrando **um logo por vez**: ele entra pela direita, sai pela direita e o
+proximo entra no mesmo lugar. O nome exibido vem do painel (`spNomes`), nunca do nome
+do arquivo da imagem.
 no canvas do motor.
 
 O overlay é HTML/CSS 1920×1080 montado pelo PHP (`partials/cena-*.php`) + a camada que o liga

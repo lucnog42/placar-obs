@@ -8,6 +8,10 @@
           <span class="sw-dot" aria-hidden="true"></span>
           <span class="sw-txt"><b>Cenas Automáticas</b><small id="btnTabelaSub">desligadas · só o placar</small></span>
         </button>
+        <button id="btnPatrocinadores" class="sw-cenas" onclick="Controle.alternarPatrocinadores()" aria-pressed="false" title="Liga ou desliga a rotacao de patrocinadores no overlay">
+          <span class="sw-dot" aria-hidden="true"></span>
+          <span class="sw-txt"><b>Patrocinadores</b><small id="btnPatrocinadoresSub">desligados</small></span>
+        </button>
         <span class="badge" id="tabelaBadge">fora do ar</span>
         <button id="toggleNomesBtn" onclick="Controle.alternarNomes()" style="background:#2a3a55">📝 Nomes</button>
         <button onclick="Controle.toggleOverlayPop()" style="background:#2a3a55">⚙️ Configuração</button>

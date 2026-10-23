@@ -1,5 +1,23 @@
 # Histórico
 
+## 2026-10-22 — Patrocinador: nome digitado, animação pela direita, rotação corrigida
+
+- **Nome do patrocinador é campo de texto**: cada slot da aba Patrocinadores ganhou um
+  input "nome exibido" (novo campo de estado `spNomes`, JSON por slot). O overlay usa
+  **só** esse texto — nunca mais o nome do arquivo da imagem. Vazio = faixa só com o logo.
+- **Animação da faixa**: o conteúdo sai deslizando para a **direita** e o próximo entra
+  pela direita, no mesmo lugar (`.sp-faixa.trocando` → `translateX(90px)`).
+- **Corrigido: rotação de patrocinadores não funcionava**. Ela estava presa a `cfg.auto`
+  (playlist com mais de 1 cena): em cena fixa, nada aparecia. Agora roda com o overlay
+  ligado em qualquer modo, e o intervalo respeita no mínimo 5 s (antes, valor < 5 caía
+  para 120 s; vazio agora = 60 s).
+- **Abertura/Intervalo/Encerramento fora do menu de mídias**: as mídias internas
+  `tipo:'cena'` continuam no estado (o painel as dispara por id) mas não aparecem mais
+  no repertório nem no histórico de notificações.
+- **Switch "Patrocinadores" na tela Operar ao vivo** (mesmo `sponsorsAtivo` da aba
+  Patrocinadores, os dois controles ficam sincronizados).
+- `?v=20261106a`
+
 ## 2026-10-22 — Notificação fora do placar + patrocinador em lower third
 
 - **Notificação como overlay animado**: saiu de dentro da camada da tabela e virou

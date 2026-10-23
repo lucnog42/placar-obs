@@ -263,7 +263,7 @@ function default_estado() {
         'posicao' => array('placarScale' => '0.65', 'placarX' => '50', 'placarY' => '50'),
         'midia' => array('midias' => '[]', 'midiasAtivas' => '[]', 'midiaTransicao' => 'fade'),
         'basquete' => array('shotClock' => '24', 'shotRodando' => 'false', 'faltasA' => '0', 'faltasB' => '0', 'posse' => 'A', 'bonusA' => 'false', 'bonusB' => 'false', 'timeoutsA' => '3', 'timeoutsB' => '3'),
-        'torneio' => array('competicao' => '', 'categoria' => '', 'grupo' => '', 'fase' => '', 'data' => '', 'hora' => '', 'local' => '', 'spText' => 'PATROCINADORES', 'sponsorsAtivo' => 'false', 'sponsorsIntervalo' => '120', 'sponsorsDuracao' => '8', 'sp1' => '', 'sp2' => '', 'sp3' => ''),
+        'torneio' => array('competicao' => '', 'categoria' => '', 'grupo' => '', 'fase' => '', 'data' => '', 'hora' => '', 'local' => '', 'spText' => 'PATROCINADORES', 'spNomes' => '', 'sponsorsAtivo' => 'false', 'sponsorsIntervalo' => '120', 'sponsorsDuracao' => '8', 'sp1' => '', 'sp2' => '', 'sp3' => ''),
         'tabela' => array(
             'tabelaAtivo' => 'false', 'tabelaCena' => 'table', 'tabelaTema' => 'laliga', 'cenaFundos' => '',
             'tabelaDuracao' => '8', 'tabelaA' => 'auto', 'tabelaB' => 'auto',
