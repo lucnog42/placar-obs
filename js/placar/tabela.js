@@ -358,7 +358,7 @@ Placar.Tabela = {
         this._savePlaylistT0(0);          // desligou: proxima vez comeca do inicio
         this.pararLoop();
         clearTimeout(this._t1);
-        if (cam) cam.classList.remove('ativa');        // overlay sai primeiro
+        if (cam) { cam.classList.remove('ativa'); cam.removeAttribute('data-cena'); }  // overlay sai
         this._t1 = setTimeout(function () {
             if (!self.ativo && wrap) wrap.classList.remove('saindo');
         }, 420);

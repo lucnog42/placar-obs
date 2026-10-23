@@ -137,9 +137,16 @@ Placar._reativar=function(id){
 Placar._checarDisparo=function(){
     var seq=Placar.estado.midiaDisparoSeq;
     if(!seq)return;
-    // primeira leitura depois de carregar a pagina (reload do OBS): so memoriza.
-    // sem isso o ultimo disparo salvo no estado toca de novo e religa o overlay.
-    if(Placar._disparoSeq===null){Placar._disparoSeq=seq;return;}
+    // primeira leitura depois de carregar a pagina (reload do OBS): memoriza e nao
+    // repete o ultimo disparo. Excecao: cena manual (abertura/intervalo/encerramento)
+    // nao e one-shot, e ESTADO — se ainda nao foi cancelada, volta ao ar no reload.
+    if(Placar._disparoSeq===null){
+        Placar._disparoSeq=seq;
+        var m0=Placar.getMidia(Placar.estado.midiaDisparoId);
+        var canc=parseInt(Placar.estado.cenaCancelar,10)||0;
+        if(m0 && m0.tipo==='cena' && (parseInt(seq,10)||0)>canc) Placar._ativar(m0.id);
+        return;
+    }
     if(seq===Placar._disparoSeq)return;
     Placar._disparoSeq=seq;
     var m=Placar.getMidia(Placar.estado.midiaDisparoId);
