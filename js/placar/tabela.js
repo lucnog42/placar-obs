@@ -403,20 +403,32 @@ Placar.Tabela = {
         var cam = this.camada();
         if (cam && cena && cam.getAttribute('data-cena') !== cena) {
             var _velha = cam.getAttribute('data-cena');
-            // dissolve: a cena que sai continua no ar por 300ms desbotando,
-            // a que entra sobe 6px e aparece em 450ms. Sem isso a troca era seca.
+            // dissolve: a cena que sai fica como fundo (sem desbotar e SEM trocar
+            // o display — cena montada com flex virava um bloco no canto) e a nova
+            // aparece por cima em 480ms.
             if (_velha) {
                 var _velhaEl = cam.querySelector('.cena[data-scene="' + _velha + '"]');
                 if (_velhaEl && _velhaEl.classList) {
+                    var _disp = 'block';
+                    try { _disp = window.getComputedStyle(_velhaEl).display || 'block'; } catch (e) { }
+                    if (!_disp || _disp === 'none') _disp = 'block';
+                    _velhaEl.style.display = _disp;      // congela o layout atual
                     _velhaEl.classList.add('saindo');
-                    (function (el) { setTimeout(function () { el.classList.remove('saindo'); }, 320); })(_velhaEl);
+                    (function (el) {
+                        setTimeout(function () {
+                            el.classList.remove('saindo');
+                            el.style.display = '';
+                        }, 540);
+                    })(_velhaEl);
                 }
             }
             cam.setAttribute('data-cena', cena);
+            cam.classList.add('trocando');           // conteúdo entra junto, sem escalonar
+            setTimeout(function () { cam.classList.remove('trocando'); }, 560);
             var _novaEl = cam.querySelector('.cena[data-scene="' + cena + '"]');
             if (_novaEl && _novaEl.classList) {
                 _novaEl.classList.add('entrando');
-                (function (el) { setTimeout(function () { el.classList.remove('entrando'); }, 500); })(_novaEl);
+                (function (el) { setTimeout(function () { el.classList.remove('entrando'); }, 520); })(_novaEl);
             }
             this._armarScroll();                 // cena acabou de ganhar altura
         }    },

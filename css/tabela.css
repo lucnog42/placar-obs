@@ -451,12 +451,20 @@
 .cena-rival .th-row.rv-rival{box-shadow:inset 3px 0 rgba(var(--ac),.55)}
 .cena-rival .th-row.foco{box-shadow:inset 3px 0 rgba(var(--ac),1)}
 
-/* ---------- troca de cena: dissolve de 450ms descendo 6px ---------- */
-.cena.entrando{animation:entraCena .45s cubic-bezier(.2,.7,.3,1) both}
-.cena.saindo{display:block !important;z-index:0;pointer-events:none;
-  animation:saiCena .30s ease forwards}
-@keyframes entraCena{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-@keyframes saiCena{from{opacity:1}to{opacity:0}}
+/* ---------- troca de cena: dissolve com a nova entrando por cima ----------
+   A cena que sai NÃO desbota nem muda de display: ela fica como fundo (o JS
+   fixa o display calculado no inline) e a nova aparece em 480ms por cima.
+   Se a que sai desbotasse junto, a tela "abria" no meio da troca (buraco);
+   e forçar display:block numa cena montada com flex jogava o conteúdo no canto
+   superior esquerdo — era o flash que aparecia antes da cena nova entrar. */
+.cena.saindo{position:absolute;inset:0;z-index:0;pointer-events:none}
+.cena.entrando{animation:entraCena .48s cubic-bezier(.2,.7,.3,1) both}
+@keyframes entraCena{from{opacity:0}to{opacity:1}}
+/* enquanto a cena troca, o conteúdo interno (linhas, cabeçalho, escudos) entra
+   junto com o dissolve em vez de escalonar linha por linha. Era isso que deixava
+   a troca automática "dura": a cena já estava visível e as linhas ainda chegavam
+   uma a uma. Só o atraso é zerado — animações infinitas (rolagem) não mudam. */
+#camadaTabela.trocando .cena *{animation-delay:0s !important}
 @media (prefers-reduced-motion:reduce){
-  .cena.entrando,.cena.saindo{animation:none !important}
+  .cena.entrando{animation:none !important}
 }
