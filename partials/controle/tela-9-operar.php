@@ -70,7 +70,7 @@
       <p>Pontos</p>
       <div class="futebol-ctrl">
         <button class="A" onclick="Controle.adicionarGol(1,'A')">+ <span class="nomeTimeA">Time A</span></button>
-        <button class="A" onclick="Controle.adicionarGol(-1,'A')">- <span class="nomeTimeA">Time A</span></button><br>
+        <button class="A" onclick="Controle.adicionarGol(-1,'A')">- <span class="nomeTimeA">Time A</span></button>
         <button class="B" onclick="Controle.adicionarGol(1,'B')">+ <span class="nomeTimeB">Time B</span></button>
         <button class="B" onclick="Controle.adicionarGol(-1,'B')">- <span class="nomeTimeB">Time B</span></button>
       </div>

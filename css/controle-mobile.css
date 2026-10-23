@@ -68,6 +68,47 @@
   section{padding:12px}
   section p{font-size:18px}
   .midia-item img{width:72px;height:40px}
+
+  /* ---------- nomes longos de arquivo não esticam a tela ---------- */
+  #logoTorneioNome,.tela .midia-nome,.tela .time-crest-nome,.tela .fundo-nome{
+    display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    overflow-wrap:anywhere}
+
+  /* ---------- TELA AO VIVO: controles lado a lado ----------
+     Em transmissão o operador precisa de +gol / -gol e do tempo sem rolar:
+     os botões ficam 2 por linha e as seções mais usadas sobem para o topo. */
+  #tela-9 .grid-inner{display:flex;flex-direction:column;gap:12px}
+  /* ordem real das seções: 1 Overlay · 2 Menu rápido · 3 Histórico · 4 Pontos
+     · 5/6/8/9/10 basquete (ocultas) · 7 Tempo · 11 Pênaltis */
+  #tela-9 .grid-inner>section:nth-child(4){order:1}   /* Pontos */
+  #tela-9 .grid-inner>section:nth-child(7){order:2}   /* Tempo */
+  #tela-9 .grid-inner>section:nth-child(11){order:3}  /* Pênaltis */
+  #tela-9 .grid-inner>section:nth-child(1){order:4}   /* Overlay (switches) */
+  #tela-9 .grid-inner>section:nth-child(2){order:5}   /* Menu rápido */
+  #tela-9 .grid-inner>section:nth-child(3){order:9}   /* Histórico */
+
+  #tela-9 .futebol-ctrl{display:flex;flex-wrap:wrap;gap:8px}
+  #tela-9 .futebol-ctrl>button{flex:1 1 calc(50% - 8px);min-width:0;
+    font-size:21px;padding:14px 8px;min-height:58px;line-height:1.1}
+  #tela-9 .tempo-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  #tela-9 .tempo-row>button{flex:1 1 calc(50% - 8px);min-width:0;
+    font-size:19px;padding:12px 6px;min-height:54px}
+  #tela-9 .cenas-manuais{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #tela-9 .sw-cenas{min-height:58px;padding:12px 14px}
+  #tela-9 .sw-cenas .sw-txt b{font-size:22px}
+  #tela-9 .sw-cenas .sw-txt small{font-size:14px}
+  /* pênaltis: 5 bolinhas cabem na largura */
+  #tela-9 .SessaoPenaltes{gap:6px}
+  #tela-9 .SessaoPenaltes button{flex:1 1 0;min-width:0;max-width:64px;aspect-ratio:1;height:auto}
+  /* listas com “enviar/remover” quebram linha em vez de sair da tela */
+  .btn-enviar,.btn-remover{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+
+  /* listas (mídias, escudos) quebram linha em vez de estourar a largura */
+  .tela .midia-item,.tela .escudo-item,.tela .preset-item{flex-wrap:wrap;gap:8px}
+  .tela .midia-item .midia-nome,.tela .escudo-item .escudo-nome{flex:1 1 100%}
+
+  /* botões − / + dos sliders não podem cortar o glifo */
+  .tela .scale-row button,.tela .pos-row button{min-width:44px;min-height:44px;padding:8px}
 }
 
 /* telas muito estreitas (iPhone SE e afins) */

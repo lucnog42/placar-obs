@@ -337,23 +337,30 @@ function save_data_uri($dataUri, $filepath) {
     return file_put_contents($filepath, $bin, LOCK_EX);
 }
 
-function list_escudo_files() {
-    $files = array();
-    if (!is_dir(ESCUDOS_DIR)) return $files;
+/* arquivos validos da biblioteca: ignora os placeholders 1x1 que o proxy
+   antigo gravava (70 bytes) e aceita png/jpg/webp/gif */
+function list_escudo_arquivos() {
+    $out = array();
+    if (!is_dir(ESCUDOS_DIR)) return $out;
     $dh = opendir(ESCUDOS_DIR);
-    if (!$dh) return $files;
+    if (!$dh) return $out;
     while (($entry = readdir($dh)) !== false) {
         if ($entry === '.' || $entry === '..') continue;
-        $ext = strtolower(pathinfo($entry, PATHINFO_EXTENSION));
-        if ($ext !== 'png') continue;
-        $name = pathinfo($entry, PATHINFO_FILENAME);
-        // Skip timeA.png and timeB.png
-        if ($name === 'timeA' || $name === 'timeB') continue;
-        $files[] = $name;
+        if (!preg_match('/\.(png|jpe?g|webp|gif)$/i', $entry)) continue;
+        $path = ESCUDOS_DIR . '/' . $entry;
+        if (@filesize($path) < 200) continue;
+        $nome = pathinfo($entry, PATHINFO_FILENAME);
+        if ($nome === 'timeA' || $nome === 'timeB') continue;
+        $out[$nome] = DADOS_URL . '/escudos/' . $entry;
     }
-    closedir($dh);
-    sort($files);
-    return $files;
+    ksort($out);
+    return $out;
+}
+
+function list_escudo_files() {
+    // mesma regra de list_escudo_arquivos(): ignora placeholders 1x1 (70 bytes)
+    // e aceita png/jpg/webp/gif, para o time nao ficar com um quadrado verde
+    return array_keys(list_escudo_arquivos());
 }
 
 // ---------- routing ----------
@@ -469,17 +476,34 @@ if ($method === 'GET') {
             'http' => array('timeout' => 5, 'follow_location' => 1, 'max_redirects' => 3, 'ignore_errors' => true),
             'https' => array('timeout' => 5)
         ));
-        $imgData = @file_get_contents($url, false, $ctx, 0, 2000000);
-        if ($imgData === false) {
-            // Retorna 1x1 pixel transparente como fallback
-            header('Content-Type: image/png');
-            header('Access-Control-Allow-Origin: *');
-            echo base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==');
+        // strict=1: falha vira erro HTTP. Sem strict (uso em <img src>), devolve
+        // um pixel realmente transparente.
+        $strict = isset($_GET['strict']) && $_GET['strict'] !== '0';
+        $falhar = function ($msg) use ($strict) {
+            if ($strict) {
+                http_response_code(502);
+                header('Content-Type: application/json; charset=utf-8');
+                header('Access-Control-Allow-Origin: *');
+                echo json_encode(array('ok' => false, 'erro' => $msg));
+            } else {
+                header('Content-Type: image/png');
+                header('Access-Control-Allow-Origin: *');
+                header('Cache-Control: no-store');
+                echo base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=');
+            }
             exit;
+        };
+        $imgData = @file_get_contents($url, false, $ctx, 0, 2000000);
+        if ($imgData === false || strlen($imgData) < 200) {
+            $falhar('nao foi possivel baixar a imagem');
         }
-        // Detecta tipo
+        // Detecta tipo: so aceita imagem de verdade (o proxy ja devolveu pixel
+        // 1x1 verde em caso de falha e isso envenenou a biblioteca de escudos)
         $finfo = new finfo(FILEINFO_MIME_TYPE);
         $mime = $finfo->buffer($imgData);
+        if (strpos($mime, 'image/') !== 0) {
+            $falhar('o conteudo baixado nao e uma imagem');
+        }
         header('Content-Type: ' . $mime);
         header('Access-Control-Allow-Origin: *');
         header('Cache-Control: public, max-age=86400');
@@ -538,7 +562,10 @@ if ($method === 'GET') {
     }
 
     if ($acao === 'listar_escudos') {
-        respond(array('escudos' => list_escudo_files()));
+        respond(array(
+            'escudos'  => list_escudo_files(),
+            'arquivos' => list_escudo_arquivos()
+        ));
     }
 
     if ($acao === 'listar_fundos') {
@@ -1214,6 +1241,7 @@ if ($method === 'POST') {
             mkdir(ESCUDOS_DIR, 0755, true);
         }
         $salvos = array();
+        $falhas = array();
         foreach ($itens as $it) {
             $nome = isset($it['nome']) ? $it['nome'] : '';
             $src = isset($it['src']) ? $it['src'] : '';
@@ -1225,10 +1253,18 @@ if ($method === 'POST') {
             elseif (strpos($src, 'data:image/gif') === 0) $ext = 'gif';
             elseif (strpos($src, 'data:image/webp') === 0) $ext = 'webp';
             $arquivo = $base . '.' . $ext;
-            if (save_data_uri($src, ESCUDOS_DIR . '/' . $arquivo) === false) continue;
+            // um "escudo" de 1x1 (70 bytes) e o placeholder do proxy: nao salva
+            $bruto = substr($src, strpos($src, ',') === false ? 0 : strpos($src, ',') + 1);
+            $dados = base64_decode($bruto, true);
+            if ($dados === false || strlen($dados) < 200) { $falhas[] = $nome; continue; }
+            $magic = substr($dados, 0, 4);
+            $ehImagem = ($magic === "\x89PNG" || $magic === "\xFF\xD8\xFF\xE0" || $magic === "\xFF\xD8\xFF\xE1"
+                      || substr($dados, 0, 3) === 'GIF' || substr($dados, 0, 4) === 'RIFF');
+            if (!$ehImagem) { $falhas[] = $nome; continue; }
+            if (save_data_uri($src, ESCUDOS_DIR . '/' . $arquivo) === false) { $falhas[] = $nome; continue; }
             $salvos[] = array('nome' => $nome, 'arquivo' => DADOS_URL . '/escudos/' . $arquivo);
         }
-        respond(array('ok' => true, 'salvos' => $salvos));
+        respond(array('ok' => true, 'salvos' => $salvos, 'falhas' => $falhas));
     }
 
     if ($acao === 'incrementar') {

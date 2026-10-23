@@ -24,8 +24,27 @@ var TabelaDados = (function () {
     if (!box) return;
     var img = box.querySelector('img'), mono = box.querySelector('.mono');
     var src = tm && (tm.crest || tm.escudo || '');
+
+    // escudo que nao carrega (ou que e um pixel 1x1 de placeholder) cai no
+    // monograma: sem isso a caixa ficava com um quadrado solido na cor do pixel
+    function mostrarMono() {
+      if (img) img.style.display = 'none';
+      if (mono) { mono.textContent = inits(tm); mono.style.display = ''; }
+    }
+    function conferir() {
+      if (img && (!img.naturalWidth || img.naturalWidth <= 2 || img.naturalHeight <= 2)) mostrarMono();
+    }
+
     if (src) {
-      if (img) { if (img.getAttribute('src') !== src) img.setAttribute('src', src); img.style.display = ''; }
+      if (img) {
+        if (img.getAttribute('src') !== src) {
+          img.onerror = mostrarMono;
+          img.onload = conferir;
+          img.setAttribute('src', src);
+        }
+        img.style.display = '';
+        if (img.complete) conferir();
+      }
       if (mono) mono.style.display = 'none';
     } else {
       if (img) { img.removeAttribute('src'); img.style.display = 'none'; }

@@ -550,7 +550,7 @@ Controle.arquivoEscudo = function (nome) {
 
 /* quais escudos do CSV ainda NAO estao na biblioteca
    (jaTinha = escudos que ja estao la, so apontar para eles) */
-Controle.escudosFaltando = function (itens, biblioteca) {
+Controle.escudosFaltando = function (itens, biblioteca, arquivos) {
     var na = {}, vistos = {}, jaTinha = [], fila = [];
     (biblioteca || []).forEach(function (n) { na[String(n).toLowerCase()] = true; });
     (itens || []).forEach(function (it) {
@@ -558,7 +558,9 @@ Controle.escudosFaltando = function (itens, biblioteca) {
         var base = Controle.arquivoEscudo(it.nome);
         if (vistos[base]) return;                       // time repetido no CSV
         vistos[base] = true;
-        if (na[base.toLowerCase()]) jaTinha.push({ nome: it.nome, arquivo: DADOS+'escudos/' + base + '.png' });
+        if (na[base.toLowerCase()]) {
+        jaTinha.push({ nome: it.nome, arquivo: (arquivos && arquivos[base]) || (DADOS + 'escudos/' + base + '.png') });
+    }
         else fila.push(it);
     });
     return { novos: fila, jaTinha: jaTinha };
@@ -616,7 +618,7 @@ Controle.baixarEscudos = function (itens) {
 
     var fila = [];
     var montarFila = function () {
-        var r = Controle.escudosFaltando(itens, Object.keys(naBiblioteca));
+        var r = Controle.escudosFaltando(itens, Object.keys(naBiblioteca), naBibliotecaArq);
         fila = r.novos;
         jaTinha = r.jaTinha;
     };
@@ -635,10 +637,14 @@ Controle.baixarEscudos = function (itens) {
             else proximo(i + 1);
             return;
         }
-        fetch(API+API_AND+'acao=proxy_imagem&url=' + encodeURIComponent(it.url))
+        fetch(API+API_AND+'acao=proxy_imagem&strict=1&url=' + encodeURIComponent(it.url))
             .then(function (r) { return r.ok ? r.blob() : null; })
             .then(function (b) {
-                if (!b || b.size < 60) { falhas.push(it.nome); proximo(i + 1); return; }
+                // 1x1 do proxy antigo tinha 70 bytes; imagem de escudo de verdade
+                // passa de 200 e precisa ser image/*
+                if (!b || b.size < 200 || String(b.type || '').indexOf('image/') !== 0) {
+                    falhas.push(it.nome); proximo(i + 1); return;
+                }
                 var fr = new FileReader();
                 fr.onload = function () {
                     lote.push({ nome: it.nome, src: String(fr.result) });
@@ -667,15 +673,19 @@ Controle.baixarEscudos = function (itens) {
             + (falhas.length ? (' · falhou: ' + falhas.length) : ''));
         if (el) el.textContent = '✔ ' + total + ' escudos em escudos/ ('
             + salvos.length + ' novos · ' + jaTinha.length + ' já estavam)'
-            + (falhas.length ? (' · ' + falhas.length + ' sem imagem') : '');
+            + (falhas.length ? (' · ' + falhas.length + ' sem imagem: ' + falhas.slice(0, 4).join(', ')
+                + (falhas.length > 4 ? '…' : '') + ' (o site de origem nao respondeu; o time segue com a imagem externa)') : '');
         if (Controle.conferirEscudos) Controle.conferirEscudos(true);
     };
 
     dizer('🔎 conferindo a biblioteca de escudos…');
+    var naBibliotecaArq = {};       // base -> caminho real (png/jpg/webp/gif)
     fetch(API+API_AND+'acao=listar_escudos')
         .then(function (r) { return r.json(); })
         .then(function (j) {
             (j.escudos || []).forEach(function (n) { naBiblioteca[String(n).toLowerCase()] = true; });
+            var a = j.arquivos || {};
+            Object.keys(a).forEach(function (k) { naBibliotecaArq[k] = a[k]; });
             pronto = true; montarFila(); proximo(0);
         })
         .catch(function () { pronto = true; montarFila(); proximo(0); });
