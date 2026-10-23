@@ -165,14 +165,77 @@ var TabelaDados = (function () {
      (pausa + ida + pausa + volta) cabe no segmento em vez de precisar de 28,7s */
   function definirTempoSegmento(s) { SEG = Number(s) > 0 ? Number(s) : 0; }
 
+  /* ------------------------------------------------------------------
+     Rolagem da classificacao — motor em JS (rAF), sem animacao CSS.
+     Motivo: `animation` infinita com keyframes injetados se comporta de
+     forma diferente em cada motor (no CEF do OBS ela simplesmente nao
+     rodava). Aqui o transform e escrito a cada quadro, entao o unico
+     requisito e o JS rodar — e para isso existe tambem um passo de
+     segurança chamado pelo loop de cenas (5x/s), caso o rAF pare.
+     Fases: PAUSA_TOPO parado -> desce ate -dist -> PAUSA_FIM parado -> volta.
+     ------------------------------------------------------------------ */
+  var _rol = { el: null, dist: 0, ida: 0, total: 0, t0: 0, raf: 0, ultimo: 0 };
+
+  function _agoraMs() {
+    return (window.performance && performance.now) ? performance.now() : Date.now();
+  }
+
+  /* agenda o proximo quadro SO com rAF: em ambiente sem rAF (harness/DOM falso)
+     nada e agendado e quem move a rolagem é o passo de seguranca (5x/s) */
+  function _agendar(f) {
+    var raf = window.requestAnimationFrame;
+    return raf ? raf(f) : 0;
+  }
+
+  function _pararRolagem() {
+    if (_rol.raf && window.cancelAnimationFrame) window.cancelAnimationFrame(_rol.raf);
+    _rol.raf = 0; _rol.el = null; _rol.total = 0;
+  }
+
+  /* deslocamento (px, negativo) para o instante t do ciclo */
+  function _yNoTempo(t) {
+    var o = _rol, c = o.total > 0 ? (t % o.total) : 0;
+    if (c <= PAUSA_TOPO) return 0;
+    var fimIda = PAUSA_TOPO + o.ida;
+    if (c <= fimIda) return -(o.dist * (c - PAUSA_TOPO) / (o.ida || 1));
+    var fimPausa = fimIda + PAUSA_FIM;
+    if (c <= fimPausa) return -o.dist;
+    var volta = o.total - fimPausa;
+    var k = volta > 0 ? (c - fimPausa) / volta : 1;
+    return -(o.dist * (1 - k));
+  }
+
+  function _aplicar(t) {
+    var o = _rol;
+    if (!o.el || !o.total) return;
+    var y = Math.round(_yNoTempo(t) * 10) / 10;
+    o.el.style.transform = 'translateY(' + y + 'px)';
+    o.ultimo = _agoraMs();
+  }
+
+  function _quadro() {
+    var o = _rol;
+    if (!o.el || !o.total) { o.raf = 0; return; }
+    _aplicar((_agoraMs() - o.t0) / 1000);
+    o.raf = _agendar(_quadro);
+  }
+
+  /* passo de seguranca: o loop de cenas chama isto 5x/s. Se o rAF parou
+     (viewer/CEF), ainda assim a rolagem avanca. */
+  function tickRolagem() {
+    var o = _rol;
+    if (!o.el || !o.total) return;
+    if (_agoraMs() - (o.ultimo || 0) > 220) _aplicar((_agoraMs() - o.t0) / 1000);
+  }
+
   function ajustarScroll() {
     var corpo = document.getElementById('thBody');       // janela (clipa)
     var alvo = document.getElementById('thScroll');      // conteudo (rola)
     if (!corpo || !alvo) return;
+    _pararRolagem();
     alvo.classList.remove('rolar');
     alvo.style.transform = '';
-    if (alvo.offsetWidth === 0 && alvo.offsetHeight === 0) { /* forca leitura */ }
-    void alvo.offsetWidth;          // reflow: sem isso o browser nao reinicia a animacao
+    void alvo.offsetWidth;          // reflow antes de medir
     var linhas = corpo.querySelectorAll('.th-row'), n = 0, alt = 0;
     for (var i = 0; i < linhas.length; i++) {
       if (linhas[i].style.display === 'none') continue;
@@ -188,23 +251,18 @@ var TabelaDados = (function () {
       var upMax = (SEG * 0.92 - PAUSA_TOPO - PAUSA_FIM) / (1 + VOLTA);
       if (upMax > 0.4 && dist / upMax > vel) vel = Math.min(dist / upMax, VEL_MAX);
     }
-    var rolagem = dist / vel;
-    var total = PAUSA_TOPO + rolagem + PAUSA_FIM + rolagem * VOLTA;
-    var pc = function (s) { return Math.round((s / total) * 1000) / 10; };
-    var st = document.getElementById('thAnim');
-    if (!st) {
-      if (!document.head) return;
-      st = document.createElement('style');
-      st.id = 'thAnim';
-      document.head.appendChild(st);
-    }
-    st.textContent = '@keyframes thScroll{'
-      + '0%,' + pc(PAUSA_TOPO) + '%{transform:translateY(0)}'
-      + pc(PAUSA_TOPO + rolagem) + '%,' + pc(PAUSA_TOPO + rolagem + PAUSA_FIM) + '%{transform:translateY(-' + dist + 'px)}'
-      + '100%{transform:translateY(0)}}';
+    var ida = dist / vel;
+
+    _rol.el = alvo;
+    _rol.dist = dist;
+    _rol.ida = ida;
+    _rol.total = PAUSA_TOPO + ida + PAUSA_FIM + ida * VOLTA;
+    _rol.t0 = _agoraMs();
+    _rol.ultimo = _rol.t0;
     alvo.style.setProperty('--th-y', '-' + dist + 'px');
-    alvo.style.setProperty('--th-dur', total.toFixed(1) + 's');
-    alvo.classList.add('rolar');
+    alvo.style.setProperty('--th-dur', _rol.total.toFixed(1) + 's');
+    _aplicar(0);
+    _rol.raf = _agendar(_quadro);
   }
 
   function fillIntro(cfg, A, B) {
@@ -542,5 +600,5 @@ var TabelaDados = (function () {
   }
 
   return { fill: fill, setFundos: setFundos, ajustarScroll: ajustarScroll, observarAltura: observarAltura,
-           definirTempoSegmento: definirTempoSegmento };
+           definirTempoSegmento: definirTempoSegmento, tickRolagem: tickRolagem };
 })();

@@ -379,6 +379,9 @@ Placar.Tabela = {
         var cfg = this.cfg;
         if (!cfg) return;
         now = now || performance.now();
+        // passo de seguranca da rolagem: se o requestAnimationFrame do viewer
+        // parar, o transform ainda avanca 5x por segundo por aqui
+        if (window.TabelaDados && TabelaDados.tickRolagem) { try { TabelaDados.tickRolagem(); } catch (e) { } }
         var el = (now - this.t0) / 1000;
         var cena = null;
 
