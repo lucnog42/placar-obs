@@ -347,3 +347,6 @@ body{touch-action:manipulation}         /* bloqueia zoom por duplo-toque, manté
 button,select,input,.drawer-item,.preset-item,.midia-item,.escudo-item{min-width:0;overflow:hidden;text-overflow:ellipsis}
 button{white-space:nowrap}
 
+/* ---- times: nome + sigla (antes era style inline) ---- */
+.times-grid{display:grid;grid-template-columns:2fr 1fr 2fr 1fr;gap:6px}
+.lbl-time{font-size:10px;color:#aaa}

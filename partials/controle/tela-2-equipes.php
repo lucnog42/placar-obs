@@ -3,11 +3,11 @@
   <div class="grid-inner">
     <section class="full">
       <p>Times <span class="hint">nome + sigla</span></p>
-      <div style="display:grid;grid-template-columns:2fr 1fr 2fr 1fr;gap:6px">
-        <div><label style="font-size:10px;color:#aaa">Nome (Casa)</label><input id="timeA" placeholder="Time A" style="width:100%;box-sizing:border-box"></div>
-        <div><label style="font-size:10px;color:#aaa">Sigla (Casa)</label><input id="siglaA" placeholder="Sigla A" maxlength="6" style="width:100%;box-sizing:border-box"></div>
-        <div><label style="font-size:10px;color:#aaa">Nome (Visitante)</label><input id="timeB" placeholder="Time B" style="width:100%;box-sizing:border-box"></div>
-        <div><label style="font-size:10px;color:#aaa">Sigla (Visit.)</label><input id="siglaB" placeholder="Sigla B" maxlength="6" style="width:100%;box-sizing:border-box"></div>
+      <div class="times-grid">
+        <div><label class="lbl-time">Nome (Casa)</label><input id="timeA" placeholder="Time A" style="width:100%;box-sizing:border-box"></div>
+        <div><label class="lbl-time">Sigla (Casa)</label><input id="siglaA" placeholder="Sigla A" maxlength="6" style="width:100%;box-sizing:border-box"></div>
+        <div><label class="lbl-time">Nome (Visitante)</label><input id="timeB" placeholder="Time B" style="width:100%;box-sizing:border-box"></div>
+        <div><label class="lbl-time">Sigla (Visit.)</label><input id="siglaB" placeholder="Sigla B" maxlength="6" style="width:100%;box-sizing:border-box"></div>
       </div>
       <button onclick="Controle.definirTimes()" style="margin-top:8px">Definir Times</button>
     </section>

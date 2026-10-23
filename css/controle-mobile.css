@@ -64,12 +64,18 @@
   .drawer-btn{font-size:22px;padding:16px;margin:8px 14px;width:calc(100% - 28px)}
 
   /* ---------- seções e grids ---------- */
-  .tela .grid-inner{grid-template-columns:1fr;gap:12px}
+  .tela .grid-inner{grid-template-columns:minmax(0,1fr);gap:12px}
+  /* .grid-inner section.full{grid-column:span 2} criava uma 2ª coluna IMPLÍCITA
+     no grid de 1 coluna e espremia as seções que não são .full (tela 4 e 7) */
+  .tela .grid-inner>section{grid-column:auto;min-width:0}
+  .tela .hint,.tela .sub{overflow-wrap:anywhere}
   section{padding:12px}
   section p{font-size:18px}
   .midia-item img{width:72px;height:40px}
 
   /* ---------- nomes longos de arquivo não esticam a tela ---------- */
+  .times-grid{grid-template-columns:1fr 96px;gap:10px}
+  .lbl-time{font-size:14px;color:#c8d2e0;margin-bottom:2px;display:block}
   #logoTorneioNome,.tela .midia-nome,.tela .time-crest-nome,.tela .fundo-nome{
     display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
     overflow-wrap:anywhere}
@@ -97,9 +103,10 @@
   #tela-9 .sw-cenas{min-height:58px;padding:12px 14px}
   #tela-9 .sw-cenas .sw-txt b{font-size:22px}
   #tela-9 .sw-cenas .sw-txt small{font-size:14px}
-  /* pênaltis: 5 bolinhas cabem na largura */
+  /* pênaltis: 5 bolinhas cabem na largura, com alvo de toque de 44px */
   #tela-9 .SessaoPenaltes{gap:6px}
-  #tela-9 .SessaoPenaltes button{flex:1 1 0;min-width:0;max-width:64px;aspect-ratio:1;height:auto}
+  #tela-9 .SessaoPenaltes button{flex:1 1 0;min-width:44px;min-height:44px;max-width:64px;
+    aspect-ratio:1;height:auto;font-size:20px;padding:0}
   /* listas com “enviar/remover” quebram linha em vez de sair da tela */
   .btn-enviar,.btn-remover{max-width:100%;white-space:normal;overflow-wrap:anywhere}
 
