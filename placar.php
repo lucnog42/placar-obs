@@ -9,6 +9,7 @@
  */
 $MAX_LINHAS = 24;          // pool de linhas da classificação (JS esconde as não usadas)
 $v = '20261109a';          // cache-busting
+$dev = isset($_GET['dev']); // ?dev=1 = fundo escuro para testar o CSS no navegador
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -21,7 +22,7 @@ $v = '20261109a';          // cache-busting
 <link rel="stylesheet" href="css/tabela.css?v=<?= $v ?>">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{width:1920px;height:1080px;background:transparent;font-family:'Arial',sans-serif;overflow:hidden;position:relative}
+body{width:1920px;height:1080px;<?= $dev ? 'background:#20242b' : 'background:transparent' ?>;font-family:'Arial',sans-serif;overflow:hidden;position:relative}
 #placarWrapper{position:absolute;z-index:1;top:50px;left:50px;transform:scale(0.65);transform-origin:0 0}
 #status{position:fixed;top:4px;right:8px;z-index:999;font-size:14px;color:#0f0;opacity:1;background:rgba(0,0,0,0.7);padding:2px 8px;border-radius:3px}
 </style>
