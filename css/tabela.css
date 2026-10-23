@@ -160,26 +160,34 @@
 /* ================= PATROCINADORES (lower third, camada propria) ================= */
 /* A camada #camadaSponsors vive fora do #camadaTabela: aparece com o overlay
    ligado ou desligado. A transicao anima o CARD INTEIRO (logo + textos). */
-#camadaSponsors{position:absolute;left:52px;bottom:64px;z-index:35;pointer-events:none;
+/* ================= PATROCINADORES (lower third, camada propria) ================= */
+/* A camada #camadaSponsors vive fora do #camadaTabela: aparece com o overlay
+   ligado ou desligado. A transicao anima o CARD INTEIRO (logo + textos).
+   Medidas na escala final (1920x1080): antes a faixa vivia dentro do .cena-inner
+   1280x720, entao tudo aqui e 1.5x. */
+#camadaSponsors{position:absolute;left:78px;bottom:78px;z-index:35;pointer-events:none;
+  /* fora do #camadaTabela as variaveis do tema NAO existem: sem elas
+     rgba(var(--bg)) e invalido e so a imagem aparece (com fallback tambem) */
+  --bg:10,10,10;--fg:255,255,255;--ac:255,215,0;
   opacity:0;visibility:hidden;transition:opacity .3s ease,visibility 0s linear .3s}
 #camadaSponsors.on{opacity:1;visibility:visible;transition:opacity .3s ease,visibility 0s}
-.sp-faixa{position:relative;height:140px;min-width:620px;max-width:900px;
-  display:flex;align-items:center;gap:26px;padding:0 40px 0 26px;box-sizing:border-box;
-  border-radius:18px;background:rgba(var(--bg),.92);border:1px solid rgba(var(--fg),.14);
-  overflow:hidden;box-shadow:0 16px 40px rgba(0,0,0,.45);
+.sp-faixa{position:relative;height:210px;min-width:930px;max-width:1350px;
+  display:flex;align-items:center;gap:39px;padding:0 60px 0 39px;box-sizing:border-box;
+  border-radius:27px;background:rgba(var(--bg,10,10,10),.92);border:1px solid rgba(var(--fg,255,255,255),.14);
+  overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.45);
   /* o card todo desliza: entra e sai pela direita */
   opacity:0;transform:translateX(140px);
   transition:opacity .32s ease,transform .42s cubic-bezier(.2,.9,.25,1)}
 #camadaSponsors.on .sp-faixa{opacity:1;transform:translateX(0)}
 /* troca de patrocinador: o card inteiro sai pela direita e volta pela direita */
 #camadaSponsors.on .sp-faixa.trocando{opacity:0;transform:translateX(140px)}
-.sp-faixa::before{content:"";position:absolute;left:0;top:0;bottom:0;width:8px;background:rgba(var(--ac),1)}
-.sp-logo-box{width:170px;height:104px;flex:0 0 170px;display:flex;align-items:center;justify-content:center;
-  border-radius:12px;background:rgba(var(--fg),.07);overflow:hidden}
-.sp-img{max-width:154px;max-height:88px;object-fit:contain;display:block}
-.sp-txts{display:flex;flex-direction:column;gap:4px;min-width:0}
-.sp-label{font-size:13px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:rgba(var(--fg),.55)}
-.sp-nome{font-size:26px;font-weight:800;color:rgba(var(--fg),.97);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:520px}
+.sp-faixa::before{content:"";position:absolute;left:0;top:0;bottom:0;width:12px;background:rgba(var(--ac,255,215,0),1)}
+.sp-logo-box{width:255px;height:156px;flex:0 0 255px;display:flex;align-items:center;justify-content:center;
+  border-radius:18px;background:rgba(var(--fg,255,255,255),.07);overflow:hidden}
+.sp-img{max-width:231px;max-height:132px;object-fit:contain;display:block}
+.sp-txts{display:flex;flex-direction:column;gap:6px;min-width:0}
+.sp-label{font-size:20px;font-weight:800;letter-spacing:4.5px;text-transform:uppercase;color:rgba(var(--fg,255,255,255),.55)}
+.sp-nome{font-size:39px;font-weight:800;color:rgba(var(--fg,255,255,255),.97);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:780px}
 /* sem nome digitado no painel: faixa so com o logo */
 .sp-faixa.sem-nome .sp-txts{justify-content:center}
 .sp-faixa.sem-nome .sp-nome{display:none}
