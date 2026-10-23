@@ -445,15 +445,30 @@ Placar.Tabela = {
                     }, ms + 520);
                 })(_novaEl, _espera);
             }
-            this._armarScroll();                 // cena acabou de ganhar altura
+            // rolagem da classificacao: informa quanto tempo a cena fica no ar
+            // (para o ciclo caber no segmento) e arma agora + quando a cena
+            // aparece de fato (o ciclo recomeca do topo junto com o fade)
+            var _dSeg = 0;
+            if (cfg.scenes) {
+                for (var _si = 0; _si < cfg.scenes.length; _si++) {
+                    if (cfg.scenes[_si].k === cena) { _dSeg = Number(cfg.scenes[_si].d) || 0; break; }
+                }
+            }
+            if (window.TabelaDados && TabelaDados.definirTempoSegmento) TabelaDados.definirTempoSegmento(_dSeg);
+            this._armarScroll();
+            if (_espera) this._armarScroll(_espera + 500);
         }    },
 
-    /* a tabela precisa medir depois do layout (cena sai de display:none) */
-    _armarScroll: function () {
+    /* a tabela precisa medir depois do layout (cena sai de display:none).
+       atraso>0: re-arma quando a cena ja esta visivel (reinicia a rolagem) */
+    _armarScroll: function (atraso) {
         var raf = window.requestAnimationFrame || function (f) { setTimeout(f, 16); };
-        raf(function () {
-            if (window.TabelaDados && TabelaDados.ajustarScroll) TabelaDados.ajustarScroll();
-        });
+        var medir = function () {
+            raf(function () {
+                if (window.TabelaDados && TabelaDados.ajustarScroll) TabelaDados.ajustarScroll();
+            });
+        };
+        if (atraso > 0) setTimeout(medir, atraso); else medir();
     },
 
     iniciarLoop: function () {

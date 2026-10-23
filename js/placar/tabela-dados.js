@@ -158,6 +158,12 @@ var TabelaDados = (function () {
      40 px/s de rolagem, 1 s parado no topo e 3 s parado no fim. Se couber na
      tela, nada anima. (Não criamos HTML: o PHP continua montando a tabela.) */
   var VEL_SCROLL = 40, PAUSA_TOPO = 1, PAUSA_FIM = 3, VOLTA = 0.6;
+  var VEL_MAX = 200;      // teto para caber em segmentos curtos da playlist
+  var SEG = 0;            // duracao (s) do segmento atual da playlist, 0 = desconhecida
+
+  /* o painel/overlay informa quanto tempo a cena fica no ar; com isso o ciclo
+     (pausa + ida + pausa + volta) cabe no segmento em vez de precisar de 28,7s */
+  function definirTempoSegmento(s) { SEG = Number(s) > 0 ? Number(s) : 0; }
 
   function ajustarScroll() {
     var corpo = document.getElementById('thBody');       // janela (clipa)
@@ -165,6 +171,8 @@ var TabelaDados = (function () {
     if (!corpo || !alvo) return;
     alvo.classList.remove('rolar');
     alvo.style.transform = '';
+    if (alvo.offsetWidth === 0 && alvo.offsetHeight === 0) { /* forca leitura */ }
+    void alvo.offsetWidth;          // reflow: sem isso o browser nao reinicia a animacao
     var linhas = corpo.querySelectorAll('.th-row'), n = 0, alt = 0;
     for (var i = 0; i < linhas.length; i++) {
       if (linhas[i].style.display === 'none') continue;
@@ -175,7 +183,12 @@ var TabelaDados = (function () {
     var dist = n * alt - visivel;
     if (!n || !alt || !visivel || dist < 8) return;      // cabe: sem rolagem
 
-    var rolagem = dist / VEL_SCROLL;
+    var vel = VEL_SCROLL;
+    if (SEG > 0) {
+      var upMax = (SEG * 0.92 - PAUSA_TOPO - PAUSA_FIM) / (1 + VOLTA);
+      if (upMax > 0.4 && dist / upMax > vel) vel = Math.min(dist / upMax, VEL_MAX);
+    }
+    var rolagem = dist / vel;
     var total = PAUSA_TOPO + rolagem + PAUSA_FIM + rolagem * VOLTA;
     var pc = function (s) { return Math.round((s / total) * 1000) / 10; };
     var st = document.getElementById('thAnim');
@@ -528,5 +541,6 @@ var TabelaDados = (function () {
     fillRival(cfg, times);
   }
 
-  return { fill: fill, setFundos: setFundos, ajustarScroll: ajustarScroll, observarAltura: observarAltura };
+  return { fill: fill, setFundos: setFundos, ajustarScroll: ajustarScroll, observarAltura: observarAltura,
+           definirTempoSegmento: definirTempoSegmento };
 })();

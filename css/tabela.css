@@ -425,7 +425,11 @@
 
 /* ---------- cena RIVAL: linhas iguais às da tabela, sem movimento ---------- */
 .cena-rival .th-row{animation:none !important}
-.cena-rival .th-body{overflow:hidden}
+.cena-rival .th-body{overflow:hidden;display:flex;flex-direction:column;justify-content:center}
+/* as linhas dividem a altura do card: com 8 times cada uma fica ~98px e o
+   card fecha no rodapé (antes sobravam ~86px vazios embaixo). Se houver menos
+   times, a linha para de crescer em 112px e o bloco fica centrado. */
+.cena-rival .th-row{flex:1 1 0;min-height:0;max-height:112px;height:auto}
 .cena-rival .th-row:nth-child(even){background:rgba(var(--fg),.025)}
 /* o rival (time logo acima do principal) ganha uma barra de acento discreta */
 .cena-rival .th-row.rv-rival{box-shadow:inset 3px 0 rgba(var(--ac),.55)}
@@ -450,7 +454,7 @@
    junto com o dissolve em vez de escalonar linha por linha. Era isso que deixava
    a troca automática "dura": a cena já estava visível e as linhas ainda chegavam
    uma a uma. Só o atraso é zerado — animações infinitas (rolagem) não mudam. */
-#camadaTabela.trocando .cena *{animation-delay:0s !important}
+#camadaTabela.trocando .cena *:not(.th-scroll){animation-delay:0s !important}
 @media (prefers-reduced-motion:reduce){
   .cena.entrando{animation:none !important}
 }

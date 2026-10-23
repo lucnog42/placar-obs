@@ -235,8 +235,16 @@ Controle.syncBotaoCenaFixa = function () {
     if (b) { b.classList[fixa ? 'add' : 'remove']('on'); b.setAttribute('aria-pressed', fixa ? 'true' : 'false'); }
     var sub = document.getElementById('btnCenaFixaSub');
     if (sub) sub.textContent = fixa ? ('no ar: ' + Controle.nomeCena(e.tabelaCena || 'table')) : 'desligada · linha do tempo';
+    // o seletor continua utilizavel com a cena fixa desligada: escolher a cena
+    // aqui é só o "pre-selecionar" que o modo fixa vai usar quando ligar
     var sel = document.getElementById('tabelaCenaTop');
-    if (sel) { sel.disabled = !fixa; sel.className = 'sel-cena-top' + (fixa ? '' : ' off'); sel.value = e.tabelaCena || 'table'; }
+    if (sel) {
+        sel.disabled = false;
+        sel.className = 'sel-cena-top' + (fixa ? '' : ' off');
+        sel.title = fixa ? 'Cena que fica no ar no modo cena fixa'
+                         : 'Cena fixa desligada — a escolha vale quando você ligar';
+        sel.value = e.tabelaCena || 'table';
+    }
 };
 Controle.definirDestaqueTabela = function (v) { Controle.setEstado({ tabelaDestaque: v }); };
 
