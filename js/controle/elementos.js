@@ -9,19 +9,23 @@ Controle.definirTimes=function(){
     if(Object.keys(d).length){Controle._presetAtual=null;Controle.setEstado(d);Controle.atualizarNomePreset();}
 };
 
+/* le um input com seguranca: tela antiga pode nao ter o campo, e um
+   getElementById(...).value quebrado abortaria o save de TODOS os campos */
+Controle._valorCampo=function(id){
+    var el=document.getElementById(id);
+    return el&&typeof el.value!=='undefined'?el.value:null;
+};
 Controle.definirTorneio=function(){
     var d={};
-    var comp=document.getElementById('competicao').value;
-    var cat=document.getElementById('categoria').value;
-    var grp=document.getElementById('grupo').value;
-    var fase=document.getElementById('fase').value;
-    var data=document.getElementById('data').value;
-    var hora=document.getElementById('hora').value;
-    var local=document.getElementById('local').value;
-    var cl=document.getElementById('clima'),ci=document.getElementById('climaIcone');
-    if(comp)d.competicao=comp;if(cat)d.categoria=cat;if(grp)d.grupo=grp;if(fase)d.fase=fase;
-    if(data)d.data=data;if(hora)d.hora=hora;if(local)d.local=local;
-    if(cl)d.clima=cl.value;if(ci)d.climaIcone=ci.value;
+    var M={competicao:'competicao',categoria:'categoria',grupo:'grupo',fase:'fase',
+           data:'data',hora:'hora',local:'local'};
+    Object.keys(M).forEach(function(id){
+        var v=Controle._valorCampo(id);
+        if(v!==null&&String(v).trim()!=='')d[id]=v;
+    });
+    var cl=Controle._valorCampo('clima'),ci=Controle._valorCampo('climaIcone');
+    if(cl!==null)d.clima=cl;
+    if(ci!==null)d.climaIcone=ci;
     if(Object.keys(d).length)Controle.setEstado(d);
 };
 

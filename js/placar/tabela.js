@@ -22,9 +22,9 @@ Placar.Tabela = {
     _forcado: false,
 
     /* cenas que o motor conhece (usado para validar o painel/estado) */
-    CENAS_VALIDAS: { intro: 1, table: 1, duel: 1, feature: 1, form2: 1, lineups: 1, lower: 1, intervalo: 1, encerramento: 1 },
+    CENAS_VALIDAS: { intro: 1, table: 1, duel: 1, feature: 1, form2: 1, lineups: 1, rival: 1, lower: 1, intervalo: 1, encerramento: 1 },
     /* cenas que só existem se houver classificacao (CSV importado) */
-    CENAS_CSV: { table: 1, duel: 1, feature: 1, form2: 1, lineups: 1 },
+    CENAS_CSV: { table: 1, duel: 1, feature: 1, form2: 1, lineups: 1, rival: 1 },
 
     /* ---------- elementos ---------- */
     camada: function () { return document.getElementById('camadaTabela'); },
@@ -427,7 +427,8 @@ Placar.Tabela = {
 
 /* linha do tempo padrao quando o painel nunca salvou uma */
 var CENAS_PADRAO = [{ k: 'intro', d: 6 }, { k: 'table', d: 10 }, { k: 'duel', d: 7 },
-                    { k: 'feature', d: 8 }, { k: 'form2', d: 8 }, { k: 'lineups', d: 9 }];
+                    { k: 'feature', d: 8 }, { k: 'rival', d: 8 }, { k: 'form2', d: 8 },
+                    { k: 'lineups', d: 9 }];
 
 // reage a mudancas de estado
 Placar.on('tabela:changed', function () { Placar.Tabela.aplicar(); });

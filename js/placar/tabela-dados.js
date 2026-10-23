@@ -117,10 +117,11 @@ var TabelaDados = (function () {
   var VEL_SCROLL = 40, PAUSA_TOPO = 1, PAUSA_FIM = 3, VOLTA = 0.6;
 
   function ajustarScroll() {
-    var corpo = document.getElementById('thBody');
-    if (!corpo) return;
-    corpo.classList.remove('rolar');
-    corpo.style.transform = '';
+    var corpo = document.getElementById('thBody');       // janela (clipa)
+    var alvo = document.getElementById('thScroll');      // conteudo (rola)
+    if (!corpo || !alvo) return;
+    alvo.classList.remove('rolar');
+    alvo.style.transform = '';
     var linhas = corpo.querySelectorAll('.th-row'), n = 0, alt = 0;
     for (var i = 0; i < linhas.length; i++) {
       if (linhas[i].style.display === 'none') continue;
@@ -145,9 +146,9 @@ var TabelaDados = (function () {
       + '0%,' + pc(PAUSA_TOPO) + '%{transform:translateY(0)}'
       + pc(PAUSA_TOPO + rolagem) + '%,' + pc(PAUSA_TOPO + rolagem + PAUSA_FIM) + '%{transform:translateY(-' + dist + 'px)}'
       + '100%{transform:translateY(0)}}';
-    corpo.style.setProperty('--th-y', '-' + dist + 'px');
-    corpo.style.setProperty('--th-dur', total.toFixed(1) + 's');
-    corpo.classList.add('rolar');
+    alvo.style.setProperty('--th-y', '-' + dist + 'px');
+    alvo.style.setProperty('--th-dur', total.toFixed(1) + 's');
+    alvo.classList.add('rolar');
   }
 
   function fillIntro(cfg, A, B) {
@@ -168,6 +169,49 @@ var TabelaDados = (function () {
     txt(pfx + 'Nb', B ? (B.short || B.name) : '');
     setCrest(document.querySelector('#' + pfx + 'BdA .th-crestbox'), A);
     setCrest(document.querySelector('#' + pfx + 'BdB .th-crestbox'), B);
+  }
+
+  /* --- cena RIVAL: top 3, o time logo acima do principal e os 3 abaixo --- */
+  function fillRivalLinha(el, tm, ehPrincipal) {
+    if (!el) return;
+    if (!tm) { el.style.display = 'none'; return; }
+    el.style.display = '';
+    var q = function (s) { return el.querySelector(s); };
+    var pos = q('.rv-pos'), nome = q('.rv-nome'), pts = q('.rv-pts');
+    if (pos) pos.textContent = (tm.pos != null ? tm.pos : '') + 'º';
+    if (nome) nome.textContent = tm.short || tm.name || '';
+    if (pts) pts.textContent = num(tm.pts) + ' pts';
+    setCrest(q('.rv-crest'), tm);
+    if (el.classList) el.classList.toggle('on', !!ehPrincipal);
+  }
+
+  function fillRival(cfg, times) {
+    txt('rvTitulo', cfg.ttl);
+    txt('rvSub', cfg.sub);
+    txt('rvTime', [cfg.vDate, cfg.vTime, cfg.vW].filter(Boolean).join(' · '));
+    setLogo('rvLogo', cfg.logo);
+    var lista = times || [];
+    var i = parseInt(cfg.c, 10);
+    if (isNaN(i) || i < 0 || i >= lista.length) i = 0;
+    var eu = lista[i] || null;
+    ['rvT1', 'rvT2', 'rvT3'].forEach(function (id, k) {
+      fillRivalLinha(document.getElementById(id), lista[k], lista[k] === eu);
+    });
+    var rival = i > 0 ? lista[i - 1] : null;
+    fillRivalLinha(document.getElementById('rvRiv'), rival, false);
+    txt('rvLblRiv', rival ? ('RIVAL · ' + (rival.pos || i) + 'º') : 'LIDERA A TABELA');
+    fillRivalLinha(document.getElementById('rvPrin'), eu, true);
+    ['rvB1', 'rvB2', 'rvB3'].forEach(function (id, k) {
+      fillRivalLinha(document.getElementById(id), lista[i + 1 + k], false);
+    });
+    var foot = '';
+    if (eu && rival && eu.pts != null && rival.pts != null) {
+      var dif = rival.pts - eu.pts;
+      foot = dif > 0 ? ('Faltam ' + dif + ' pt' + (dif > 1 ? 's' : '') + ' para o rival')
+                     : ('Empatado em pontos com o rival');
+    }
+    else if (eu && i === 0) foot = 'Líder da competição';
+    txt('rvFoot', foot);
   }
 
   // fundo opcional por cena (intro/table/intervalo/encerramento), vindo do painel
@@ -429,6 +473,7 @@ var TabelaDados = (function () {
     fillFeature(cfg, times);
     fillForm2(cfg, times);
     fillDuel(cfg, A, B, times);
+    fillRival(cfg, times);
   }
 
   return { fill: fill, setFundos: setFundos, ajustarScroll: ajustarScroll };

@@ -57,7 +57,7 @@
 .cena{color:rgba(var(--fg),1);font-family:'Arial','Helvetica Neue',sans-serif}
 
 /* ================= TABELA ================= */
-.cena-table{padding:44px 64px 40px;display:none;flex-direction:column;gap:0}   /* mesma margem das outras cenas */
+.cena-table{padding:60px 80px;display:none;flex-direction:column;gap:0}   /* mesma margem das outras (60/80) */
 #camadaTabela[data-cena="table"] .cena-table{display:flex}
 .cena-table::before{content:"";position:absolute;inset:0;z-index:-1;
   background:linear-gradient(180deg,rgba(var(--bg),.94),rgba(var(--bg),.90))}
@@ -84,10 +84,13 @@
   color:rgba(var(--fg),.6);border-bottom:1px solid rgba(var(--fg),.14);flex:0 0 auto;
   position:relative;z-index:2;background:rgba(var(--bg),.95)}   /* fixo: as linhas passam por baixo */
 .th-thead .th-pts,.th-thead div:nth-child(n+5){text-align:center}
-.th-body{flex:1 1 0;min-height:0;overflow:hidden;display:flex;flex-direction:column;will-change:transform}
+.th-body{flex:1 1 0;min-height:0;overflow:hidden;display:block}
+/* o que rola é o CONTEÚDO dentro do .th-body: se o transform fosse no próprio
+   .th-body o clip andava junto e nada novo aparecia */
+.th-scroll{display:flex;flex-direction:column;will-change:transform}
 /* rolagem automatica: JS grava @keyframes thScroll com a distancia e os tempos
    (40 px/s, 1 s no topo, 3 s no fim) e liga a classe .rolar */
-.th-body.rolar{animation:thScroll var(--th-dur,22s) linear infinite}
+.th-scroll.rolar{animation:thScroll var(--th-dur,22s) linear infinite}
 @keyframes thScroll{0%,5%{transform:translateY(0)}90%,94%{transform:translateY(var(--th-y,0px))}100%{transform:translateY(0)}}
 .th-row{flex:0 0 88px;min-height:88px;padding:0 22px;font-size:30px;border-bottom:1px solid rgba(var(--fg),.06);
   animation:rowIn .5s cubic-bezier(.2,.7,.3,1) both;animation-delay:calc(var(--i) * 45ms)}
@@ -134,11 +137,10 @@
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;animation:nomeIn .6s .55s both}
 .in-vs .na{left:190px;text-align:left}
 .in-vs .nb{right:190px;text-align:right}
-.in-vs .vsx{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:56px;font-weight:900;
+.in-vs .vsx{position:absolute;inset:0;margin:auto;width:max-content;height:max-content;font-size:56px;font-weight:900;
   color:rgba(var(--ac),1);animation:vsIn .6s .4s both}
 .in-vs .vsub{position:absolute;left:50%;top:calc(50% + 46px);transform:translateX(-50%);font-size:16px;font-weight:700;
   opacity:.8;letter-spacing:.2em;text-transform:uppercase;animation:vsubIn .6s .65s both}
-.in-fcf{margin-top:40px;font-size:14px;letter-spacing:.36em;opacity:.5;animation:fadeUp .6s .7s both}
 
 /* ================= INTERVALO / ENCERRAMENTO ================= */
 .cena-full{display:none;flex-direction:column;align-items:center;justify-content:center;gap:30px;
@@ -159,7 +161,7 @@
 /* animações que NÃO podem usar zoomIn/fadeUp: esses keyframes terminam em
    transform:none e apagam o translate de centralização (VS/nomes/escudos da
    abertura saíam fora de centro). */
-@keyframes vsIn{from{opacity:0;transform:translate(-50%,-50%) scale(.86)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+@keyframes vsIn{from{opacity:0;transform:scale(.86)}to{opacity:1;transform:scale(1)}}
 @keyframes bdIn{from{opacity:0;transform:translateY(-50%) scale(.86)}to{opacity:1;transform:translateY(-50%) scale(1)}}
 @keyframes nomeIn{from{opacity:0;transform:translateY(calc(-50% + 16px))}to{opacity:1;transform:translateY(-50%)}}
 @keyframes vsubIn{from{opacity:0;transform:translateX(-50%) translateY(16px)}to{opacity:.8;transform:translateX(-50%) translateY(0)}}
@@ -230,8 +232,8 @@
 
 /* ================= ESCALACAO ================= */
 .cena-lineups{display:none}
-.lu-painel{position:absolute;left:56px;top:124px;width:1168px;height:520px;box-sizing:border-box;
-  border-radius:20px;background:rgba(var(--fg),.05);border:1px solid rgba(var(--fg),.13);padding:26px 32px}
+.lu-painel{position:absolute;left:56px;top:100px;width:1168px;height:520px;box-sizing:border-box;
+  border-radius:20px;background:rgba(var(--bg),.90);border:1px solid rgba(var(--fg),.13);padding:26px 32px}
 .lu-hdr{display:flex;align-items:center;gap:22px}
 .lu-crest{width:104px;height:104px;flex:0 0 104px}
 .lu-hd{display:flex;flex-direction:column;gap:4px;flex:1;min-width:0}
@@ -255,8 +257,8 @@
 
 /* ================= TIME DESTAQUE ================= */
 .cena-feature{display:none}
-.ft-painel{position:absolute;left:56px;top:124px;width:1168px;height:520px;box-sizing:border-box;
-  border-radius:20px;background:rgba(var(--fg),.055);border:1px solid rgba(var(--fg),.14);
+.ft-painel{position:absolute;left:56px;top:100px;width:1168px;height:520px;box-sizing:border-box;
+  border-radius:20px;background:rgba(var(--bg),.90);border:1px solid rgba(var(--fg),.14);
   display:grid;grid-template-columns:700px 1fr;padding:22px 26px;overflow:hidden}
 .ft-esq{display:flex;flex-direction:column;gap:12px;padding-right:20px;min-width:0}
 .ft-topo{display:flex;align-items:center;gap:20px}
@@ -298,11 +300,11 @@
 
 /* ================= ULTIMOS JOGOS ================= */
 .cena-form2{display:none}
-.f2-esq{position:absolute;left:56px;top:124px;width:700px;height:520px;box-sizing:border-box;
-  border-radius:20px;background:rgba(var(--fg),.055);border:1px solid rgba(var(--fg),.14);
+.f2-esq{position:absolute;left:56px;top:100px;width:700px;height:520px;box-sizing:border-box;
+  border-radius:20px;background:rgba(var(--bg),.90);border:1px solid rgba(var(--fg),.14);
   padding:26px 30px;display:flex;flex-direction:column;gap:10px}
-.f2-dir{position:absolute;left:792px;top:124px;width:432px;height:520px;box-sizing:border-box;
-  border-radius:20px;background:rgba(var(--fg),.045);border:1px solid rgba(var(--fg),.12);padding:26px 24px;
+.f2-dir{position:absolute;left:792px;top:100px;width:432px;height:520px;box-sizing:border-box;
+  border-radius:20px;background:rgba(var(--bg),.90);border:1px solid rgba(var(--fg),.12);padding:26px 24px;
   display:flex;flex-direction:column;gap:8px}
 .f2-lbl{font-size:13px;font-weight:800;letter-spacing:3px;color:rgba(var(--ac),1);text-transform:uppercase}
 .f2-lbl-seq{color:rgba(var(--fg),.5);font-size:11px;letter-spacing:2px;margin-top:6px}
@@ -338,7 +340,7 @@
 .cena-duel{display:none}
 .du-par{position:absolute;left:80px;top:125px;display:flex;gap:180px}
 .du-card{position:relative;width:470px;height:470px;box-sizing:border-box;padding:18px;
-  border-radius:20px;background:rgba(var(--fg),.055);border:1px solid rgba(var(--fg),.14);
+  border-radius:20px;background:rgba(var(--bg),.90);border:1px solid rgba(var(--fg),.14);
   display:flex;flex-direction:column;align-items:center;overflow:hidden}
 .du-card::before{content:"";position:absolute;left:0;right:0;top:0;height:120px;pointer-events:none;
   background:linear-gradient(180deg,rgba(var(--ac),.18),transparent)}
@@ -357,7 +359,7 @@
 .du-stat b{display:block;font-size:22px;font-weight:800;color:rgba(var(--fg),.97)}
 .du-stat span{font-size:11px;font-weight:700;letter-spacing:1px;color:rgba(var(--fg),.55)}
 .du-barras{width:100%;margin-top:auto;display:flex;flex-direction:column;gap:16px;padding:0 6px 6px}
-.du-vs{position:absolute;left:640px;top:360px;transform:translate(-50%,-50%);width:116px;height:116px;
+.du-vs{position:absolute;inset:0;margin:auto;width:116px;height:116px;
   border-radius:50%;display:flex;align-items:center;justify-content:center;
   background:rgba(var(--bg),.92);border:3px solid rgba(var(--ac),1);
   box-shadow:0 0 0 16px rgba(var(--ac),.12)}
@@ -388,3 +390,34 @@
 #camadaSponsors #spLabel,#camadaSponsors #spNome{
   min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
+/* ================= RIVAL (top 3 · rival · perseguindo) ================= */
+.cena-rival{display:none}
+#camadaTabela[data-cena="rival"] .cena-rival{display:block}
+.rv-painel{position:absolute;left:56px;top:100px;width:1168px;height:520px;box-sizing:border-box;
+  border-radius:20px;background:rgba(var(--bg),.90);border:1px solid rgba(var(--fg),.14);
+  padding:24px 28px;display:flex;flex-direction:column;gap:16px}
+.rv-hdr{display:flex;align-items:center;gap:18px}
+.rv-logo{width:56px;height:56px;object-fit:contain;flex:0 0 auto}
+.rv-hd{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+.rv-tit{font-size:30px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rv-sub{font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;opacity:.7;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rv-dir{display:flex;flex-direction:column;gap:2px;text-align:right;min-width:0}
+.rv-lbl{font-size:11px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;opacity:.55}
+.rv-time{font-size:13px;color:rgba(var(--fg),.65);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:340px}
+.rv-cols{flex:1 1 0;min-height:0;display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
+.rv-col{display:flex;flex-direction:column;gap:6px;min-width:0}
+.rv-col-meio{background:rgba(var(--ac),.06);border:1px solid rgba(var(--ac),.22);border-radius:14px;padding:10px 12px}
+.rv-lbl-top{color:rgba(var(--ac),.9)}
+.rv-lbl-baixo{color:rgba(var(--fg),.5)}
+.rv-lbl-eu{margin-top:6px;color:rgba(var(--ac),.9)}
+.rv-lin{display:grid;grid-template-columns:40px 46px 1fr auto;align-items:center;gap:10px;
+  height:64px;padding:0 12px;border-radius:12px;background:rgba(var(--fg),.05);box-sizing:border-box;min-width:0}
+.rv-lin:nth-child(even){background:rgba(var(--fg),.08)}
+.rv-rival{background:rgba(var(--fg),.10)}
+.rv-eu,.rv-lin.on{background:rgba(var(--ac),.18);border:1px solid rgba(var(--ac),.55)}
+.rv-pos{font-size:20px;font-weight:900;text-align:center;color:rgba(var(--fg),.85)}
+.rv-crest .th-crestbox{width:40px;height:40px}
+.rv-nome{font-size:20px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.rv-pts{font-size:22px;font-weight:900;color:rgba(var(--ac),1);white-space:nowrap}
+.rv-foot{flex:0 0 auto;font-size:12px;opacity:.5;text-align:right}

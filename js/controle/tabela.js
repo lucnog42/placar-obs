@@ -17,11 +17,12 @@ Controle.TABELA_CENAS_META = [
     ['feature', 'Time destaque', 8, true],
     ['form2', 'Forma / últimos jogos', 8, true],
     ['lineups', 'Escalações', 9, true],
+    ['rival', 'Rival (top 3 · rival · perseguindo)', 8, false],
     ['lower', 'Faixa inferior (placar)', 8, false]
 ];
 
 /* cenas que dependem da classificacao (CSV importado) */
-Controle.TABELA_CENAS_CSV = { table: 1, duel: 1, feature: 1, form2: 1, lineups: 1 };
+Controle.TABELA_CENAS_CSV = { table: 1, duel: 1, feature: 1, form2: 1, lineups: 1, rival: 1 };
 
 /* ha classificacao carregada? (sem CSV nao existem cenas de tabela) */
 Controle.temClassificacao = function () {

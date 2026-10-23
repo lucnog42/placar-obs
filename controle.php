@@ -42,15 +42,15 @@ $v = '20261114a';
 <?php include __DIR__ . '/partials/controle/bottombar.php'; ?>
 <?php include __DIR__ . '/partials/controle/debug.php'; ?>
 
-<script src="js/eventbus.js?v=20261114a"></script>
-<script src="js/comum.js?v=20261114a"></script>
-<script src="js/controle/core.js?v=20261114a"></script>
-<script src="js/controle/elementos.js?v=20261114a"></script>
-<script src="js/controle/estilo.js?v=20261114a"></script>
-<script src="js/controle/midia.js?v=20261114a"></script>
-<script src="js/controle/tabela.js?v=20261114a"></script>
+<script src="js/eventbus.js?v=20261115a"></script>
+<script src="js/comum.js?v=20261115a"></script>
+<script src="js/controle/core.js?v=20261115a"></script>
+<script src="js/controle/elementos.js?v=20261115a"></script>
+<script src="js/controle/estilo.js?v=20261115a"></script>
+<script src="js/controle/midia.js?v=20261115a"></script>
+<script src="js/controle/tabela.js?v=20261115a"></script>
 <script src="js/controle/app.js?v=<?= $v ?>"></script>
 <script src="js/controle/boot.js?v=<?= $v ?>"></script>
-<script src="js/controle/navegacao.js?v=20261114a"></script>
+<script src="js/controle/navegacao.js?v=20261115a"></script>
 </body>
 </html>

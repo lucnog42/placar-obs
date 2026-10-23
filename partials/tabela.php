@@ -27,6 +27,7 @@
     </div>
 
     <div class="th-body" id="thBody">
+      <div class="th-scroll" id="thScroll">
       <?php for ($i = 0; $i < $MAX; $i++): ?>
       <div class="th-row th-grid" style="--i:<?= $i ?>">
         <div class="th-pos"></div>
@@ -40,6 +41,7 @@
         </div>
       </div>
       <?php endfor; ?>
+      </div>
     </div>
   </div>
 

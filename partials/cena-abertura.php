@@ -16,5 +16,4 @@
     <div class="vsub" id="inVsub"></div>
   </div>
 
-  <div class="in-fcf">FCF · FEDERACIÓ CATALANA DE FUTBOL</div>
 </div>

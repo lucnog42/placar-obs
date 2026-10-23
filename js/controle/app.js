@@ -427,7 +427,7 @@ Controle.voltarLoop = function(){
    O arquivo mora em dados/fundos/; a cena guarda só o caminho.
    ============================================================ */
 Controle.FUNDO_CENAS = [['intro','Abertura'],['intervalo','Intervalo'],['encerramento','Encerramento'],['table','Tabela'],
-                        ['lower','Lower third'],['lineups','Escalação']];
+                        ['lower','Lower third'],['lineups','Escalação'],['rival','Rival']];
 Controle._fundoAlvo = 'intro';
 
 Controle._fundoMapa = function(){
