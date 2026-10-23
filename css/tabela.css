@@ -120,8 +120,11 @@
 @keyframes rowIn{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:none}}
 
 /* ================= ABERTURA ================= */
-.cena-intro{display:none;flex-direction:column;align-items:center;justify-content:center;gap:8px;
-  padding:60px 80px;text-align:center;background:rgba(var(--bg),.90)}
+/* abertura: o bloco de times (VS) fica no centro EXATO da cena; logo/título
+   ficam como cabeçalho acima, então o conjunto não "escorrega" para baixo quando
+   o título está preenchido. */
+.cena-intro{display:none;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;
+  padding:104px 80px 0;text-align:center;background:rgba(var(--bg),.90)}
 #camadaTabela[data-cena="intro"] .cena-intro{display:flex}
 .in-logo{width:96px;height:96px;object-fit:contain;margin-bottom:8px;
   animation:fadeUp .6s both}
@@ -129,7 +132,7 @@
 .in-hoje{margin-top:14px;font-size:20px;font-weight:800;letter-spacing:.4em;color:rgba(var(--ac),1);animation:fadeUp .6s .2s both}
 .in-linha{width:220px;height:3px;background:rgba(var(--fg),.25);margin:10px 0 14px;animation:fadeUp .6s .25s both}
 .in-sub{font-size:22px;font-weight:700;opacity:.85;animation:fadeUp .6s .3s both}
-.in-vs{position:relative;width:100%;max-width:1280px;height:220px;margin-top:34px}
+.in-vs{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);width:100%;max-width:1280px;height:220px;margin:0 auto}
 .in-vs .bd{position:absolute;top:50%;transform:translateY(-50%);width:132px;height:132px;animation:bdIn .6s .45s both}
 .in-vs #inBdA{left:40px}
 .in-vs #inBdB{right:40px}
