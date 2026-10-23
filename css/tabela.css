@@ -136,7 +136,7 @@
 .in-vs .bd{position:absolute;top:50%;transform:translateY(-50%);width:132px;height:132px;animation:bdIn .6s .45s both}
 .in-vs #inBdA{left:40px}
 .in-vs #inBdB{right:40px}
-.in-vs .na,.in-vs .nb{position:absolute;top:50%;transform:translateY(-50%);font-size:30px;font-weight:900;max-width:340px;
+.in-vs .na,.in-vs .nb{position:absolute;top:50%;transform:translateY(-50%);font-size:30px;font-weight:900;max-width:500px;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;animation:nomeIn .6s .55s both}
 .in-vs .na{left:190px;text-align:left}
 .in-vs .nb{right:190px;text-align:right}
@@ -144,6 +144,12 @@
   color:rgba(var(--ac),1);animation:vsIn .6s .4s both}
 .in-vs .vsub{position:absolute;left:50%;top:calc(50% + 46px);transform:translateX(-50%);font-size:16px;font-weight:700;
   opacity:.8;letter-spacing:.2em;text-transform:uppercase;animation:vsubIn .6s .65s both}
+/* local do jogo fecha a composição na base (a abertura ficava com a metade
+   de baixo vazia: cabeçalho em cima, times no centro, nada embaixo) */
+.in-local{position:absolute;left:0;right:0;bottom:104px;text-align:center;
+  font-size:26px;font-weight:800;letter-spacing:.26em;text-transform:uppercase;
+  color:rgba(var(--fg),.72);animation:fadeUp .6s .7s both}
+.in-local:empty{display:none}
 
 /* ================= INTERVALO / ENCERRAMENTO ================= */
 .cena-full{display:none;flex-direction:column;align-items:center;justify-content:center;gap:30px;
@@ -151,13 +157,25 @@
 #camadaTabela[data-cena="intervalo"] .cena-intervalo,
 #camadaTabela[data-cena="encerramento"] .cena-encerramento{display:flex}
 .fl-titulo{font-size:52px;font-weight:900;letter-spacing:.2em;color:rgba(var(--ac),1);animation:fadeUp .55s both}
-.fl-painel{display:flex;align-items:center;justify-content:center;gap:34px;animation:fadeUp .55s .15s both}
+.fl-logo{width:92px;height:92px;object-fit:contain;margin-bottom:-8px;animation:fadeUp .55s both}
+.fl-logo:not([src]),.fl-logo[src=""]{display:none}
+.fl-painel{display:flex;align-items:center;justify-content:center;gap:30px;animation:fadeUp .55s .15s both}
+/* cada lado é escudo + nome, então a leitura sai na ordem certa:
+   [escudo A] [nome A]  gol - gol  [nome B] [escudo B] */
+.fl-time{display:flex;align-items:center;gap:20px;min-width:0}
+.fl-time .na,.fl-time .nb{max-width:520px}
+.fl-score{display:flex;align-items:center;gap:16px}
 .fl-painel .bd{width:150px;height:150px;animation:zoomIn .55s .3s both}
 .fl-painel .ga,.fl-painel .gb{font-size:110px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1}
 .fl-painel .sep{font-size:90px;font-weight:400;opacity:.45}
-.fl-painel .na,.fl-painel .nb{font-size:28px;font-weight:800;max-width:380px;text-align:center;
+.fl-painel .na,.fl-painel .nb{font-size:28px;font-weight:800;max-width:520px;text-align:center;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.fl-rodape{font-size:18px;letter-spacing:.4em;opacity:.55;animation:fadeUp .55s .5s both}
+.fl-meta{font-size:30px;font-weight:900;letter-spacing:.02em;text-align:center;
+  animation:fadeUp .55s .35s both}
+.fl-meta:empty,.fl-meta2:empty{display:none}
+.fl-meta2{font-size:20px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;
+  opacity:.72;text-align:center;animation:fadeUp .55s .45s both}
+.fl-rodape{font-size:18px;letter-spacing:.4em;opacity:.55;margin-top:26px;animation:fadeUp .55s .5s both}
 
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 @keyframes zoomIn{from{opacity:0;transform:scale(.86)}to{opacity:1;transform:none}}

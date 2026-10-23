@@ -16,4 +16,6 @@
     <div class="vsub" id="inVsub"></div>
   </div>
 
+  <!-- local do jogo: fecha a composição na parte de baixo da tela -->
+  <div class="in-local" id="inLocal"></div>
 </div>

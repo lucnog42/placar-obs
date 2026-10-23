@@ -190,7 +190,9 @@ var TabelaDados = (function () {
     setLogo('inLogo', cfg.logo);
     txt('inNa', A ? (A.short || A.name) : '');
     txt('inNb', B ? (B.short || B.name) : '');
-    txt('inVsub', [cfg.vDate, cfg.vTime, cfg.vW].filter(Boolean).join(' · '));
+    // clima com ícone (☀️ 18°C) + local do jogo, que antes não aparecia
+    txt('inVsub', [cfg.vDate, cfg.vTime, [cfg.vIcon, cfg.vW].filter(Boolean).join(' ')].filter(Boolean).join(' · '));
+    txt('inLocal', cfg.vName || '');
     setCrest(document.querySelector('#inBdA .th-crestbox'), A);
     setCrest(document.querySelector('#inBdB .th-crestbox'), B);
   }
@@ -202,6 +204,11 @@ var TabelaDados = (function () {
     txt(pfx + 'Nb', B ? (B.short || B.name) : '');
     setCrest(document.querySelector('#' + pfx + 'BdA .th-crestbox'), A);
     setCrest(document.querySelector('#' + pfx + 'BdB .th-crestbox'), B);
+    // logo do torneio + dados da competição (linha 1) e do jogo (linha 2)
+    setLogo(pfx + 'Logo', cfg.logo);
+    txt(pfx + 'Meta', [cfg.ttl, cfg.sub].filter(Boolean).join(' · '));
+    txt(pfx + 'Meta2', [cfg.vName, cfg.vDate, cfg.vTime,
+      [cfg.vIcon, cfg.vW].filter(Boolean).join(' ')].filter(Boolean).join(' · '));
   }
 
   /* --- cena RIVAL: desenha LINHAS iguais às da tabela, estáticas.
